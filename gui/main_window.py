@@ -14,6 +14,7 @@ from gui.tabs.time_funds_tab import TimeFundsTab
 from gui.tabs.melting_tab import MeltingTab
 from gui.tabs.molding_tab import MoldingTab
 from gui.tabs.core_tab import CoreTab
+from gui.tabs.cleaning_tab import CleaningTab
 
 
 class SideBarButton(QPushButton):
@@ -164,6 +165,8 @@ class MainWindow(QMainWindow):
             return MoldingTab(self.project)
         elif key == "core_tab":
             return CoreTab(self.project)
+        elif key == "cleaning_tab":
+            return CleaningTab(self.project)
 
         # Заглушка для нереализованных вкладок
         return self._make_placeholder(title)
@@ -191,6 +194,7 @@ class MainWindow(QMainWindow):
         melting_tab = self.tabs.get("melting_tab")
         molding_tab = self.tabs.get("molding_tab")
         core_tab = self.tabs.get("core_tab")
+        cleaning_tab = self.tabs.get("cleaning_tab")
 
         if project_tab and time_funds_tab:
             # При изменении исходных данных → пересчёт фондов времени
@@ -222,6 +226,19 @@ class MainWindow(QMainWindow):
             # Смена линии/программы формовки влияет на загрузку стержневых машин
             molding_tab.line_choice_changed.connect(
                 lambda _equipment: core_tab.refresh())
+
+        if project_tab and cleaning_tab:
+            # При изменении исходных данных → пересчёт тоннажей и парка очистки
+            project_tab.project_changed.connect(cleaning_tab.on_project_changed)
+
+        if time_funds_tab and cleaning_tab:
+            # Фонд времени оборудования влияет на число очистных установок
+            time_funds_tab.funds_updated.connect(cleaning_tab.on_project_changed)
+
+        if molding_tab and cleaning_tab:
+            # Смена программы/линии формовки меняет число форм → тоннаж выбивки
+            molding_tab.line_choice_changed.connect(
+                lambda _equipment: cleaning_tab.refresh())
 
     def _select_section(self, index: int) -> None:
         if not (0 <= index < len(self.nav_buttons)):
