@@ -70,18 +70,24 @@ class UserChoices:
 
     # ---------- удобное API для оборудования (Шаг 2) ----------
     EQUIPMENT_CATEGORY: str = "melting_furnace"
+    #: Категория для выбора формовочной линии (Раздел 4, вкладка «Формовочное»)
+    MOLDING_LINE_CATEGORY: str = "molding_line"
 
     def save_equipment_choice(
         self,
         project_id: str,
         equipment_data: Dict[str, Any],
+        category: Optional[str] = None,
     ) -> None:
-        """Сохранить выбранную печь для плавильного отделения.
+        """Сохранить выбранную единицу оборудования для проекта.
 
         Args:
             project_id: идентификатор проекта (Project.project_id)
-            equipment_data: карточка оборудования из EquipmentSelector
+            equipment_data: карточка оборудования из селектора/калькулятора
                 (обязателен ключ "id")
+            category: категория выбора; по умолчанию ``EQUIPMENT_CATEGORY``
+                (плавильные печи). Для формовочных линий передавайте
+                ``MOLDING_LINE_CATEGORY``
         """
         payload = {
             "equipment_id": equipment_data.get("id", ""),
@@ -90,8 +96,21 @@ class UserChoices:
             "num_required": equipment_data.get("_num_required"),
             "load_factor": equipment_data.get("_load_factor"),
         }
-        self.set_choice(project_id, self.EQUIPMENT_CATEGORY, payload)
+        self.set_choice(project_id, category or self.EQUIPMENT_CATEGORY, payload)
 
-    def get_equipment_choice(self, project_id: str) -> Optional[Dict[str, Any]]:
-        """Загрузить сохранённый выбор печи для проекта (или None)."""
-        return self.get_choice(project_id, self.EQUIPMENT_CATEGORY)
+    def get_equipment_choice(
+        self,
+        project_id: str,
+        category: Optional[str] = None,
+    ) -> Optional[Dict[str, Any]]:
+        """Загрузить сохранённый выбор оборудования (или None).
+
+        Args:
+            project_id: идентификатор проекта
+            category: категория выбора (по умолчанию — плавильные печи)
+
+        Returns:
+            Словарь с полями equipment_id/name/type/num_required/load_factor
+            либо None, если выбор не сохранялся
+        """
+        return self.get_choice(project_id, category or self.EQUIPMENT_CATEGORY)

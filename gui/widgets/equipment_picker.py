@@ -12,15 +12,44 @@ from config import COLORS
 
 
 class EquipmentCard(QFrame):
-    """Карточка одного варианта оборудования."""
-    
+    """Карточка одного варианта оборудования.
+
+    Ключ ``card_fields`` в словаре оборудования позволяет переопределить
+    строку характеристик (используется карточками формовочных линий, где
+    единицы — ф/ч и размеры опок, а не т и т/ч).
+    """
+
     selected = Signal(dict)
-    
+
     def __init__(self, equipment_data: dict, parent=None):
         super().__init__(parent)
         self.equipment_data = equipment_data
         self._build_ui()
-        
+
+    def _specs_text(self) -> str:
+        """Собрать строку характеристик карточки (печь либо линия АФЛ)."""
+        specs = self.equipment_data.get("specs", {})
+        override = self.equipment_data.get("card_fields")
+        if override:
+            parts = []
+            for key, label in override:
+                value = specs.get(key)
+                if value in (None, "", 0):
+                    continue
+                parts.append(f"{label}: {value}")
+            return " | ".join(parts)
+
+        specs_text = []
+        if "capacity_t" in specs:
+            specs_text.append(f"Ёмкость: {specs['capacity_t']} т")
+        if "productivity_t_h" in specs:
+            specs_text.append(f"Производительность: {specs['productivity_t_h']} т/ч")
+        if "power_kw" in specs and specs["power_kw"] > 0:
+            specs_text.append(f"Мощность: {specs['power_kw']} кВт")
+        if "working_temp_C" in specs:
+            specs_text.append(f"T = {specs['working_temp_C']}°C")
+        return " | ".join(specs_text)
+
     def _build_ui(self):
         self.setFrameShape(QFrame.StyledPanel)
         self.setStyleSheet(f"""

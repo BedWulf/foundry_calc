@@ -1,0 +1,108 @@
+{
+  "version": "1.0",
+  "updated": "2026-10-11",
+  "source": [
+    "Sample Diploma.pdf, с. 28-29 (тех. характеристика ИЛ-225)",
+    "Sample Diploma 2.pdf, с. 26-27"
+  ],
+  "lines": [
+    {
+      "id": "IL-225",
+      "name": "АФЛ ИЛ-225",
+      "type": "автоматическая формовочная линия",
+      "description": "Линия для изготовления отливок из чугуна и стали в сырых песчано-глинистых формах с опками 900×600 мм. НИИТракторосельхозмаш / Сиблитмаш, Автолитмаш.",
+      "specs": {
+        "flask_size_mm": "900x600",
+        "flask_heights_mm": [125, 150, 175, 200, 250],
+        "nominal_productivity_molds_h": 240,
+        "max_mold_metal_kg": 70,
+        "pressing_force_kn": 2350,
+        "mix_consumption_m3_h": [75, 110],
+        "installed_power_kw": 115,
+        "footprint_mm": "65200x9300x6855",
+        "mass_t": 220
+      },
+      "applicable_for": {
+        "materials": ["steel", "cast_iron"],
+        "casting_mass_range_kg": [0, 100],
+        "recommended": true
+      }
+    },
+    {
+      "id": "KV301",
+      "name": "АФЛ КВ301",
+      "type": "автоматическая формовочная линия",
+      "description": "Линия для чугунного и стального литья в сырые разовые ПГС-формы, опки 1100×750 мм. База — трёхпозиционные челночные установки КВ3019.",
+      "specs": {
+        "flask_size_mm": "1100x750",
+        "flask_heights_mm": [200, 250, 300, 350],
+        "nominal_productivity_molds_h": 300,
+        "max_mold_metal_kg": 250,
+        "mix_consumption_m3_h": [60, 90],
+        "installed_power_kw": 160
+      },
+      "applicable_for": {
+        "materials": ["steel", "cast_iron"],
+        "casting_mass_range_kg": [0, 250],
+        "recommended": false
+      }
+    },
+    {
+      "id": "IL-225A",
+      "name": "АФЛ ИЛ-225А",
+      "type": "автоматическая формовочная линия",
+      "description": "Модификация ИЛ-225 с повышенной цикловой производительностью (опки 900×600 мм).",
+      "specs": {
+        "flask_size_mm": "900x600",
+        "flask_heights_mm": [125, 150, 175, 200, 250],
+        "nominal_productivity_molds_h": 300,
+        "max_mold_metal_kg": 70,
+        "mix_consumption_m3_h": [80, 120],
+        "installed_power_kw": 125
+      },
+      "applicable_for": {
+        "materials": ["steel", "cast_iron"],
+        "casting_mass_range_kg": [0, 100],
+        "recommended": false
+      }
+    },
+    {
+      "id": "TL-124",
+      "name": "Линия ТЛ-124",
+      "type": "полуавтоматическая формовочная линия",
+      "description": "Линия для мелкого стального и чугунного литья в опках 675×520 мм.",
+      "specs": {
+        "flask_size_mm": "675x520",
+        "flask_heights_mm": [100, 125, 150, 175],
+        "nominal_productivity_molds_h": 180,
+        "max_mold_metal_kg": 30,
+        "mix_consumption_m3_h": [30, 50],
+        "installed_power_kw": 45
+      },
+      "applicable_for": {
+        "materials": ["steel", "cast_iron", "aluminum"],
+        "casting_mass_range_kg": [0, 30],
+        "recommended": false
+      }
+    },
+    {
+      "id": "IL-204",
+      "name": "АФЛ ИЛ-204",
+      "type": "автоматическая формовочная линия",
+      "description": "Линия для алюминиевого и мелкого чугунного литья, опки 710×470 мм.",
+      "specs": {
+        "flask_size_mm": "710x470",
+        "flask_heights_mm": [100, 125, 150, 200],
+        "nominal_productivity_molds_h": 240,
+        "max_mold_metal_kg": 25,
+        "mix_consumption_m3_h": [25, 45],
+        "installed_power_kw": 40
+      },
+      "applicable_for": {
+        "materials": ["aluminum", "cast_iron"],
+        "casting_mass_range_kg": [0, 25],
+        "recommended": false
+      }
+    }
+  ]
+}
