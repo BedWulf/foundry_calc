@@ -67,3 +67,31 @@ class UserChoices:
         """Получить выбранный сплав для проекта."""
         choice = self.get_choice(project_id, "alloy")
         return choice.get("alloy_id") if choice else None
+
+    # ---------- удобное API для оборудования (Шаг 2) ----------
+    EQUIPMENT_CATEGORY: str = "melting_furnace"
+
+    def save_equipment_choice(
+        self,
+        project_id: str,
+        equipment_data: Dict[str, Any],
+    ) -> None:
+        """Сохранить выбранную печь для плавильного отделения.
+
+        Args:
+            project_id: идентификатор проекта (Project.project_id)
+            equipment_data: карточка оборудования из EquipmentSelector
+                (обязателен ключ "id")
+        """
+        payload = {
+            "equipment_id": equipment_data.get("id", ""),
+            "name": equipment_data.get("name", ""),
+            "type": equipment_data.get("type", ""),
+            "num_required": equipment_data.get("_num_required"),
+            "load_factor": equipment_data.get("_load_factor"),
+        }
+        self.set_choice(project_id, self.EQUIPMENT_CATEGORY, payload)
+
+    def get_equipment_choice(self, project_id: str) -> Optional[Dict[str, Any]]:
+        """Загрузить сохранённый выбор печи для проекта (или None)."""
+        return self.get_choice(project_id, self.EQUIPMENT_CATEGORY)

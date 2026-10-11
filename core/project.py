@@ -1,4 +1,5 @@
 """Модель проекта литейного цеха."""
+import hashlib
 from dataclasses import dataclass, field
 from typing import List, Optional
 from datetime import date
@@ -42,6 +43,16 @@ class Project:
     liquid_metal_t: float = 0.0
 
     # ---------- методы ----------
+    @property
+    def project_id(self) -> str:
+        """Стабильный идентификатор проекта для user_data/choices.json.
+
+        Вычисляется из названия и даты создания, поэтому выбор оборудования
+        корректно восстанавливается между запусками приложения.
+        """
+        raw = f"{self.name}|{self.created_at.isoformat()}"
+        return hashlib.md5(raw.encode("utf-8")).hexdigest()[:12]
+
     def add_casting(self, item: CastingItem) -> None:
         self.castings.append(item)
 

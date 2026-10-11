@@ -1,0 +1,12 @@
+{
+  "922d4036d62b": {
+    "melting_furnace": {
+      "equipment_id": "IST-6M1",
+      "name": "ИСТ-6М1",
+      "type": "induction_crucible",
+      "num_required": 6,
+      "load_factor": 0.842,
+      "updated_at": "2026-10-11T07:41:03.666315"
+    }
+  }
+}

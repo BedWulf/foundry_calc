@@ -1,4 +1,6 @@
 """Виджет выбора оборудования из нескольких вариантов."""
+from typing import Any, Dict, List, Optional
+
 from PySide6.QtCore import Qt, Signal
 from PySide6.QtGui import QFont
 from PySide6.QtWidgets import (
@@ -187,8 +189,19 @@ class EquipmentPicker(QWidget):
         self.scroll.setWidget(self.cards_container)
         layout.addWidget(self.scroll, 1)
     
-    def set_equipment_options(self, equipment_list: list):
-        """Установить список доступных вариантов."""
+    def set_equipment_options(
+        self,
+        equipment_list: List[Dict[str, Any]],
+        selected_id: Optional[str] = None,
+    ) -> None:
+        """Установить список доступных вариантов.
+
+        Args:
+            equipment_list: карточки оборудования (первая — лучшая по скорингу)
+            selected_id: id печи, которую нужно отметить (восстановление
+                выбора пользователя); если None или не найдено —
+                автовыбор первой (лучшей) карточки
+        """
         self.equipment_list = equipment_list
         
         # Очистить старые карточки
@@ -208,9 +221,18 @@ class EquipmentPicker(QWidget):
             # Сигнал
             card.selected.connect(self._on_equipment_selected)
         
-        # Автовыбор первого (лучшего)
+        # Выбор: сохранённый пользователем либо первый (лучший) вариант
         if equipment_list:
-            self.button_group.button(0).setChecked(True)
+            idx = 0
+            if selected_id is not None:
+                for i, equip in enumerate(equipment_list):
+                    if equip.get("id") == selected_id:
+                        idx = i
+                        break
+            button = self.button_group.button(idx)
+            if button is not None:
+                button.setChecked(True)
+                self.equipment_selected.emit(equipment_list[idx])
     
     def _on_equipment_selected(self, equipment_data: dict):
         self.equipment_selected.emit(equipment_data)
