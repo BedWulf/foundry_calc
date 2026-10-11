@@ -14,6 +14,7 @@ from gui.tabs.time_funds_tab import TimeFundsTab
 from gui.tabs.melting_tab import MeltingTab
 from gui.tabs.molding_tab import MoldingTab
 from gui.tabs.core_tab import CoreTab
+from gui.tabs.sand_tab import SandTab
 from gui.tabs.cleaning_tab import CleaningTab
 
 
@@ -165,6 +166,8 @@ class MainWindow(QMainWindow):
             return MoldingTab(self.project)
         elif key == "core_tab":
             return CoreTab(self.project)
+        elif key == "sand_tab":
+            return SandTab(self.project)
         elif key == "cleaning_tab":
             return CleaningTab(self.project)
 
@@ -194,6 +197,7 @@ class MainWindow(QMainWindow):
         melting_tab = self.tabs.get("melting_tab")
         molding_tab = self.tabs.get("molding_tab")
         core_tab = self.tabs.get("core_tab")
+        sand_tab = self.tabs.get("sand_tab")
         cleaning_tab = self.tabs.get("cleaning_tab")
 
         if project_tab and time_funds_tab:
@@ -226,6 +230,20 @@ class MainWindow(QMainWindow):
             # Смена линии/программы формовки влияет на загрузку стержневых машин
             molding_tab.line_choice_changed.connect(
                 lambda _equipment: core_tab.refresh())
+
+        if project_tab and sand_tab:
+            # При изменении исходных данных → пересчёт расхода смеси и парка
+            project_tab.project_changed.connect(sand_tab.on_project_changed)
+
+        if time_funds_tab and sand_tab:
+            # Фонд времени оборудования влияет на число смесителей
+            time_funds_tab.funds_updated.connect(sand_tab.on_project_changed)
+
+        if molding_tab and sand_tab:
+            # Смена программы/линии формовки меняет число и объём форм →
+            # годовой расход формовочной смеси
+            molding_tab.line_choice_changed.connect(
+                lambda _equipment: sand_tab.refresh())
 
         if project_tab and cleaning_tab:
             # При изменении исходных данных → пересчёт тоннажей и парка очистки

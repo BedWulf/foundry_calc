@@ -82,6 +82,18 @@ class EquipmentDialog(QDialog):
             "prod_default": 30.0,
             "type_default": "custom_core",
         },
+        "mixer": {
+            "title": "Добавить смесеприготовительную установку",
+            "capacity_label": "Объём замеса:",
+            "capacity_suffix": " м³",
+            "capacity_range": (0.01, 50.0),
+            "capacity_default": 3.0,
+            "prod_label": "Производительность:",
+            "prod_suffix": " м³/ч",
+            "prod_range": (0.01, 500.0),
+            "prod_default": 12.0,
+            "type_default": "custom_mixer",
+        },
     }
 
     def __init__(self, parent: Optional[QWidget] = None,
@@ -162,6 +174,19 @@ class EquipmentDialog(QDialog):
             self.operation_combo.setCurrentIndex(2)
             ov.addWidget(self.operation_combo)
             layout.addWidget(op_group)
+        elif self._kind == "mixer":
+            op_group = QGroupBox("Операция отделения")
+            ov = QVBoxLayout(op_group)
+            self.operation_combo = QComboBox()
+            try:
+                from core.sand_prep import OPERATION_TITLES as MIX_OP_TITLES
+                for key, title in MIX_OP_TITLES.items():
+                    self.operation_combo.addItem(title, key)
+            except Exception:  # pragma: no cover - страховка от циклов импорта
+                self.operation_combo.addItem("Приготовление формовочной смеси",
+                                             "molding_mix")
+            ov.addWidget(self.operation_combo)
+            layout.addWidget(op_group)
 
         group = QGroupBox("Применима для материалов")
         gbox = QVBoxLayout(group)
@@ -214,6 +239,10 @@ class EquipmentDialog(QDialog):
                      "cavities_per_box": cap,
                      "hourly_output_cores_h": round(hourly, 1)}
             mass_range_max = 500.0
+        elif self._kind == "mixer":
+            # cap — объём замеса, м³; prod — производительность, м³/ч
+            specs = {"batch_volume_m3": cap, "productivity_m3_h": prod}
+            mass_range_max = 10000.0
         else:
             specs = {"capacity_t": cap, "productivity_t_h": prod}
             mass_range_max = 10000.0
@@ -229,9 +258,18 @@ class EquipmentDialog(QDialog):
                 "recommended": False,
             },
         }
-        if self.operation_combo is not None:
+        if self._kind == "mixer":
+            unit = "t_h" if prod < 2.0 else "m3_h"
+            self._result["unit"] = unit
+            if unit == "t_h":
+                self._result["specs"] = {"productivity_t_h": prod}
+        if self.operation_combo is not None and self._kind != "mixer":
             self._result["applicable_for"]["operations"] = [
                 str(self.operation_combo.currentData())]
+        elif self.operation_combo is not None:
+            # для смесеприготовления операция — обязательный ключ подбора
+            self._result["operation"] = str(
+                self.operation_combo.currentData())
         self.accept()
 
     def get_result(self) -> Optional[Dict[str, Any]]:

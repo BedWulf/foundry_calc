@@ -78,6 +78,9 @@ class UserChoices:
     #: подкатегорий по позициям техпроцесса: ``{"shot_blasting": {...}}`` —
     #: там оборудования много, и для каждой позиции нужен свой выбор.
     CLEANING_CATEGORY: str = "cleaning_equipment"
+    #: Категория смесеприготовительного отделения (Раздел 6). Хранит
+    #: подсловарь по операциям: ``{"molding_mix": {...}, "sieving": {...}}``.
+    SAND_PREP_CATEGORY: str = "sand_prep_equipment"
 
     def save_equipment_choice(
         self,

@@ -1,0 +1,96 @@
+{
+  "version": "1.0",
+  "updated": "2026-10-11",
+  "source": "Методичка и дипломы-примеры (раздел 6.1 «Состав используемой формовочной смеси»)",
+  "_comment": "Составы смесей (масс. доли, %). Плотности (т/м3) — из методички: неуплотненная смесь с кварцевым песком 1.25, уплотнённая встряхиванием 1.65, прессованием 1.8, ГТС 1.50–1.55.",
+  "densities": {
+    "loose_sand_mix_t_m3": 1.25,
+    "tamped_shake_t_m3": 1.65,
+    "tamped_pressure_t_m3": 1.8,
+    "gtc_t_m3": 1.55,
+    "regenerated_loose_t_m3": 1.4
+  },
+  "compositions": [
+    {
+      "id": "EFS_steel",
+      "name": "Единая формовочная смесь (ЕФС), сталь",
+      "kind": "molding",
+      "category": ["steel"],
+      "density_t_m3": 1.8,
+      "components": [
+        {"material": "оборотная смесь", "share_pct": 87.0},
+        {"material": "кварцевый песок 1К023Б", "share_pct": 9.0},
+        {"material": "бентонит", "share_pct": 4.0}
+      ],
+      "properties": {
+        "strength_mpa": "0.09–1.3",
+        "moisture_pct": "3.5–4.5",
+        "fines_pct": "10.0–12.0",
+        "active_bentonite_pct": "5.5–7.0",
+        "gas_permeability_units_min": 120
+      }
+    },
+    {
+      "id": "EFS_cast_iron",
+      "name": "Единая формовочная смесь (ЕФС), чугун",
+      "kind": "molding",
+      "category": ["cast_iron"],
+      "density_t_m3": 1.65,
+      "components": [
+        {"material": "оборотная смесь", "share_pct": 88.0},
+        {"material": "кварцевый песок 1К023Б", "share_pct": 8.0},
+        {"material": "бентонит", "share_pct": 4.0}
+      ],
+      "properties": {
+        "strength_mpa": "0.09–1.3",
+        "moisture_pct": "3.5–4.5",
+        "fines_pct": "10.0–12.0",
+        "active_bentonite_pct": "5.5–7.0",
+        "gas_permeability_units_min": 120
+      }
+    },
+    {
+      "id": "EFS_aluminum",
+      "name": "Единая формовочная смесь (ЕФС), алюминий",
+      "kind": "molding",
+      "category": ["aluminum"],
+      "density_t_m3": 1.65,
+      "components": [
+        {"material": "оборотная смесь", "share_pct": 85.0},
+        {"material": "кварцевый песок 1К023Б", "share_pct": 10.0},
+        {"material": "бентонит", "share_pct": 5.0}
+      ],
+      "properties": {
+        "strength_mpa": "0.09–1.3",
+        "moisture_pct": "3.5–4.5",
+        "fines_pct": "10.0–12.0",
+        "active_bentonite_pct": "5.5–7.0",
+        "gas_permeability_units_min": 120
+      }
+    },
+    {
+      "id": "Core_SLS",
+      "name": "Стержневая песчано-глинистая смесь (СЛС)",
+      "kind": "core",
+      "category": ["steel", "cast_iron", "aluminum"],
+      "density_t_m3": 1.55,
+      "components": [
+        {"material": "песок стержневой", "share_pct": 96.5},
+        {"material": "бентонит / связующее", "share_pct": 3.5}
+      ],
+      "properties": {}
+    },
+    {
+      "id": "Core_XTS",
+      "name": "Стержневая ХТС (жидкое стекло)",
+      "kind": "core",
+      "category": ["steel", "cast_iron", "aluminum"],
+      "density_t_m3": 1.55,
+      "components": [
+        {"material": "песок стержневой", "share_pct": 97.3},
+        {"material": "жидкое стекло", "share_pct": 2.7}
+      ],
+      "properties": {}
+    }
+  ]
+}
