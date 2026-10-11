@@ -1,0 +1,111 @@
+{
+  "version": "1.0",
+  "updated": "2026-10-11",
+  "source": [
+    "Sample Diploma.pdf, раздел 10 «Расчет площади складских помещений» (листы 63–64, табл. 14)",
+    "Sample Diploma 2.pdf, раздел 9 «Расчет площадей складских помещений» (листы 69–70, табл. 15, формула (27))",
+    "Методичка проектирования литейных цехов (нормативы запасов хранения, высота штабеля)"
+  ],
+  "note": "Единицы хранения: bin — бункер/приёмный прямой ящик; rack — стеллаж; pile — штабель на площадке; pallet — поддонная площадка; shelf — полочный стеллаж; crane_area — зона кранного хранения. capacity_per_unit_t — разовая вместимость одной единицы, т; footprint_m2 — занимаемая площадь (брутто с проходами), м2. applicable_for.storage_types соответствует складам из core.warehouse.WAREHOUSES.",
+  "units": [
+    {
+      "id": "BIN-STEEL-60",
+      "name": "Бункер для стального лома, 60 т",
+      "type": "bin",
+      "category": "warehouse",
+      "specs": {"capacity_per_unit_t": 60.0, "footprint_m2": 28.0, "power_kw": 0.0},
+      "applicable_for": {"storage_types": ["charge"], "materials": ["steel", "cast_iron", "aluminum"], "recommended": true},
+      "notes": "Приёмный бункер шихтового двора с заездом сверху; типовое решение для ломовых складов обоих дипломов."
+    },
+    {
+      "id": "BIN-CASTIRON-40",
+      "name": "Бункер для чугунного лома и возврата, 40 т",
+      "type": "bin",
+      "category": "warehouse",
+      "specs": {"capacity_per_unit_t": 40.0, "footprint_m2": 20.0, "power_kw": 0.0},
+      "applicable_for": {"storage_types": ["charge"], "materials": ["steel", "cast_iron", "aluminum"], "recommended": false},
+      "notes": "Отдельная секция под чугунный лом и возврат собственного производства (диплом 2: лом 17А + возврат)."
+    },
+    {
+      "id": "BIN-SAND-50",
+      "name": "Бункер формовочного песка с электропитателем, 50 т",
+      "type": "bin",
+      "category": "warehouse",
+      "specs": {"capacity_per_unit_t": 50.0, "footprint_m2": 24.0, "power_kw": 5.5},
+      "applicable_for": {"storage_types": ["molding_sand"], "materials": ["steel", "cast_iron", "aluminum"], "recommended": true},
+      "notes": "Хранение свежего песка 1К023Б с выдачей в смесеприготовление через вибрационный питатель."
+    },
+    {
+      "id": "SILO-CLAY-25",
+      "name": "Силос формовочной глины, 25 т",
+      "type": "silo",
+      "category": "warehouse",
+      "specs": {"capacity_per_unit_t": 25.0, "footprint_m2": 12.0, "power_kw": 3.0},
+      "applicable_for": {"storage_types": ["molding_sand"], "materials": ["steel", "cast_iron", "aluminum"], "recommended": false},
+      "notes": "Глина ГОСТ 3226-93; силосное хранение исключает выветривание и увлажнение."
+    },
+    {
+      "id": "PILE-CORE-10",
+      "name": "Штабельная площадка стержневого песка, 10 т",
+      "type": "pile",
+      "category": "warehouse",
+      "specs": {"capacity_per_unit_t": 10.0, "footprint_m2": 8.0, "power_kw": 0.0},
+      "applicable_for": {"storage_types": ["core_materials"], "materials": ["steel", "cast_iron", "aluminum"], "recommended": true},
+      "notes": "Песок 1К016Б малой партии (запас 5 сут (5 сут по дипломам) хранится закрытым штабелем на навесе."
+    },
+    {
+      "id": "SHELF-BINDER-5",
+      "name": "Стеллаж связующих и добавок, 5 т",
+      "type": "shelf",
+      "category": "warehouse",
+      "specs": {"capacity_per_unit_t": 5.0, "footprint_m2": 6.0, "power_kw": 0.0},
+      "applicable_for": {"storage_types": ["core_materials", "charge"], "materials": ["steel", "cast_iron", "aluminum"], "recommended": false},
+      "notes": "Лигносульфонат, декстрин, масла, ферросплавы в тарной упаковке (диплом 1: лигносульфонат 0.4 т/м3)."
+    },
+    {
+      "id": "RACK-FLASK-20",
+      "name": "Кассетный стеллаж опок, 20 т комплекта",
+      "type": "rack",
+      "category": "warehouse",
+      "specs": {"capacity_per_unit_t": 20.0, "footprint_m2": 15.0, "power_kw": 0.0},
+      "applicable_for": {"storage_types": ["flasks"], "materials": ["steel", "cast_iron", "aluminum"], "recommended": true},
+      "notes": "Вертикальное кассетное хранение опок у линии; ёмкость — масса комплекта опок в стеллаже."
+    },
+    {
+      "id": "PALLET-FLASK-15",
+      "name": "Поддонная площадка опок, 15 т",
+      "type": "pallet",
+      "category": "warehouse",
+      "specs": {"capacity_per_unit_t": 15.0, "footprint_m2": 18.0, "power_kw": 0.0},
+      "applicable_for": {"storage_types": ["flasks"], "materials": ["steel", "cast_iron", "aluminum"], "recommended": false},
+      "notes": "Накопитель опок при индивидуальном размере партии; требует крана/погрузчика."
+    },
+    {
+      "id": "RACK-PATTERNS-8",
+      "name": "Стеллаж модельной оснастки, 8 т",
+      "type": "rack",
+      "category": "warehouse",
+      "specs": {"capacity_per_unit_t": 8.0, "footprint_m2": 12.0, "power_kw": 0.0},
+      "applicable_for": {"storage_types": ["patterns"], "materials": ["steel", "cast_iron", "aluminum"], "recommended": true},
+      "notes": "Модельные плиты и модели на полках с такелажными карманами; хранение в один-два яруса."
+    },
+    {
+      "id": "CRANE-PATTERNS-40",
+      "name": "Зона кранного хранения крупной оснастки, 40 т",
+      "type": "crane_area",
+      "category": "warehouse",
+      "specs": {"capacity_per_unit_t": 40.0, "footprint_m2": 60.0, "power_kw": 0.0},
+      "applicable_for": {"storage_types": ["patterns", "flasks"], "materials": ["steel", "cast_iron"], "recommended": false},
+      "notes": "Крупные каркасы и плиты (>5 т) — штабель в зоне действия мостового крана (дипломы: 1–2 крана на склад)."
+    },
+    {
+      "id": "SHELF-TOOLS-3",
+      "name": "Стеллаж приспособлений и инструмента, 3 т",
+      "type": "shelf",
+      "category": "warehouse",
+      "specs": {"capacity_per_unit_t": 3.0, "footprint_m2": 5.0, "power_kw": 0.0},
+      "applicable_for": {"storage_types": ["tools"], "materials": ["steel", "cast_iron", "aluminum"], "recommended": true},
+      "notes": "Уборочно-шлифовальный инструмент, выбивки, шаблоны; ячейки с адресным хранением."
+    }
+  ]
+}
