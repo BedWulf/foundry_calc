@@ -233,12 +233,19 @@ class EquipmentPicker(QWidget):
         """
         self.equipment_list = equipment_list
         
-        # Очистить старые карточки
+        # Очистить старые карточки: удалить виджеты и отвязать radio-кнопки
+        # от группы. Без removeButton кнопки оставались в старой QButtonGroup
+        # и на экране одновременно подсвечивалось по две карточки (дефект
+        # проявлялся при повторных refresh(): смена материала/программы).
         while self.cards_layout.count() > 1:  # Не удаляем stretch
             item = self.cards_layout.takeAt(0)
-            if item.widget():
-                item.widget().deleteLater()
-        
+            widget = item.widget()
+            if widget is not None:
+                for btn in widget.findChildren(QRadioButton):
+                    self.button_group.removeButton(btn)
+                widget.deleteLater()
+                widget.setParent(None)
+
         self.button_group = QButtonGroup(self)
         
         # Создать карточки
