@@ -5,7 +5,10 @@
 3 890 ч (2 смены × 8 ч × 249 дней − простои) требуемая производительность
 составляет ~15.15 т/ч → ИСТ-6М1 (3.0 т/ч): 6 печей, К_загр ≈ 0.84.
 """
+import hashlib
+import json
 import math
+from datetime import datetime
 from typing import List, Dict, Any
 
 from config import DATA_DIR
@@ -13,6 +16,8 @@ from data.loader import DataLoader
 
 # Справочник печей (Шаг 1) — всегда через config.DATA_DIR (правило №2).
 FURNACES_FILE = "equipment/furnaces.json"
+# Пользовательские печи, добавленные через UI-диалог (требование №5).
+CUSTOM_FURNACES_FILE = "equipment/custom_furnaces.json"
 
 
 class EquipmentSelector:
@@ -27,6 +32,58 @@ class EquipmentSelector:
         if loader is None:
             loader = DataLoader(DATA_DIR)
         self.loader = loader
+
+    # ---------- пользовательское оборудование (требование №5) ----------
+    def _all_furnaces(self) -> List[Dict[str, Any]]:
+        """Объединённый список печей: справочник + пользовательские.
+
+        Returns:
+            Список карточек печей (пользовательские имеют флаг custom=True)
+        """
+        furnaces = list(self.loader.load_list(FURNACES_FILE, key="furnaces"))
+        furnaces.extend(self.load_custom_furnaces())
+        return furnaces
+
+    def load_custom_furnaces(self) -> List[Dict[str, Any]]:
+        """Загрузить пользовательские печи (файл может отсутствовать).
+
+        Returns:
+            Список карточек печёк из user_data/custom_furnaces.json
+        """
+        path = DATA_DIR.parent / "user_data" / "custom_furnaces.json"
+        if not path.exists():
+            return []
+        try:
+            with open(path, "r", encoding="utf-8") as f:
+                data = json.load(f)
+        except (json.JSONDecodeError, IOError):
+            return []
+        furnaces = data.get("furnaces", []) if isinstance(data, dict) else data
+        return [f for f in furnaces if isinstance(f, dict)]
+
+    def add_custom_furnace(self, furnace: Dict[str, Any]) -> Dict[str, Any]:
+        """Добавить пользовательскую печь и сохранить в JSON (без SQLite).
+
+        Args:
+            furnace: карточка печи (минимум name/type/specs.productivity_t_h/
+                applicable_for.materials); id проставляется автоматически
+
+        Returns:
+            Сохранённая карточка печи (с полем id и флагом custom=True)
+        """
+        record: Dict[str, Any] = {**furnace, "custom": True}
+        if not record.get("id"):
+            raw = f"{record.get('name', 'furnace')}|{datetime.now().isoformat()}"
+            record["id"] = "custom_" + hashlib.md5(raw.encode("utf-8")).hexdigest()[:8]
+        records = self.load_custom_furnaces()
+        records = [r for r in records if r.get("id") != record["id"]]
+        records.append(record)
+        path = DATA_DIR.parent / "user_data" / "custom_furnaces.json"
+        path.parent.mkdir(parents=True, exist_ok=True)
+        with open(path, "w", encoding="utf-8") as f:
+            json.dump({"version": "1.0", "furnaces": records},
+                      f, indent=2, ensure_ascii=False)
+        return record
 
     def find_furnaces(
         self,
@@ -47,7 +104,8 @@ class EquipmentSelector:
             Список подходящих печей с расчётными параметрами (ключи `_score`,
             `_num_required`, `_load_factor`, `_productivity_required`)
         """
-        furnaces = self.loader.load_list(FURNACES_FILE, key="furnaces")
+        # Справочник + пользовательские печи, добавленные через UI (требование №5)
+        furnaces = self._all_furnaces()
 
         # Требуемая средняя производительность, т/ч
         required_productivity = annual_charge_t / working_hours if working_hours > 0 else 0
@@ -149,7 +207,7 @@ class EquipmentSelector:
         Returns:
             Словарь с описанием печи или пустой словарь, если не найдена
         """
-        furnaces = self.loader.load_list(FURNACES_FILE, key="furnaces")
+        furnaces = self._all_furnaces()
         for f in furnaces:
             if f.get("id") == furnace_id:
                 return f
