@@ -13,6 +13,7 @@ from gui.tabs.project_tab import ProjectTab
 from gui.tabs.time_funds_tab import TimeFundsTab
 from gui.tabs.melting_tab import MeltingTab
 from gui.tabs.molding_tab import MoldingTab
+from gui.tabs.core_tab import CoreTab
 
 
 class SideBarButton(QPushButton):
@@ -161,6 +162,8 @@ class MainWindow(QMainWindow):
             return MeltingTab(self.project)
         elif key == "molding_tab":
             return MoldingTab(self.project)
+        elif key == "core_tab":
+            return CoreTab(self.project)
 
         # Заглушка для нереализованных вкладок
         return self._make_placeholder(title)
@@ -187,6 +190,7 @@ class MainWindow(QMainWindow):
         time_funds_tab = self.tabs.get("time_funds_tab")
         melting_tab = self.tabs.get("melting_tab")
         molding_tab = self.tabs.get("molding_tab")
+        core_tab = self.tabs.get("core_tab")
 
         if project_tab and time_funds_tab:
             # При изменении исходных данных → пересчёт фондов времени
@@ -206,6 +210,18 @@ class MainWindow(QMainWindow):
 
         if time_funds_tab and molding_tab:
             time_funds_tab.funds_updated.connect(molding_tab.on_project_changed)
+
+        if project_tab and core_tab:
+            # При изменении исходных данных → пересчёт программы стержней
+            project_tab.project_changed.connect(core_tab.on_project_changed)
+
+        if time_funds_tab and core_tab:
+            time_funds_tab.funds_updated.connect(core_tab.on_project_changed)
+
+        if molding_tab and core_tab:
+            # Смена линии/программы формовки влияет на загрузку стержневых машин
+            molding_tab.line_choice_changed.connect(
+                lambda _equipment: core_tab.refresh())
 
     def _select_section(self, index: int) -> None:
         if not (0 <= index < len(self.nav_buttons)):

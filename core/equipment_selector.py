@@ -152,15 +152,16 @@ class EquipmentSelector:
                 "_productivity_required": round(required_productivity, 3),
             })
 
-        # Сортировка: recommended сначала, потом по score,
-        # при равенстве — больше ёмкость (крупные агрегаты предпочтительнее
-        # мелкого раздробленного парка, ср. выбор ИСТ-6 в дипломе 2)
+        # Сортировка от наиболее оптимальных: сначала балл загрузки,
+        # затем бóльшая ёмкость (меньше единиц в парке). Флаг ``recommended``
+        # — только минорный тie-break при равенстве эффективности
+        # (дипломы — примеры, не эталон оптимальности).
         candidates.sort(
             key=lambda x: (
-                x["applicable_for"].get("recommended", False),
                 x["_score"],
                 x["specs"].get("capacity_t", 0),
                 -x["_num_required"],
+                bool(x["applicable_for"].get("recommended", False)),
             ),
             reverse=True,
         )

@@ -112,6 +112,20 @@ class MoldingCalculator:
         """
         self.loader = loader or DataLoader(DATA_DIR)
 
+    def material_category(self, alloy_id: str) -> str:
+        """Категория материала сплава ('steel'/'cast_iron'/'aluminum').
+
+        Публичная обёртка над ``_material_category`` для внешних модулей
+        (например, вкладки «Стержневое отделение»).
+
+        Args:
+            alloy_id: идентификатор или название сплава
+
+        Returns:
+            Категория; 'steel' при неизвестном сплаве
+        """
+        return _material_category(self, alloy_id)
+
     # ---------- справочник + пользовательские линии ----------
     def _all_lines(self) -> List[Dict[str, Any]]:
         """Объединённый список линий: справочник + пользовательские."""
@@ -223,11 +237,14 @@ class MoldingCalculator:
                 ],
             })
 
+        # Сортировка от наиболее оптимальных: балл загрузки → меньше линий
+        # в парке. ``recommended`` — лишь минорный tie-break (дипломы —
+        # примеры, эффективность важнее флага из справочника).
         candidates.sort(
             key=lambda x: (
-                bool(x.get("applicable_for", {}).get("recommended", False)),
                 x["_score"],
                 -x["_num_required"],
+                bool(x.get("applicable_for", {}).get("recommended", False)),
             ),
             reverse=True,
         )

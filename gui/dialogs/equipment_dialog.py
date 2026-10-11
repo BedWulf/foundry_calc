@@ -57,6 +57,18 @@ class EquipmentDialog(QDialog):
             "prod_default": 240.0,
             "type_default": "custom_molding",
         },
+        "core_machine": {
+            "title": "Добавить свою стержневую машину",
+            "capacity_label": "Гнезд в ящике:",
+            "capacity_suffix": " гнезд",
+            "capacity_range": (1.0, 64.0),
+            "capacity_default": 2.0,
+            "prod_label": "Время цикла:",
+            "prod_suffix": " с",
+            "prod_range": (1.0, 600.0),
+            "prod_default": 30.0,
+            "type_default": "custom_core",
+        },
     }
 
     def __init__(self, parent: Optional[QWidget] = None,
@@ -65,7 +77,7 @@ class EquipmentDialog(QDialog):
 
         Args:
             parent: родительский виджет
-            kind: вид оборудования ("furnace" | "molding_line")
+            kind: вид оборудования ("furnace" | "molding_line" | "core_machine")
         """
         super().__init__(parent)
         if kind not in self._KIND_META:
@@ -81,22 +93,26 @@ class EquipmentDialog(QDialog):
         meta = self._KIND_META[self._kind]
         layout = QVBoxLayout(self)
 
-        hint_text = (
-            "Линия будет сохранена в user_data/custom_molding_lines.json "
-            "и появится в подборе для выбранных материалов."
-            if self._kind == "molding_line" else
+        hint_text = {
+            "molding_line": (
+                "Линия будет сохранена в user_data/custom_molding_lines.json "
+                "и появится в подборе для выбранных материалов."),
+            "core_machine": (
+                "Машина будет сохранена в user_data/custom_core_machines.json "
+                "и появится в подборе для выбранных материалов."),
+        }.get(self._kind, (
             "Печь будет сохранена в user_data/custom_furnaces.json "
-            "и появится в подборе для выбранных материалов."
-        )
+            "и появится в подборе для выбранных материалов."))
         hint = QLabel(hint_text)
         hint.setWordWrap(True)
         hint.setStyleSheet(f"color: {COLORS['text_secondary']};")
         layout.addWidget(hint)
 
         form = QFormLayout()
-        name_default = ("Формовочная линия индивидуальная"
-                        if self._kind == "molding_line"
-                        else "Печь индивидуальная")
+        name_default = {
+            "molding_line": "Формовочная линия индивидуальная",
+            "core_machine": "Стержневая машина индивидуальная",
+        }.get(self._kind, "Печь индивидуальная")
         self.edit_name = QLineEdit(name_default)
         self.edit_type = QLineEdit(str(meta["type_default"]))
         self.spin_capacity = QDoubleSpinBox()
@@ -130,25 +146,54 @@ class EquipmentDialog(QDialog):
         layout.addWidget(buttons)
 
     def _on_accept(self) -> None:
-        """Собрать карточку печи и закрыть диалог с accepted."""
+        """Собрать карточку оборудования (печь/линия/стержневая машина).
+
+        Поля «ёмкость» и «производительность» переиспользуются под разные
+        виды: для печи — т и т/ч; для линии — кг металла в форме и ф/ч;
+        для стержневой машины — число гнёзд в ящике и время цикла, с, при
+        этом часовая производительность считается автоматически
+        (3600/цикл * гнёзда).
+        """
         materials: List[str] = [c for c, cb in self.checks.items()
                                 if cb.isChecked()]
+        name = self.edit_name.text().strip() or "Оборудование без названия"
+        etype = self.edit_type.text().strip() or str(
+            self._KIND_META[self._kind]["type_default"])
+        cap = float(self.spin_capacity.value())
+        prod = float(self.spin_productivity.value())
+
+        specs: Dict[str, Any]
+        mass_range_max: float
+        if self._kind == "molding_line":
+            specs = {"flask_size_mm": "индивидуальная",
+                     "nominal_productivity_molds_h": prod,
+                     "max_mold_metal_kg": cap}
+            mass_range_max = cap
+        elif self._kind == "core_machine":
+            # cap — гнёзда, prod — цикл, с
+            hourly = (3600.0 / prod) * cap if prod > 0 else 0.0
+            specs = {"box_size_mm": "индивидуальный",
+                     "cycle_time_s": prod,
+                     "cavities_per_box": cap,
+                     "hourly_output_cores_h": round(hourly, 1)}
+            mass_range_max = 500.0
+        else:
+            specs = {"capacity_t": cap, "productivity_t_h": prod}
+            mass_range_max = 10000.0
+
         self._result = {
-            "name": self.edit_name.text().strip() or "Печь без названия",
-            "type": self.edit_type.text().strip() or "custom",
+            "name": name,
+            "type": etype,
             "description": "Пользовательское оборудование",
-            "specs": {
-                "capacity_t": self.spin_capacity.value(),
-                "productivity_t_h": self.spin_productivity.value(),
-            },
+            "specs": specs,
             "applicable_for": {
                 "materials": materials,
-                "casting_mass_range_kg": [0, 10000],
+                "casting_mass_range_kg": [0, mass_range_max],
                 "recommended": False,
             },
         }
         self.accept()
 
     def get_result(self) -> Optional[Dict[str, Any]]:
-        """Возвращает собранную карточку печи или None (отмена)."""
+        """Возвращает собранную карточку оборудования или None (отмена)."""
         return self._result

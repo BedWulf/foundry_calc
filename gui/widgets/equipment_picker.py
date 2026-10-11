@@ -16,7 +16,9 @@ class EquipmentCard(QFrame):
 
     Ключ ``card_fields`` в словаре оборудования позволяет переопределить
     строку характеристик (используется карточками формовочных линий, где
-    единицы — ф/ч и размеры опок, а не т и т/ч).
+    единицы — ф/ч и размеры опок, а не т и т/ч; стержневые машины задают
+    часы работы парка в ключе ``_hours_required`` — тогда вместо «Требуется
+    N шт.» показывается «N ч работы парка в год»).
     """
 
     selected = Signal(dict)
@@ -27,7 +29,7 @@ class EquipmentCard(QFrame):
         self._build_ui()
 
     def _specs_text(self) -> str:
-        """Собрать строку характеристик карточки (печь либо линия АФЛ)."""
+        """Собрать строку характеристик карточки (печь / АФЛ / стержневая машина)."""
         specs = self.equipment_data.get("specs", {})
         override = self.equipment_data.get("card_fields")
         if override:
@@ -37,6 +39,21 @@ class EquipmentCard(QFrame):
                 if value in (None, "", 0):
                     continue
                 parts.append(f"{label}: {value}")
+            return " | ".join(parts)
+
+        # Стержневые машины: свои единицы (цикл, гнезда, час. произв., опочный размер)
+        if "cycle_time_s" in specs or "hourly_output_cores_h" in specs:
+            parts = []
+            if specs.get("box_size_mm"):
+                parts.append(f"Ящик: {specs['box_size_mm']} мм")
+            if specs.get("cycle_time_s"):
+                parts.append(f"Цикл: {specs['cycle_time_s']:g} с")
+            if specs.get("cavities_per_box"):
+                parts.append(f"Гнезд: {specs['cavities_per_box']:g}")
+            if specs.get("hourly_output_cores_h"):
+                parts.append(f"Производительность: {specs['hourly_output_cores_h']:g} ст/ч")
+            if specs.get("installed_power_kw"):
+                parts.append(f"Мощность: {specs['installed_power_kw']:g} кВт")
             return " | ".join(parts)
 
         specs_text = []
@@ -115,8 +132,14 @@ class EquipmentCard(QFrame):
         # Расчётные данные
         if "_num_required" in self.equipment_data:
             calc_layout = QHBoxLayout()
-            
-            num_lbl = QLabel(f"Требуется: {self.equipment_data['_num_required']} шт.")
+
+            hours = self.equipment_data.get("_hours_required")
+            if hours is not None:
+                num_lbl = QLabel(
+                    f"Загрузка парка: {float(hours):,.0f} ч/год".replace(",", " "))
+            else:
+                num_lbl = QLabel(
+                    f"Требуется: {self.equipment_data['_num_required']} шт.")
             num_lbl.setStyleSheet(f"""
                 QLabel {{
                     color: {COLORS['text_secondary']};

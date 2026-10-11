@@ -15,8 +15,64 @@
       "name": "ИСТ-6М1",
       "type": "induction_crucible",
       "num_required": 6,
-      "load_factor": 0.842,
-      "updated_at": "2026-10-11T08:34:55.400787"
+      "load_factor": 0.745,
+      "updated_at": "2026-10-11T09:02:53.954598"
+    },
+    "molding_line": {
+      "equipment_id": "KV301",
+      "name": "АФЛ КВ301",
+      "type": "автоматическая формовочная линия",
+      "num_required": 4,
+      "load_factor": 0.793,
+      "updated_at": "2026-10-11T09:02:53.977378"
+    },
+    "core_machine": {
+      "equipment_id": "ZB08Y-80",
+      "name": "Автомат стержлевой ZB08Y-80 (ХFS, 8 гнезд)",
+      "type": "автомат стержлевой холодного спекания (ХFS)",
+      "num_required": 5,
+      "load_factor": 0.991,
+      "updated_at": "2026-10-11T09:02:54.084153"
+    }
+  },
+  "1d19bbca87bb": {
+    "core_machine": {
+      "equipment_id": "ZB08Y-80",
+      "name": "Автомат стержлевой ZB08Y-80 (ХFS, 8 гнезд)",
+      "type": "автомат стержлевой холодного спекания (ХFS)",
+      "num_required": 5,
+      "load_factor": 0.991,
+      "updated_at": "2026-10-11T09:03:28.316989"
+    }
+  },
+  "6c0b35f2a520": {
+    "core_machine": {
+      "equipment_id": "ZB08Y-80",
+      "name": "Автомат стержлевой ZB08Y-80 (ХFS, 8 гнезд)",
+      "type": "автомат стержлевой холодного спекания (ХFS)",
+      "num_required": 3,
+      "load_factor": 0.826,
+      "updated_at": "2026-10-11T09:03:33.579253"
+    }
+  },
+  "a2a8603da41e": {
+    "core_machine": {
+      "equipment_id": "ZB08Y-80",
+      "name": "Автомат стержлевой ZB08Y-80 (ХFS, 8 гнезд)",
+      "type": "автомат стержлевой холодного спекания (ХFS)",
+      "num_required": 3,
+      "load_factor": 0.826,
+      "updated_at": "2026-10-11T09:03:45.100518"
+    }
+  },
+  "b35f2ec72498": {
+    "core_machine": {
+      "equipment_id": "ZB08Y-80",
+      "name": "Автомат стержлевой ZB08Y-80 (ХFS, 8 гнезд)",
+      "type": "автомат стержлевой холодного спекания (ХFS)",
+      "num_required": 3,
+      "load_factor": 0.826,
+      "updated_at": "2026-10-11T09:03:45.112512"
     }
   }
 }

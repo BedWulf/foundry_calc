@@ -72,6 +72,8 @@ class UserChoices:
     EQUIPMENT_CATEGORY: str = "melting_furnace"
     #: Категория для выбора формовочной линии (Раздел 4, вкладка «Формовочное»)
     MOLDING_LINE_CATEGORY: str = "molding_line"
+    #: Категория для выбора стержневой машины (Раздел 5, вкладка «Стержневое»)
+    CORE_MACHINE_CATEGORY: str = "core_machine"
 
     def save_equipment_choice(
         self,

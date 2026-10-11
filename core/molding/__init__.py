@@ -28,11 +28,43 @@ __all__ = [
     "build_mass_groups", "mass_group_index", "calc_annual_molds",
     "calc_required_productivity", "calc_lines_count", "MoldingCalculator",
     "MoldingCalculation", "calc_molding", "DEFAULT_UNIT_MASS_KG",
+    "DEFAULT_CORES_PER_MOLD", "calc_avg_cores_per_mold",
 ]
 
 #: Средняя масса одной отливки с ЛПС по цеху, кг (методичка, типовой
 #: сталелитейный цех тракторостроения) — резерв, когда номенклатура не введена.
 DEFAULT_UNIT_MASS_KG: float = 10.0
+
+#: Среднее число стержней на одну форму, если номенклатура не задана
+#: (методичка, ориентир для среднего ЛПС-содержащего цеха).
+DEFAULT_CORES_PER_MOLD: float = 1.5
+
+
+def calc_avg_cores_per_mold(castings: List[CastingItem]) -> float:
+    """Средневзвешенное число стержней на форму по номенклатуре.
+
+    Взвешивание — по годовому числу форм каждой позиции
+    (``cores_count * molds_per_year / Σ molds_per_year``), как в дипломе.
+
+    Args:
+        castings: позиции номенклатуры
+
+    Returns:
+        Среднее число стержней на форму; ``DEFAULT_CORES_PER_MOLD``,
+        если данные неполные
+    """
+    total_molds = 0
+    total_cores = 0
+    for c in castings:
+        molds = int(getattr(c, "molds_per_year", 0) or 0)
+        cores = int(getattr(c, "cores_count", 0) or 0)
+        if molds <= 0 or cores <= 0:
+            continue
+        total_molds += molds
+        total_cores += molds * cores
+    if total_molds <= 0:
+        return DEFAULT_CORES_PER_MOLD
+    return round(total_cores / total_molds, 2)
 
 
 @dataclass
@@ -105,8 +137,12 @@ def _material_category(calc: MoldingCalculator, alloy_id: str) -> str:
         alloys = calc.loader.load_list("materials/alloys.json", key="alloys")
     except Exception:
         alloys = []
+    target = (alloy_id or "").strip().lower()
     for a in alloys:
-        if a.get("id") == alloy_id:
+        # Сравнение регистронезависимо: id в справочнике — 'cast_iron_SCh20',
+        # а сохранённые пользователем значения могли быть приведены к нижнему
+        if (a.get("id", "").strip().lower() == target
+                or a.get("name", "").strip().lower() == target):
             return a.get("category", "steel")
     return "steel"
 
