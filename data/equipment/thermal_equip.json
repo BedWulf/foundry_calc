@@ -1,0 +1,226 @@
+{
+  "version": "1.0",
+  "updated": "2026-10-11",
+  "source": [
+    "Sample Diploma.pdf, раздел 7 «Отделение обрубки, очистки и термообработки» (листы 43–47)",
+    "Sample Diploma 2.pdf, раздел 7, формулы (13)–(15) (листы 48–53)",
+    "Методичка проектирования литейных цехов (нормы загрузки очистного оборудования 0.70–0.85)"
+  ],
+  "note": "Производительность приведена к т/ч там, где паспорт даёт шт/ч — пересчёт выполняется в core/cleaning.py через среднюю массу отливки с ЛПС. applicable_for.operations — позиции техпроцесса из core.cleaning.OPERATIONS; materials — категории сплавов (steel/cast_iron/aluminum).",
+  "machines": [
+    {
+      "id": "CONV-PLAST-50",
+      "name": "Конвейер пластинчатый охлаждения литья",
+      "type": "cooling_conveyor",
+      "category": "cleaning",
+      "specs": {
+        "productivity_t_h": 50.0,
+        "length_m": 30.0,
+        "power_kw": 11.0,
+        "dimensions_mm": {"length": 30000, "width": 1500, "height": 900},
+        "mass_kg": 18000
+      },
+      "applicable_for": {
+        "operations": ["cooling"],
+        "materials": ["steel", "cast_iron", "aluminum"],
+        "casting_mass_range_kg": [0, 1000],
+        "recommended": false
+      },
+      "notes": "Охлаждение выбитого литья перед обрубкой (дипломы: «выбитые отливки охлаждаются на пластинчатых конвейерах»)."
+    },
+    {
+      "id": "SHAKEOUT-ROT-30",
+      "name": "Выбивная решётчатая установка роторная",
+      "type": "shakeout",
+      "category": "cleaning",
+      "specs": {
+        "productivity_t_h": 30.0,
+        "power_kw": 22.0,
+        "mass_kg": 12000
+      },
+      "applicable_for": {
+        "operations": ["shakeout"],
+        "materials": ["steel", "cast_iron"],
+        "casting_mass_range_kg": [0, 500],
+        "recommended": false
+      },
+      "notes": "Для крупных отливок; в массовом производстве выбивка обычно входит в состав АФЛ."
+    },
+    {
+      "id": "DRUM-42322",
+      "name": "Дробемётный барабан непрерывного действия мод. 42322",
+      "type": "shot_blasting_drum",
+      "category": "cleaning",
+      "specs": {
+        "productivity_t_h": 8.0,
+        "power_kw": 30.0,
+        "dimensions_mm": {"length": 7600, "width": 4500, "height": 7100},
+        "mass_kg": 30000
+      },
+      "applicable_for": {
+        "operations": ["shot_blasting"],
+        "materials": ["steel", "cast_iron"],
+        "casting_mass_range_kg": [0, 100],
+        "recommended": true
+      },
+      "notes": "Эталонная позиция обоих дипломов: q = 8 т/ч, n = Q·kН/(q·Тд), диплом 2: 90720·1.3/(8·3770)=3.9 → 5 машин, кз 0.78."
+    },
+    {
+      "id": "SHOT-BAY-15",
+      "name": "Дробемётная камера камерного типа (на подвеске)",
+      "type": "shot_blasting_chamber",
+      "category": "cleaning",
+      "specs": {
+        "productivity_t_h": 15.0,
+        "power_kw": 45.0,
+        "mass_kg": 26000
+      },
+      "applicable_for": {
+        "operations": ["shot_blasting"],
+        "materials": ["steel", "cast_iron"],
+        "casting_mass_range_kg": [50, 2000],
+        "recommended": false
+      },
+      "notes": "Для средних и крупных отливок, не помещающихся в барабан."
+    },
+    {
+      "id": "BLAST-SAND-10",
+      "name": "Пескоструйная установка для алюминиевого литья",
+      "type": "shot_blasting_chamber",
+      "category": "cleaning",
+      "specs": {
+        "productivity_t_h": 10.0,
+        "power_kw": 37.0,
+        "mass_kg": 15000
+      },
+      "applicable_for": {
+        "operations": ["shot_blasting"],
+        "materials": ["aluminum"],
+        "casting_mass_range_kg": [0, 150],
+        "recommended": true
+      },
+      "notes": "Мягкая очистка Al-отливок (стальное дробь-абразив повреждает алюминий)."
+    },
+    {
+      "id": "PMR-1000",
+      "name": "Установка механизированной резки ПМР-1000",
+      "type": "gating_cutting",
+      "category": "cleaning",
+      "specs": {
+        "productivity_pieces_h": 100.0,
+        "cutting_speed_mm_min": 70.0,
+        "feeder_length_mm": 30.0,
+        "power_kw": 4.0,
+        "mass_kg": 3500
+      },
+      "applicable_for": {
+        "operations": ["gating_cutting"],
+        "materials": ["steel", "cast_iron"],
+        "casting_mass_range_kg": [0, 500],
+        "recommended": true
+      },
+      "notes": "Газокислородная резка ЛПС стальных отливок (диплом 1, лист 44). Производительность в шт/ч — перевод в т/ч по средней массе отливки."
+    },
+    {
+      "id": "DISC-SAW-200",
+      "name": "Отрезной дисковый станок (абразивный круг Ø200 мм)",
+      "type": "gating_cutting",
+      "category": "cleaning",
+      "specs": {
+        "productivity_pieces_h": 200.0,
+        "power_kw": 7.5,
+        "mass_kg": 1200
+      },
+      "applicable_for": {
+        "operations": ["gating_cutting"],
+        "materials": ["cast_iron", "aluminum"],
+        "casting_mass_range_kg": [0, 50],
+        "recommended": false
+      },
+      "notes": "Обрубка ЛПС чугунного и алюминиевого литья мелких масс."
+    },
+    {
+      "id": "ZM636",
+      "name": "Станок обдирочно-шлифовальный ЗМ636",
+      "type": "grinding",
+      "category": "cleaning",
+      "specs": {
+        "productivity_pieces_h": 100.0,
+        "wheel_size_mm": "400x40",
+        "wheel_rpm": 1420,
+        "power_kw": 2.8,
+        "dimensions_mm": {"length": 900, "width": 600, "height": 1200}
+      },
+      "applicable_for": {
+        "operations": ["grinding"],
+        "materials": ["steel", "cast_iron", "aluminum"],
+        "casting_mass_range_kg": [0, 200],
+        "recommended": true
+      },
+      "notes": "Зачистка литья БЕЗ ЛПС (тоннаж Г+Б). Паспорт 60–100 шт/ч, принят верх диапазона — как в дипломе 2 (q=100)."
+    },
+    {
+      "id": "NORMALIZE-12",
+      "name": "Агрегат нормализации толкательный (2 линии)",
+      "type": "heat_treatment",
+      "category": "cleaning",
+      "specs": {
+        "productivity_t_h": 12.0,
+        "working_temp_c": 980.0,
+        "fuel": "природный газ",
+        "fuel_consumption_m3_h": 280.0,
+        "lines": 2,
+        "dimensions_mm": {"length": 13690, "width": 3660},
+        "mass_kg": 144121
+      },
+      "applicable_for": {
+        "operations": ["heat_treatment"],
+        "materials": ["steel"],
+        "casting_mass_range_kg": [0, 500],
+        "recommended": true
+      },
+      "notes": "Эталон диплома 2: n = 90720·1.3/(12·3770) = 2.6 → 3 агрегата, кз 0.85."
+    },
+    {
+      "id": "NORMALIZE-CHAIN-20",
+      "name": "Линия нормализации на цепочном конвейере (поточная)",
+      "type": "heat_treatment",
+      "category": "cleaning",
+      "specs": {
+        "productivity_t_h": 20.0,
+        "working_temp_c": 950.0,
+        "fuel": "природный газ",
+        "fuel_consumption_m3_h": 420.0,
+        "lines": 1,
+        "dimensions_mm": {"length": 24000, "width": 4200},
+        "mass_kg": 210000
+      },
+      "applicable_for": {
+        "operations": ["heat_treatment"],
+        "materials": ["steel"],
+        "casting_mass_range_kg": [0, 300],
+        "recommended": false
+      },
+      "notes": "Более производительная альтернатива толкательному агрегату при массовом выпуске мелкого и среднего литья."
+    },
+    {
+      "id": "FURNACE-ANNEAL-8",
+      "name": "Печь отжига камерная (чугунное литьё)",
+      "type": "heat_treatment",
+      "category": "cleaning",
+      "specs": {
+        "productivity_t_h": 8.0,
+        "working_temp_c": 620.0,
+        "power_kw": 120.0,
+        "mass_kg": 25000
+      },
+      "applicable_for": {
+        "operations": ["heat_treatment"],
+        "materials": ["cast_iron"],
+        "casting_mass_range_kg": [0, 800],
+        "recommended": false
+      },
+      "notes": "Отжиг для снятия напряжений и обезуглероживания чугуна."
+    }
+  ]
+}

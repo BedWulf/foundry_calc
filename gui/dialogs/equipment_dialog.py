@@ -9,6 +9,7 @@ from typing import Any, Dict, List, Optional
 
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import (
+    QComboBox,
     QDialog, QVBoxLayout, QHBoxLayout, QFormLayout, QLabel, QLineEdit,
     QDoubleSpinBox, QDialogButtonBox, QCheckBox, QGroupBox, QWidget,
 )
@@ -57,6 +58,18 @@ class EquipmentDialog(QDialog):
             "prod_default": 240.0,
             "type_default": "custom_molding",
         },
+        "cleaning_machine": {
+            "title": "Добавить своё очистное оборудование",
+            "capacity_label": "Макс. масса отливки:",
+            "capacity_suffix": " кг",
+            "capacity_range": (0.1, 5000.0),
+            "capacity_default": 100.0,
+            "prod_label": "Производительность:",
+            "prod_suffix": " т/ч",
+            "prod_range": (0.01, 500.0),
+            "prod_default": 8.0,
+            "type_default": "custom_cleaning",
+        },
         "core_machine": {
             "title": "Добавить свою стержневую машину",
             "capacity_label": "Гнезд в ящике:",
@@ -77,7 +90,8 @@ class EquipmentDialog(QDialog):
 
         Args:
             parent: родительский виджет
-            kind: вид оборудования ("furnace" | "molding_line" | "core_machine")
+            kind: вид оборудования
+                ("furnace" | "molding_line" | "core_machine" | "cleaning_machine")
         """
         super().__init__(parent)
         if kind not in self._KIND_META:
@@ -94,6 +108,9 @@ class EquipmentDialog(QDialog):
         layout = QVBoxLayout(self)
 
         hint_text = {
+            "cleaning_machine": (
+                "Установка будет сохранена в user_data/custom_cleaning_machines.json "
+                "и появится в подборе для выбранных материалов и позиций."),
             "molding_line": (
                 "Линия будет сохранена в user_data/custom_molding_lines.json "
                 "и появится в подборе для выбранных материалов."),
@@ -110,6 +127,7 @@ class EquipmentDialog(QDialog):
 
         form = QFormLayout()
         name_default = {
+            "cleaning_machine": "Установка очистки индивидуальная",
             "molding_line": "Формовочная линия индивидуальная",
             "core_machine": "Стержневая машина индивидуальная",
         }.get(self._kind, "Печь индивидуальная")
@@ -128,6 +146,22 @@ class EquipmentDialog(QDialog):
         form.addRow(str(meta["capacity_label"]), self.spin_capacity)
         form.addRow(str(meta["prod_label"]), self.spin_productivity)
         layout.addLayout(form)
+
+        self.operation_combo: Optional[QComboBox] = None
+        if self._kind == "cleaning_machine":
+            op_group = QGroupBox("Позиция техпроцесса")
+            ov = QVBoxLayout(op_group)
+            self.operation_combo = QComboBox()
+            try:
+                from core.cleaning import OPERATION_TITLES
+                for key, title in OPERATION_TITLES.items():
+                    self.operation_combo.addItem(title, key)
+            except Exception:  # pragma: no cover - страховка от циклов импорта
+                self.operation_combo.addItem("Очистка и удаление стержней",
+                                             "shot_blasting")
+            self.operation_combo.setCurrentIndex(2)
+            ov.addWidget(self.operation_combo)
+            layout.addWidget(op_group)
 
         group = QGroupBox("Применима для материалов")
         gbox = QVBoxLayout(group)
@@ -169,6 +203,9 @@ class EquipmentDialog(QDialog):
                      "nominal_productivity_molds_h": prod,
                      "max_mold_metal_kg": cap}
             mass_range_max = cap
+        elif self._kind == "cleaning_machine":
+            specs = {"productivity_t_h": prod}
+            mass_range_max = cap
         elif self._kind == "core_machine":
             # cap — гнёзда, prod — цикл, с
             hourly = (3600.0 / prod) * cap if prod > 0 else 0.0
@@ -192,6 +229,9 @@ class EquipmentDialog(QDialog):
                 "recommended": False,
             },
         }
+        if self.operation_combo is not None:
+            self._result["applicable_for"]["operations"] = [
+                str(self.operation_combo.currentData())]
         self.accept()
 
     def get_result(self) -> Optional[Dict[str, Any]]:

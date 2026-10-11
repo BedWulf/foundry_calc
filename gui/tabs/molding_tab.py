@@ -36,7 +36,10 @@ from PySide6.QtWidgets import (
 
 from config import COLORS
 from core.project import Project
-from core.molding import MoldingCalculator, MoldingCalculation, calc_molding
+from core.molding import (
+    MoldingCalculator, MoldingCalculation, calc_molding,
+    calc_avg_cores_per_mold,
+)
 from core.user_choices import UserChoices
 from gui.widgets.equipment_picker import EquipmentPicker
 from gui.dialogs.equipment_dialog import EquipmentDialog
@@ -202,6 +205,7 @@ class MoldingTab(QWidget):
             ("p1_calc", "Расчётное количество линий (П₁)"),
             ("num_adopt", "Принятое количество линий (Ппр)"),
             ("load_factor", "Коэффициент загрузки (Кзо)"),
+            ("cores_per_mold", "Среднее число стержней на форму (k_ст)"),
         ]
         for r, (key, title) in enumerate(result_rows):
             name_lbl = QLabel(f"{title}:")
@@ -261,6 +265,15 @@ class MoldingTab(QWidget):
         self.picker.set_equipment_options(
             result.line_options, selected_id=result.selected_line_id)
 
+        # k_ст — мост в стержневое и очистное отделения (тоннаж стержней на
+        # выбивке зависит именно от него); показываем здесь, чтобы пользователь
+        # видел, откуда берётся число стержней.
+        castings = list(getattr(self.project, "castings", []) or [])
+        k_st = calc_avg_cores_per_mold(castings) if castings else 0.0
+        self._result_labels["cores_per_mold"].setText(
+            f"{k_st:.2f} шт/форму" if k_st > 0 else
+            "— (номенклатура не загружена)")
+
     # ─────────────────────── обработчики ───────────────────────
     def _on_line_selected(self, equipment: Dict[str, Any]) -> None:
         """Обработать выбор линии: пересчёт итогов и сохранение выбора."""
@@ -317,8 +330,13 @@ class MoldingTab(QWidget):
 
         Returns:
             Словарь с ключами: annual_molds_total, required_productivity,
-            line_name, line_count, load_factor, material_category
+            line_name, line_count, load_factor, material_category,
+            shakeout_in_line (входит ли выбивка в состав принятой линии —
+            используется очистным отделением, чтобы не предлагать отдельную
+            выбивную установку там, где она уже есть на АФЛ)
         """
+        line = (self._last_result.selected_line
+                if self._last_result else {}) or {}
         return {
             "annual_molds_total": (self._last_result.annual_molds_total
                                    if self._last_result else 0),
@@ -329,4 +347,5 @@ class MoldingTab(QWidget):
             "load_factor": float(self._selected.get("_load_factor", 0.0)),
             "material_category": (self._last_result.material_category
                                   if self._last_result else ""),
+            "shakeout_in_line": bool(line.get("has_shakeout", False)),
         }
