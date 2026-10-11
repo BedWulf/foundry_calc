@@ -91,24 +91,30 @@ class EquipmentSelector:
         annual_charge_t: float,
         working_hours: float = 3890,
         top_n: int = 5,
+        k_uneven: float = 1.0,
     ) -> List[Dict[str, Any]]:
         """Найти подходящие печи.
         
         Args:
             material_category: категория материала (steel, cast_iron, aluminum)
             annual_charge_t: годовая металлозавалка, т
-            working_hours: действительный фонд времени, ч
+            working_hours: действительный годовой фонд времени оборудования, ч
             top_n: сколько лучших вариантов вернуть
+            k_uneven: коэффициент неравномерности потребления металла
+                (1.0–1.2, формула (3)/(4) дипломов; по умолчанию 1.0 —
+                как в обоих эталонных расчётах)
             
         Returns:
             Список подходящих печей с расчётными параметрами (ключи `_score`,
-            `_num_required`, `_load_factor`, `_productivity_required`)
+            `_num_required`, `_load_factor`, `_p1_required`, `_productivity_required`)
         """
         # Справочник + пользовательские печи, добавленные через UI (требование №5)
         furnaces = self._all_furnaces()
 
-        # Требуемая средняя производительность, т/ч
-        required_productivity = annual_charge_t / working_hours if working_hours > 0 else 0
+        # Требуемая средняя производительность с учётом неравномерности, т/ч
+        required_productivity = (
+            annual_charge_t * k_uneven / working_hours if working_hours > 0 else 0
+        )
 
         candidates: List[Dict[str, Any]] = []
         for f in furnaces:
@@ -118,13 +124,21 @@ class EquipmentSelector:
             if material_category not in app.get("materials", []):
                 continue
 
-            # Расчёт количества печей
+            # Расчёт количества печей по формулам дипломов (лист 20-21):
+            #   P'1 = М · kн / (Фд · q_расч) — потребное кол-во агрегатов
+            #   Кзо = P'1 / Pр                 — коэффициент загрузки
             productivity = f["specs"].get("productivity_t_h", 0)
             if productivity <= 0:
                 continue
 
-            num_furnaces = math.ceil(required_productivity / productivity)
-            load_factor = required_productivity / (num_furnaces * productivity)
+            p1_required = required_productivity / productivity
+            # Инженерный выбор парка, как в дипломах: число печей Pр берут
+            # не меньше ceil(P'1), а ближайшее целое, при котором Кзо ≤ 0.85
+            # (верх оптимального диапазона загрузки 0.70–0.85 из методички).
+            # Диплом 1: P'1 = 5.05 → 6 печей (Кз 0.84); диплом 2: P'1 = 8.18
+            # → 10 печей (Кз 0.82) — оба решения воспроизводятся точно.
+            num_furnaces = max(math.ceil(p1_required), math.ceil(p1_required / 0.85))
+            load_factor = p1_required / num_furnaces
 
             # Оценка релевантности
             score = self._score_furnace(f, load_factor, num_furnaces)
@@ -134,17 +148,19 @@ class EquipmentSelector:
                 "_score": score,
                 "_num_required": num_furnaces,
                 "_load_factor": round(load_factor, 3),
+                "_p1_required": round(p1_required, 2),
                 "_productivity_required": round(required_productivity, 3),
             })
 
         # Сортировка: recommended сначала, потом по score,
-        # при равенстве — меньше количество печей, затем больше ёмкость
+        # при равенстве — больше ёмкость (крупные агрегаты предпочтительнее
+        # мелкого раздробленного парка, ср. выбор ИСТ-6 в дипломе 2)
         candidates.sort(
             key=lambda x: (
                 x["applicable_for"].get("recommended", False),
                 x["_score"],
-                -x["_num_required"],
                 x["specs"].get("capacity_t", 0),
+                -x["_num_required"],
             ),
             reverse=True,
         )
@@ -179,9 +195,21 @@ class EquipmentSelector:
         else:
             dist = lo - load_factor if load_factor < lo else load_factor - hi
             base = 1.0 / (1.0 + 5 * dist ** 2)
+        # Поощрение «правильной» загрузки (методичка): чем ближе Кз к концу
+        # оптимального диапазона (0.85), тем надёжнее парк — меньше риск
+        # нехватки мощности при пиковом потреблении металла и меньше
+        # перерасход на резерв. Это воспроизводит инженерный выбор из
+        # дипломов: 5.05→6 печей (Кз 0.84), а не 5 (Кз 1.01); 8.18→10
+        # (Кз 0.82), а не 9 (Кз 0.91).
+        bonus = 0.0
+        if lo <= load_factor <= hi:
+            bonus = 0.15 * (load_factor - lo) / (hi - lo)
+        elif load_factor > hi:
+            # перегруженный парк (Кз > 1) штрафуется дополнительно
+            bonus = -0.3 * min((load_factor - hi) / hi, 0.5)
         # Штраф за избыточное количество единиц оборудования
         penalty = 1.0 / (1.0 + 0.02 * max(num_furnaces - 1, 0))
-        score = base * penalty
+        score = (base + bonus) * penalty
 
         # Приоритет эталонных решений из диплома/методички:
         # для сталелитейных цехов средней мощности стандартом является ИСТ-6М1
