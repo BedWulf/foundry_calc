@@ -101,21 +101,9 @@ class EquipmentCard(QFrame):
             header_layout.addWidget(rec_lbl)
         
         layout.addLayout(header_layout)
-        
-        # Характеристики
-        specs = self.equipment_data.get("specs", {})
-        specs_text = []
-        
-        if "capacity_t" in specs:
-            specs_text.append(f"Ёмкость: {specs['capacity_t']} т")
-        if "productivity_t_h" in specs:
-            specs_text.append(f"Производительность: {specs['productivity_t_h']} т/ч")
-        if "power_kw" in specs and specs["power_kw"] > 0:
-            specs_text.append(f"Мощность: {specs['power_kw']} кВт")
-        if "working_temp_C" in specs:
-            specs_text.append(f"T = {specs['working_temp_C']}°C")
-        
-        specs_lbl = QLabel(" | ".join(specs_text))
+
+        # Характеристики (печь либо линия АФЛ — см. _specs_text)
+        specs_lbl = QLabel(self._specs_text())
         specs_lbl.setStyleSheet(f"""
             QLabel {{
                 color: {COLORS['text_primary']};

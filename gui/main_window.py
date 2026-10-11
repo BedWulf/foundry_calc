@@ -12,6 +12,7 @@ from core.project import Project
 from gui.tabs.project_tab import ProjectTab
 from gui.tabs.time_funds_tab import TimeFundsTab
 from gui.tabs.melting_tab import MeltingTab
+from gui.tabs.molding_tab import MoldingTab
 
 
 class SideBarButton(QPushButton):
@@ -158,6 +159,8 @@ class MainWindow(QMainWindow):
             return TimeFundsTab(self.project)
         elif key == "melting_tab":
             return MeltingTab(self.project)
+        elif key == "molding_tab":
+            return MoldingTab(self.project)
 
         # Заглушка для нереализованных вкладок
         return self._make_placeholder(title)
@@ -183,6 +186,7 @@ class MainWindow(QMainWindow):
         project_tab = self.tabs.get("project_tab")
         time_funds_tab = self.tabs.get("time_funds_tab")
         melting_tab = self.tabs.get("melting_tab")
+        molding_tab = self.tabs.get("molding_tab")
 
         if project_tab and time_funds_tab:
             # При изменении исходных данных → пересчёт фондов времени
@@ -191,6 +195,17 @@ class MainWindow(QMainWindow):
         if project_tab and melting_tab:
             # При изменении исходных данных → пересчёт завалки и подбор печей
             project_tab.project_changed.connect(melting_tab.on_project_changed)
+
+        if project_tab and molding_tab:
+            # При изменении исходных данных → пересчёт программы формовки
+            project_tab.project_changed.connect(molding_tab.on_project_changed)
+
+        if time_funds_tab and melting_tab:
+            # Фонд времени оборудования влияет на подбор печей и линий
+            time_funds_tab.funds_updated.connect(melting_tab.on_project_changed)
+
+        if time_funds_tab and molding_tab:
+            time_funds_tab.funds_updated.connect(molding_tab.on_project_changed)
 
     def _select_section(self, index: int) -> None:
         if not (0 <= index < len(self.nav_buttons)):

@@ -205,6 +205,9 @@ class MoldingCalculator:
 
             res = calc_lines_count(required_productivity, nominal)
             score = self._score_line(line, res["load_factor"], res["count"])
+            # card_fields — переопределение строки характеристик карточки в
+            # EquipmentPicker (единицы ф/ч и опки, а не т/т·ч); формат:
+            # [(ключ в specs, человекочитаемая подпись), ...]
             candidates.append({
                 **line,
                 "_score": score,
@@ -212,6 +215,12 @@ class MoldingCalculator:
                 "_load_factor": res["load_factor"],
                 "_p1_required": res["p1_required"],
                 "_molds_required": round(required_productivity, 2),
+                "card_fields": [
+                    ("flask_size_mm", "Опки"),
+                    ("nominal_productivity_molds_h", "Производительность, ф/ч"),
+                    ("max_mold_metal_kg", "Макс. металл в форме"),
+                    ("installed_power_kw", "Мощность, кВт"),
+                ],
             })
 
         candidates.sort(
