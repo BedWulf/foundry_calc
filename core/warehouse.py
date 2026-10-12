@@ -461,6 +461,12 @@ def _build_area_option(unit: Dict[str, Any], target_area_m2: float,
     если она не задана — вычисляется по геометрической формуле склада
     ``Q = F * h * ρ * k`` (площадь × высота × насыпная плотность × коэф.
     использования). Для закрытых бункеров/силосов высота выше нормативной.
+
+    Если даже ``MAX_STORAGE_UNITS`` единиц не закрывают требуемый объём
+    запаса, считается «виртуальная» крупнотоннажная площадка: её площадь
+    определяется той же геометрической формулой ``F = Q / (h·ρ·k)`` —
+    так норматив всегда выполняется, а карточка честно показывает дефицит
+    стандартных единиц.
     """
     specs = unit.get("specs", {})
     footprint = float(specs.get("footprint_m2") or 0.0)
@@ -474,6 +480,40 @@ def _build_area_option(unit: Dict[str, Any], target_area_m2: float,
     count = max(1, math.ceil(target_area_m2 / footprint))
     if capacity_t is not None and cap_unit > 0:
         count = max(count, math.ceil(capacity_t / cap_unit))
+    if count > MAX_STORAGE_UNITS:
+        # стандартным парком норматив не закрывается — укрупнённая площадка:
+        # площадь из геометрии F = Q / (h·ρ·k), вместимость — из запаса
+        height = (BIN_STORAGE_HEIGHT_M
+                  if unit.get("type") in ("bin", "silo") else STORAGE_HEIGHT_M)
+        area_needed = target_area_m2
+        if capacity_t:
+            area_needed = max(area_needed,
+                              capacity_t / (height * BULK_DENSITY_T_M3
+                                            * AREA_USAGE_K))
+        big_footprint = round(area_needed, 1)
+        # вместимость площадки: геометрия F·h·ρ·k, но не больше реального запаса
+        geo_cap = big_footprint * height * BULK_DENSITY_T_M3 * AREA_USAGE_K
+        if capacity_t:
+            big_cap = round(min(geo_cap, capacity_t), 1) \
+                if geo_cap >= capacity_t - 0.5 else round(geo_cap, 1)
+        else:
+            big_cap = round(geo_cap, 1)
+        return {
+            "id": unit["id"],
+            "name": f"{unit['name']} (укрупнённая площадка)",
+            "type": unit.get("type", ""),
+            "unit_count": 1,
+            "capacity_per_unit_t": big_cap,
+            "total_capacity_t": big_cap,
+            "footprint_per_unit_m2": big_footprint,
+            "total_area_m2": big_footprint,
+            "required_area_m2": round(target_area_m2, 1),
+            "required_capacity_t": round(capacity_t or 0.0, 1),
+            "recommended": bool(unit.get("applicable_for", {}).get("recommended")),
+            "notes": (f"Стандартных единиц ({MAX_STORAGE_UNITS} шт) не хватает "
+                      f"для запаса {capacity_t or 0:,.0f} т / площади "
+                      f"{target_area_m2:,.0f} м² — принята укрупнённая площадка"),
+        }
     count = min(count, MAX_STORAGE_UNITS)
     return {
         "id": unit["id"],

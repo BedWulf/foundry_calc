@@ -293,6 +293,14 @@ class MainWindow(QMainWindow):
             workforce_tab.workforce_changed.connect(
                 lambda _data: warehouse_tab.refresh())
 
+        # Связки «отделения → склады»: запасы шихты зависят от
+        # металлозавалки, склады материалов — от тоннажей смесей
+        for tab in (melting_tab, molding_tab, core_tab, sand_tab):
+            sig = getattr(tab, "equipment_choice_changed", None) \
+                or getattr(tab, "line_choice_changed", None)
+            if tab is not None and sig is not None and warehouse_tab is not None:
+                sig.connect(lambda _data: warehouse_tab.refresh())
+
     def department_summaries(self) -> dict:
         """Собрать сводки (`get_summary`) всех реализованных отделений.
 
@@ -317,7 +325,7 @@ class MainWindow(QMainWindow):
             "cores": summary("core_tab"),
             "sand_prep": summary("sand_tab"),
             "cleaning": summary("cleaning_tab"),
-            "warehouses": summary("warehouse_tab").get("warehouses", {}),
+            "warehouses": summary("warehouse_tab"),
             "workforce": summary("workforce_tab"),
         }
 

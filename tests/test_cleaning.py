@@ -110,13 +110,35 @@ class TestCleaningCalculator(unittest.TestCase):
     def test_options_sorted_optimal_first(self) -> None:
         """Лучшие по баллу варианты — первыми (оптимальность важнее recommended).
 
-        Программа 90 000 т/год мелкого литья: барабан DRUM-42322 попадает в
-        optimum-зону (Кзо ≈ 0.81), подвесная камера SHOT-BAY-15 проходит
-        фильтр масс [50; 2000] и остаётся «терпимым» сравнением (Кзо ≈ 0.65).
+        Программа 90 000 т/год мелкого литья (avg_mass_kg=10): барабан
+        DRUM-42322 попадает в optimum-зону (Кзо ≈ 0.76); подвесная камера
+        SHOT-BAY-15 отсеивается фильтром масс [50; 2000] и правилом
+        CHAMBER_MIN_MASS_KG, поэтому включаем её как пользовательское
+        оборудование («своя установка») — оно не подлежит фильтрам и
+        должно попадать в список сравнения даже с Кзо ниже optimum.
         """
-        options = self.calc.find_for_operation(
-            operation="shot_blasting", tonnage_t=90_000.0,
-            fund_hours=3770.0, material_category="steel", avg_mass_kg=10.0)
+        custom_chamber = {
+            "id": "CUSTOM-SHOT-1",
+            "name": "Своя дробемётная камера",
+            "type": "shot_blasting_chamber",
+            "category": "cleaning",
+            "custom": True,
+            "specs": {"productivity_t_h": 15.0},
+            "applicable_for": {"operations": ["shot_blasting"],
+                               "materials": ["steel"]},
+        }
+        original = self.calc._all_machines
+
+        def patched() -> list:
+            return list(original()) + [custom_chamber]
+
+        self.calc._all_machines = patched  # type: ignore[method-assign]
+        try:
+            options = self.calc.find_for_operation(
+                operation="shot_blasting", tonnage_t=90_000.0,
+                fund_hours=3770.0, material_category="steel", avg_mass_kg=10.0)
+        finally:
+            self.calc._all_machines = original  # type: ignore[method-assign]
         self.assertGreater(len(options), 1)
         # Балл должен быть монотонно неотрастающим по списку (или зоны
         # "в optimum / вне optimum" с сортировкой внутри по баллу).

@@ -503,8 +503,12 @@ class CleaningCalculator:
             prod = self.hourly_tonnage(machine, mass_for_filter)
             if prod <= 0:
                 continue
+            # Коэффициент использования учитываем в знаменателе фонда
+            # (calc_units_required), а НЕ умножением на него тоннажа:
+            # иначе загрузка парка занижается вдвое и камеры с Кзо≈0.8
+            # ошибочно отсеиваются как «неоптимальные».
             util = (DRUM_UTILIZATION
-                    if str(machine.get("type", "")).startswith("shot_blasting")
+                    if str(machine.get("type", "")) == "shot_blasting_drum"
                     else 1.0)
             n_req = calc_units_required(tonnage_t, prod, fund_hours, k_uneven, util)
             if n_req <= 0:
