@@ -404,16 +404,22 @@ class SandPrepCalculator:
             парк, средний Кзо)
         """
         selected_ids = dict(selected_ids or {})
+        # avg_core_mass_kg — СРЕДНЯЯ МАССА ОДНОГО СТЕРЖНЯ (кг/шт).
+        # Масса стержней на форму = cores_per_mold × средняя масса стержня;
+        # суммарная годовая масса = Σ(molds_per_year_i × cores_count_i ×
+        # core_mass_kg_i) (см. ``calc_sand_prep`` — точный пересчёт по
+        # номенклатуре).
         core_mass = avg_core_mass_kg if avg_core_mass_kg > 0 \
             else AVG_CORE_MASS_KG
+        cores_mass_per_mold_kg = cores_per_mold * core_mass
         annual_cores = int(math.ceil(annual_molds * cores_per_mold))
-        cores_mass_t = annual_cores * core_mass / 1000.0
+        cores_mass_t = annual_molds * cores_mass_per_mold_kg / 1000.0
 
         volumes = calc_sand_volumes(
             annual_molds=annual_molds,
             mold_volume_m3=mold_volume_m3,
             metal_per_mold_kg=metal_per_mold_kg,
-            cores_mass_per_mold_kg=cores_per_mold * core_mass,
+            cores_mass_per_mold_kg=cores_mass_per_mold_kg,
             tamped_density=tamped_density,
         )
         molding_loose_m3 = volumes["sand_volume_loose_m3"]

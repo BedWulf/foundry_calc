@@ -555,10 +555,38 @@ class CleaningCalculator:
             ),
             reverse=True,
         )
-        if tonnage_t >= MIN_LOAD_DISPLAY_TONNAGE:
-            # Крупная программа: показываем и низкозагруненные установки —
-            # они отсортированы вниз списка собственным низким баллом.
-            pass
+        if tonnage_t >= MIN_LOAD_DISPLAY_TONNAGE and len(options) == 1 \
+                and low_load_rejected:
+            # Крупная программа, но в оптимальной зоне только один вариант:
+            # добавляем лучшие «терпимые» (Кзо < MIN_LOAD_FACTOR_DISPLAY),
+            # чтобы пользователь видел сравнение и понимал, почему выбран
+            # именно оптимальный парк (они отсортированы вниз списка).
+            rejected = sorted(low_load_rejected, key=lambda x: -x[1])
+            for mid, _factor in rejected:
+                machine = next((m for m in self._all_machines()
+                                if m.get("id") == mid), None)
+                if machine is None:
+                    continue
+                prod = self.hourly_tonnage(machine, mass_for_filter)
+                if prod <= 0:
+                    continue
+                util = (DRUM_UTILIZATION
+                        if str(machine.get("type", "")).startswith("shot_blasting")
+                        else 1.0)
+                n_req = calc_units_required(tonnage_t, prod, fund_hours, k_uneven, util)
+                units = pick_unit_count(n_req)
+                if units > MAX_PARK_UNITS:
+                    continue
+                factor = load_factor(n_req, units)
+                shown_prod = prod * util if util < 1.0 else prod
+                options.append({
+                    **machine,
+                    "_productivity_t_h": round(shown_prod, 3),
+                    "_p1_required": round(n_req, 2),
+                    "_num_required": units,
+                    "_load_factor": factor,
+                    "_score": self._score(factor, units),
+                })
         return options[:top_n]
 
     # ---------- сводный расчёт отделения ----------
