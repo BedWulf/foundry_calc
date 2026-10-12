@@ -265,7 +265,14 @@ def calc_workforce(
     # что близко к эталонным 1840…2000 ч.
     t_wr_raw = float(getattr(project, "F_workers_h", 0.0) or 0.0)
     shifts = int(getattr(project, "shifts_per_day", 2) or 2)
-    t_wr = t_wr_raw / max(shifts, 1) if t_wr_raw > 1.5 * 2000 else (t_wr_raw or 1840.0)
+    # Трактовка F_workers_h: в проекте это годовой фонд ОДНОГО рабочего
+    # (методичка, раздел «Фонды времени»: ~1840…2000 ч при 2…3 сменах).
+    # Значения > 2500 ч — аномалия / суммарный фонд (старые файлы
+    # проектов): тогда делим на сменность.
+    if t_wr_raw > 2500.0:
+        t_wr = t_wr_raw / max(shifts, 1)
+    else:
+        t_wr = t_wr_raw or 1840.0
     if t_wr <= 0:
         t_wr = 1840.0
 

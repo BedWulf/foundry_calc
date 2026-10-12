@@ -81,6 +81,9 @@ class UserChoices:
     #: Категория смесеприготовительного отделения (Раздел 6). Хранит
     #: подсловарь по операциям: ``{"molding_mix": {...}, "sieving": {...}}``.
     SAND_PREP_CATEGORY: str = "sand_prep_equipment"
+    #: Категория складского хозяйства (Раздел 8/10). Хранит подсловарь по
+    #: ключам складов: ``{"charge": {...}, "molding_sand": {...}, ...}``.
+    WAREHOUSE_CATEGORY: str = "warehouse_units"
 
     def save_equipment_choice(
         self,

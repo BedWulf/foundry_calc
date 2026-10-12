@@ -18,13 +18,18 @@
 """
 from __future__ import annotations
 
+import json
 import math
+import re
 from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional
 
 from config import DATA_DIR
 from core.warehouse_meta import WAREHOUSES, WAREHOUSE_TITLES
 from data.loader import DataLoader
+
+#: Каталог пользовательских данных рядом с каталогом приложения
+USER_DATA_DIR = DATA_DIR.parent / "user_data"
 
 # ---------------------------------------------------------------------------
 # Константы нормативов (методичка + оба диплома)
@@ -326,9 +331,96 @@ def calc_warehouse_requirements(
 # ---------------------------------------------------------------------------
 
 def load_storage_units(loader: Optional[DataLoader] = None) -> List[Dict[str, Any]]:
-    """Загрузить справочник единиц хранения ``equipment/warehouse_equip.json``."""
+    """Загрузить справочник единиц хранения ``equipment/warehouse_equip.json``.
+
+    Пользовательские склады из ``user_data/custom_warehouses.json``
+    добавляются в конец списка (см. :func:`add_custom_unit`).
+    """
     loader = loader or DataLoader(DATA_DIR)
-    return loader.load_dict("equipment/warehouse_equip.json").get("units", [])
+    units = list(loader.load_dict("equipment/warehouse_equip.json").get("units", []))
+    custom = load_custom_units()
+    known_ids = {u.get("id") for u in units}
+    units.extend(u for u in custom if u.get("id") not in known_ids)
+    return units
+
+
+#: Файл пользовательских складов (в ``user_data/`` рядом с приложением)
+CUSTOM_WAREHOUSE_FILE = USER_DATA_DIR / "custom_warehouses.json"
+
+
+def load_custom_units() -> List[Dict[str, Any]]:
+    """Загрузить пользовательские единицы хранения (пустой список, если нет)."""
+    path = CUSTOM_WAREHOUSE_FILE
+    if not path.exists():
+        return []
+    try:
+        with open(path, "r", encoding="utf-8") as f:
+            data = json.load(f)
+    except (OSError, json.JSONDecodeError):
+        return []
+    return list(data.get("units", []))
+
+
+def add_custom_unit(unit: Dict[str, Any]) -> Dict[str, Any]:
+    """Сохранить пользовательскую единицу хранения в JSON-справочник.
+
+    Args:
+        unit: карточка склада (ключи id/name/type/specs/applicable_for)
+
+    Returns:
+        Дополненная карточка (проставлены ``id`` и ``custom=True``)
+    """
+    record = dict(unit)
+    if not record.get("id"):
+        slug = re.sub(r"[^a-zа-я0-9]+", "-",
+                      str(record.get("name", "склад")).lower()).strip("-")[:24]
+        record["id"] = f"CUSTOM-{slug or 'warehouse'}"
+    record["custom"] = True
+    units = load_custom_units()
+    units = [u for u in units if u.get("id") != record["id"]]
+    units.append(record)
+    path = CUSTOM_WAREHOUSE_FILE
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with open(path, "w", encoding="utf-8") as f:
+        json.dump({"version": "1.0", "units": units}, f,
+                  ensure_ascii=False, indent=2)
+    return record
+
+
+def to_picker_options(options: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    """Преобразовать варианты компоновки склада в формат ``EquipmentPicker``.
+
+    Добавляет служебные поля ``_num_required`` (кол-во единиц) и
+    ``_load_factor`` (отношение потребной площади к принятой — аналог
+    коэффициента использования), а также сводный блок ``specs`` для
+    отображения в карточке.
+
+    Args:
+        options: варианты из :func:`pick_storage_options`
+
+    Returns:
+        Список карточек для виджета выбора
+    """
+    cards: List[Dict[str, Any]] = []
+    for opt in options:
+        card = dict(opt)
+        card["_num_required"] = int(opt.get("unit_count", 0))
+        req_area = float(opt.get("required_area_m2") or 0.0)
+        tot_area = float(opt.get("total_area_m2") or 0.0)
+        # «загрузка»Inverse: насколько плотно принятая площадь закрывает норму
+        card["_load_factor"] = round(req_area / tot_area, 3) \
+            if tot_area > 0 and req_area > 0 else 0.0
+        card["specs"] = {
+            "capacity_t": opt.get("capacity_per_unit_t", 0.0),
+            "productivity_t_h": 0.0,
+            "footprint_m2": opt.get("footprint_per_unit_m2", 0.0),
+            "total_area_m2": opt.get("total_area_m2", 0.0),
+            "total_capacity_t": opt.get("total_capacity_t", 0.0),
+        }
+        if opt.get("custom"):
+            card["custom"] = True
+        cards.append(card)
+    return cards
 
 
 def _units_for(req: WarehouseRequirement, material_category: Optional[str],
@@ -428,6 +520,8 @@ def calc_warehouses(
     material_category: Optional[str] = None,
     k_irregularity: float = DEFAULT_K_IRREGULARITY,
     top_n: int = 5,
+    selected_ids: Optional[Dict[str, str]] = None,
+    workers_total: Optional[float] = None,
 ) -> List[WarehouseResult]:
     """Полный расчёт складского хозяйства: нормативы + подбор оборудования.
 
@@ -438,6 +532,11 @@ def calc_warehouses(
             если не задана — берётся из ``project.selected_alloy_id``.
         k_irregularity: коэффициент неравномерности.
         top_n: число вариантов компоновки на склад.
+        selected_ids: сохранённый выбор пользователя ``{ключ_склада: id}``;
+            если оборудование больше не подходит — берётся лучший вариант.
+        workers_total: списочная численность рабочих (из
+            :mod:`core.workforce`) для склада инструмента; если не передана —
+            считается сам.
 
     Returns:
         Список :class:`WarehouseResult` по всем шести складам.
@@ -447,19 +546,23 @@ def calc_warehouses(
         material_category = loader.get_alloy_category(
             getattr(project, "selected_alloy_id", "") or "")
     all_units = load_storage_units(loader)
+    selected_ids = selected_ids or {}
     results: List[WarehouseResult] = []
     for req in calc_warehouse_requirements(project, loader=loader,
-                                           k_irregularity=k_irregularity):
+                                           k_irregularity=k_irregularity,
+                                           workers_total=workers_total):
         options = pick_storage_options(req, material_category=material_category,
                                        units=all_units, top_n=top_n)
-        best = options[0] if options else None
+        chosen = next(
+            (o for o in options if o["id"] == selected_ids.get(req.key)),
+            options[0] if options else None)
         results.append(WarehouseResult(
             requirement=req,
             units=options,
-            total_area_m2=float(best["total_area_m2"]) if best else 0.0,
-            total_capacity_t=float(best["total_capacity_t"]) if best else 0.0,
-            notes=(f"Выбрано: {best['name']} × {best['unit_count']}"
-                   if best else "Нет подходящих единиц хранения"),
+            total_area_m2=float(chosen["total_area_m2"]) if chosen else 0.0,
+            total_capacity_t=float(chosen["total_capacity_t"]) if chosen else 0.0,
+            notes=(f"Выбрано: {chosen['name']} × {chosen['unit_count']}"
+                   if chosen else "Нет подходящих единиц хранения"),
         ))
     return results
 

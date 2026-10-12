@@ -16,6 +16,8 @@ from gui.tabs.molding_tab import MoldingTab
 from gui.tabs.core_tab import CoreTab
 from gui.tabs.sand_tab import SandTab
 from gui.tabs.cleaning_tab import CleaningTab
+from gui.tabs.warehouse_tab import WarehouseTab
+from gui.tabs.workforce_tab import WorkforceTab
 
 
 class SideBarButton(QPushButton):
@@ -170,6 +172,10 @@ class MainWindow(QMainWindow):
             return SandTab(self.project)
         elif key == "cleaning_tab":
             return CleaningTab(self.project)
+        elif key == "warehouse_tab":
+            return WarehouseTab(self.project)
+        elif key == "workforce_tab":
+            return WorkforceTab(self.project)
 
         # Заглушка для нереализованных вкладок
         return self._make_placeholder(title)
@@ -257,6 +263,63 @@ class MainWindow(QMainWindow):
             # Смена программы/линии формовки меняет число форм → тоннаж выбивки
             molding_tab.line_choice_changed.connect(
                 lambda _equipment: cleaning_tab.refresh())
+
+        warehouse_tab = self.tabs.get("warehouse_tab")
+        workforce_tab = self.tabs.get("workforce_tab")
+
+        if project_tab and warehouse_tab:
+            # При изменении исходных данных → пересчёт нормативов складов
+            project_tab.project_changed.connect(warehouse_tab.on_project_changed)
+
+        if project_tab and workforce_tab:
+            # При изменении исходных данных → пересчёт ведомости РБ
+            project_tab.project_changed.connect(workforce_tab.on_project_changed)
+
+        # Реактивная связка «отделения → рабочая сила»: любое изменение
+        # выбора оборудования или программы пересчитывает численность
+        for tab in (melting_tab, molding_tab, core_tab, sand_tab, cleaning_tab):
+            sig = getattr(tab, "equipment_choice_changed", None) \
+                or getattr(tab, "line_choice_changed", None)
+            if tab is not None and sig is not None and workforce_tab is not None:
+                sig.connect(lambda _data: workforce_tab.refresh())
+
+        if workforce_tab is not None:
+            # Численность цеха нужна для склада инструмента; провайдер
+            # собирает сводки всех отделений одним вызовом
+            workforce_tab.set_dependencies_provider(self.department_summaries)
+
+        if warehouse_tab is not None and workforce_tab is not None:
+            # После пересчёта РБ склады уточняют площадь инструментария
+            workforce_tab.workforce_changed.connect(
+                lambda _data: warehouse_tab.refresh())
+
+    def department_summaries(self) -> dict:
+        """Собрать сводки (`get_summary`) всех реализованных отделений.
+
+        Returns:
+            Словарь ``{melting, molding, cores, sand_prep, cleaning,
+            warehouses, workforce}`` — пустые словари там, где вкладка
+            ещё не реализована или данные не готовы
+        """
+        def summary(key: str) -> dict:
+            tab = self.tabs.get(key)
+            fn = getattr(tab, "get_summary", None)
+            if callable(fn):
+                try:
+                    return fn() or {}
+                except Exception:
+                    return {}
+            return {}
+
+        return {
+            "melting": summary("melting_tab"),
+            "molding": summary("molding_tab"),
+            "cores": summary("core_tab"),
+            "sand_prep": summary("sand_tab"),
+            "cleaning": summary("cleaning_tab"),
+            "warehouses": summary("warehouse_tab").get("warehouses", {}),
+            "workforce": summary("workforce_tab"),
+        }
 
     def _select_section(self, index: int) -> None:
         if not (0 <= index < len(self.nav_buttons)):

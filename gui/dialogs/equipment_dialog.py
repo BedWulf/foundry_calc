@@ -94,6 +94,30 @@ class EquipmentDialog(QDialog):
             "prod_default": 12.0,
             "type_default": "custom_mixer",
         },
+        "warehouse": {
+            "title": "Добавить своё складское оборудование",
+            "capacity_label": "Площадь одной единицы:",
+            "capacity_suffix": " м²",
+            "capacity_range": (1.0, 5000.0),
+            "capacity_default": 50.0,
+            "prod_label": "Вместимость одной единицы:",
+            "prod_suffix": " т",
+            "prod_range": (0.1, 5000.0),
+            "prod_default": 40.0,
+            "type_default": "rack",
+            "storage_types": ["charge", "molding_sand", "core_materials",
+                              "flasks", "patterns", "tools"],
+        },
+    }
+
+    #: Названия складов для выпадающего списка в диалоге «warehouse»
+    _WAREHOUSE_TYPE_TITLES: Dict[str, str] = {
+        "charge": "Склад шихтовых материалов",
+        "molding_sand": "Склад формовочных материалов",
+        "core_materials": "Склад стержневых материалов",
+        "flasks": "Склад опок",
+        "patterns": "Склад модельной оснастки",
+        "tools": "Склад инструмента и приспособлений",
     }
 
     def __init__(self, parent: Optional[QWidget] = None,
@@ -129,6 +153,10 @@ class EquipmentDialog(QDialog):
             "core_machine": (
                 "Машина будет сохранена в user_data/custom_core_machines.json "
                 "и появится в подборе для выбранных материалов."),
+            "warehouse": (
+                "Единица хранения будет сохранена в "
+                "user_data/custom_warehouses.json и появится в подборе "
+                "для выбранного склада."),
         }.get(self._kind, (
             "Печь будет сохранена в user_data/custom_furnaces.json "
             "и появится в подборе для выбранных материалов."))
@@ -142,6 +170,7 @@ class EquipmentDialog(QDialog):
             "cleaning_machine": "Установка очистки индивидуальная",
             "molding_line": "Формовочная линия индивидуальная",
             "core_machine": "Стержневая машина индивидуальная",
+            "warehouse": "Площадка складская индивидуальная",
         }.get(self._kind, "Печь индивидуальная")
         self.edit_name = QLineEdit(name_default)
         self.edit_type = QLineEdit(str(meta["type_default"]))
@@ -187,6 +216,14 @@ class EquipmentDialog(QDialog):
                                              "molding_mix")
             ov.addWidget(self.operation_combo)
             layout.addWidget(op_group)
+        elif self._kind == "warehouse":
+            wh_group = QGroupBox("Тип склада (где будет применяться)")
+            wv = QVBoxLayout(wh_group)
+            self.operation_combo = QComboBox()
+            for key, title in self._WAREHOUSE_TYPE_TITLES.items():
+                self.operation_combo.addItem(title, key)
+            wv.addWidget(self.operation_combo)
+            layout.addWidget(wh_group)
 
         group = QGroupBox("Применима для материалов")
         gbox = QVBoxLayout(group)
@@ -243,6 +280,10 @@ class EquipmentDialog(QDialog):
             # cap — объём замеса, м³; prod — производительность, м³/ч
             specs = {"batch_volume_m3": cap, "productivity_m3_h": prod}
             mass_range_max = 10000.0
+        elif self._kind == "warehouse":
+            # cap — площадь одной единицы, м²; prod — вместимость, т
+            specs = {"footprint_m2": cap, "capacity_per_unit_t": prod}
+            mass_range_max = 10000.0
         else:
             specs = {"capacity_t": cap, "productivity_t_h": prod}
             mass_range_max = 10000.0
@@ -263,7 +304,11 @@ class EquipmentDialog(QDialog):
             self._result["unit"] = unit
             if unit == "t_h":
                 self._result["specs"] = {"productivity_t_h": prod}
-        if self.operation_combo is not None and self._kind != "mixer":
+        if self._kind == "warehouse" and self.operation_combo is not None:
+            # для склада тип склада — обязательный ключ подбора
+            self._result["applicable_for"]["storage_types"] = [
+                str(self.operation_combo.currentData())]
+        elif self.operation_combo is not None and self._kind != "mixer":
             self._result["applicable_for"]["operations"] = [
                 str(self.operation_combo.currentData())]
         elif self.operation_combo is not None:
