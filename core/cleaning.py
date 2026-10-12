@@ -167,10 +167,15 @@ def calc_department_masses(
     if not (0.0 <= ug < 1.0):
         raise ValueError(f"Некорректный процент угара: {ugar_pct}%")
 
+    from core.melting import calc_metal_charge  # единый источник формулы (1)
+
     gating = annual_output_t * litniki_pribyli_pct / 100.0
     scrap = annual_output_t * brak_pct / 100.0
     liquid = annual_output_t + gating + scrap
-    metal_charge = liquid / (1.0 - ug)
+    # Металлозавалка считается той же функцией, что и в плавильном
+    # отделении, — иначе баланс цеха расходился бы с подбором печей.
+    metal_charge = calc_metal_charge(annual_output_t, brak_pct,
+                                     litniki_pribyli_pct, ugar_pct)
     return {
         "liquid_metal_t": round(liquid, 1),
         "casting_count_t": round(liquid, 1),
@@ -385,7 +390,12 @@ class CleaningCalculator:
             base = 1.0 / (1.0 + 5 * dist ** 2)
             bonus = 0.0
         penalty = 1.0 / (1.0 + 0.02 * max(units - 1, 0))
-        return round((base + bonus) * penalty, 3)
+        score = (base + bonus) * penalty
+        # Разрыв между «идеальным» и «терпимым» парком должен быть виден
+        # в карточках: при округлении до 3 знаков варианты с одинаковым
+        # Кзо становились неразличимыми, и тест на сортировку не мог
+        # подтвердить порядок «оптимальные — первыми».
+        return round(score, 4)
 
     def _is_suitable(self, machine: Dict[str, Any], operation: str,
                      material_category: str, casting_mass_kg: float) -> bool:
@@ -405,8 +415,21 @@ class CleaningCalculator:
         if operations and operation not in operations:
             return False
         materials = app.get("materials", [])
-        if materials and material_category and material_category not in materials:
-            return False
+        if materials:
+            # Оборудование, привязанное к конкретным сплавам, показываем
+            # только если сплав проекта есть в списке. Если категория
+            # материала неизвестна (сплав не выбран / не найден в
+            # справочнике) — такие карточки скрываем, а «бессплавные»
+            # (привязанные только к категории) оставляем, иначе при
+            # пустом selected_alloy_id отделение вообще оставалось бы
+            # без вариантов.
+            alloys = app.get("alloys", [])
+            if alloys:
+                return bool(material_category) and material_category in alloys
+            if not material_category:
+                return False
+            if material_category not in materials:
+                return False
         mass_range = app.get("casting_mass_range_kg") or []
         if mass_range and casting_mass_kg > 0:
             low = float(mass_range[0]) if len(mass_range) > 0 else 0.0
@@ -463,6 +486,8 @@ class CleaningCalculator:
             75.0, max(5.0, tonnage_t / 1200.0))
 
         options: List[Dict[str, Any]] = []
+        #: Отброшенные низкозагруженные варианты (для пояснений в GUI).
+        low_load_rejected: List[Tuple[str, float]] = []
         for machine in self._all_machines():
             if not self._is_suitable(machine, operation, material_category,
                                      mass_for_filter):
@@ -482,6 +507,15 @@ class CleaningCalculator:
                 # поточным участком/бригадой, а не отдельными установками.
                 continue
             factor = load_factor(n_req, units)
+            # Низкозагруженные варианты (Кзо < MIN_LOAD_FACTOR_DISPLAY) —
+            # это «невыгодные» установки из-за избыточной производительности.
+            # Их нельзя отбрасывать: пользователь должен видеть сравнение и
+            # понимать, почему выбран более мелкий парк (см. константу).
+            # Но на малых тоннажах они только забивают топ, поэтому там
+            # оставляем единственный лучший вариант.
+            if factor < MIN_LOAD_FACTOR_DISPLAY and tonnage_t < MIN_LOAD_DISPLAY_TONNAGE:
+                low_load_rejected.append((machine.get("id", ""), factor))
+                continue
             # Дробемётные барабаны/камеры работают циклично: их реальная
             # выработка ниже паспортной — учитываем это в отображаемой
             # производительности карточки.
@@ -495,11 +529,14 @@ class CleaningCalculator:
                 "_score": self._score(factor, units),
             })
 
-        # Наиболее эффективные варианты — первыми (дипломы — примеры,
-        # а не эталон оптимальности): балл загрузки, затем бóльшая
-        # производительность (меньше единиц в парке).
+        # Сортировка «эффективность → терпимо»: сначала варианты с Кзо в
+        # идеальной зоне 0.70–0.85, затем остальные по убыванию балла; внутри
+        # одной зоны — бо́льшая производительность (меньше единиц в парке).
+        # Дипломы — лишь примеры, поэтому оптимальность важнее флага
+        # ``recommended`` (он участвует только как последний «равноценник»).
         options.sort(
             key=lambda x: (
+                LOAD_OPTIMAL_MIN <= x["_load_factor"] <= LOAD_OPTIMAL_MAX,
                 x["_score"],
                 x["_productivity_t_h"],
                 -x["_num_required"],
@@ -507,6 +544,10 @@ class CleaningCalculator:
             ),
             reverse=True,
         )
+        if tonnage_t >= MIN_LOAD_DISPLAY_TONNAGE:
+            # Крупная программа: показываем и низкозагруненные установки —
+            # они отсортированы вниз списка собственным низким баллом.
+            pass
         return options[:top_n]
 
     # ---------- сводный расчёт отделения ----------
@@ -519,6 +560,7 @@ class CleaningCalculator:
         material_category: str = "",
         avg_mass_kg: float = DEFAULT_UNIT_MASS_KG,
         cores_per_mold: float = DEFAULT_CORES_PER_MOLD,
+        avg_core_mass_kg: float = 0.0,
         annual_molds: int = 0,
         ugar_pct: float = 5.0,
         k_uneven: float = 1.3,
@@ -535,6 +577,10 @@ class CleaningCalculator:
             material_category: категория сплава проекта
             avg_mass_kg: средняя масса отливки с ЛПС, кг
             cores_per_mold: среднее число стержней на форму (тоннаж стержней)
+            avg_core_mass_kg: средняя масса одного стержня, кг; если 0 —
+                типовой :data:`AVG_CORE_MASS_KG` (мелкое литьё). Для
+                номенклатуры передаётся средневзвешенная масса стержня,
+                иначе тоннаж выбивки занижается в разы.
             annual_molds: годовое число форм (для выбивки); если 0 — оценка
                 по тоннажу и средней массе
             ugar_pct: процент угара, %
@@ -559,7 +605,9 @@ class CleaningCalculator:
         # формы × стержней в форме × средняя масса стержня.
         molds = annual_molds if annual_molds > 0 else calc_annual_pieces(
             casting_count_t, avg_mass_kg, 0.0)
-        cores_ton = molds * max(cores_per_mold, 0.0) * AVG_CORE_MASS_KG / 1000.0
+        core_mass = (avg_core_mass_kg if avg_core_mass_kg > 0
+                     else AVG_CORE_MASS_KG)
+        cores_ton = molds * max(cores_per_mold, 0.0) * core_mass / 1000.0
 
         basis_tonnage: Dict[str, float] = {
             "casting_count": casting_count_t,
@@ -673,6 +721,15 @@ def calc_cleaning(
 
     category = _alloy_category(str(getattr(project, "selected_alloy_id", "")))
     cores_per_mold = calc_avg_cores_per_mold(castings) if castings else _CPM
+    # Средневзвешенная масса стержня по программе (по числу стержней), а не
+    # «средняя на форму»: иначе лёгкие многоствержневые позиции вытягивают
+    # тоннаж выбивки вниз.
+    n_cores = sum(int(getattr(c, "cores_count", 0) or 0) * int(
+        getattr(c, "molds_per_year", 0) or 0) for c in castings)
+    core_mass_sum = sum(float(getattr(c, "core_mass_kg", 0.0) or 0.0) * int(
+        getattr(c, "cores_count", 0) or 0) * int(
+        getattr(c, "molds_per_year", 0) or 0) for c in castings)
+    avg_core_mass_kg = core_mass_sum / n_cores if n_cores > 0 else 0.0
 
     result = calc.calc_department(
         annual_output_t=float(getattr(project, "annual_output_t", 0.0) or 0.0),
@@ -686,6 +743,7 @@ def calc_cleaning(
         # сам оценит массу по тоннажу, а не подставляет жёстко 10 кг.
         avg_mass_kg=avg_mass,
         cores_per_mold=cores_per_mold,
+        avg_core_mass_kg=avg_core_mass_kg,
         annual_molds=annual_molds,
         ugar_pct=float(getattr(project, "ugar_pct", 5.0) or 5.0),
         top_n=top_n,
@@ -698,8 +756,15 @@ def calc_cleaning(
 def _alloy_category(alloy_id: str) -> str:
     """Определить категорию материала по ``selected_alloy_id``.
 
+    Идентификаторы сплавов в справочнике имеют вид ``steel_45L``,
+    ``cast_iron_SCh20``, ``aluminum_AK12``; пользовательские/тестовые
+    проекты могут хранить «голую» марку (``45L``, ``AK12``). Поэтому
+    кроме точного совпадения разбирается префикс категории и выполняется
+    поиск марки среди сплавов этой категории.
+
     Args:
         alloy_id: идентификатор сплава из ``data/materials/alloys.json``
+            либо его каноническая форма без префикса категории
 
     Returns:
         Категория (``steel``/``cast_iron``/``aluminum``) или пустая строка,
@@ -708,8 +773,21 @@ def _alloy_category(alloy_id: str) -> str:
     if not alloy_id:
         return ""
     loader = DataLoader(DATA_DIR)
-    for alloy in loader.load_list("materials/alloys.json", key="alloys"):
+    alloys = loader.load_list("materials/alloys.json", key="alloys")
+    for alloy in alloys:
         if alloy.get("id") == alloy_id:
+            return str(alloy.get("category", ""))
+    # Префикс категории в самом id (например "steel_45L").
+    for prefix in ("steel", "cast_iron", "aluminum"):
+        if alloy_id.lower().startswith(prefix + "_"):
+            return prefix
+    # Марка без префикса: ищем совпадение по name/mark внутри категорий.
+    needle = alloy_id.strip().lower()
+    for alloy in alloys:
+        haystack = [str(alloy.get("name", "")), str(alloy.get("mark", "")),
+                    str(alloy.get("id", ""))]
+        if any(needle == h.strip().lower() or needle in h.lower()
+               for h in haystack if h):
             return str(alloy.get("category", ""))
     return ""
 
