@@ -205,11 +205,28 @@ def _bulk_area_m2(capacity_t: float) -> float:
     return max(math.ceil(area), MIN_WAREHOUSE_AREA_M2)
 
 
+def _department_workers(project: Any) -> float:
+    """Оценка общего списочного числа рабочих цеха (основных + вспомогательных).
+
+    Используется только как резерв для склада инструмента, когда модуль
+    :mod:`core.workforce` недоступен (циклический импорт, пустой проект).
+
+    Args:
+        project: модель проекта.
+
+    Returns:
+        Приблизительное число рабочих, чел.
+    """
+    output_t = float(getattr(project, "annual_output_t", 0.0) or 0.0)
+    return output_t / 1000.0 * WORKERS_PER_1000T
+
+
 def calc_warehouse_requirements(
     project: Any,
     *,
     loader: Optional[DataLoader] = None,
     k_irregularity: float = DEFAULT_K_IRREGULARITY,
+    workers_total: Optional[float] = None,
 ) -> List[WarehouseRequirement]:
     """Рассчитать нормативы по всем шести складам для проекта.
 
@@ -217,6 +234,8 @@ def calc_warehouse_requirements(
         project: объект :class:`core.project.Project` (или совместимый).
         loader: необязательный загрузчик справочников (для тестов).
         k_irregularity: коэффициент неравномерности потребления.
+        workers_total: списочная численность рабочих цеха (из
+            :mod:`core.workforce`); если не передана — считается сам.
 
     Returns:
         Список :class:`WarehouseRequirement` в порядке ведомости площадей.
@@ -283,7 +302,13 @@ def calc_warehouse_requirements(
     ))
 
     # --- 6. Инструмент и приспособления ------------------------------------
-    workers = output_t / 1000.0 * WORKERS_PER_1000T
+    # Приоритет — реальная списочная численность из core.workforce
+    # (связка «рабочая сила → склады»); резерв — укрупненная норма.
+    try:
+        from core.workforce import calc_workforce as _calc_wf  # без цикла
+        workers = float(_calc_wf(project).total_total)
+    except Exception:
+        workers = _department_workers(project)
     tools_area = max(workers * TOOLS_AREA_M2_PER_WORKER, 40.0)
     reqs.append(WarehouseRequirement(
         key="tools", title=WAREHOUSE_TITLES["tools"],

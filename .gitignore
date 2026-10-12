@@ -1,3 +1,4 @@
 __pycache__/
-*.pyc
-user_data/custom_*.json
+*.py[cod]
+*$py.class
+.pytest_cache/

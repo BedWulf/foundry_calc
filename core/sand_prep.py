@@ -374,6 +374,7 @@ class SandPrepCalculator:
         lumps_share: float = LUMPS_SHARE_DEFAULT,
         top_n: int = 5,
         selected_ids: Optional[Dict[str, str]] = None,
+        cores_mass_t_direct: Optional[float] = None,
     ) -> Dict[str, Any]:
         """Рассчитать все позиции смесеприготовительного отделения.
 
@@ -397,6 +398,11 @@ class SandPrepCalculator:
             lumps_share: доля комьев в обороте смеси для дробилки
             top_n: сколько вариантов показывать по каждой позиции
             selected_ids: сохранённый выбор пользователя {operation: id}
+            cores_mass_t_direct: точная годовая масса стержней, т (из
+                номенклатуры проекта). Если задана (>= 0), используется
+                вместо оценки ``annual_molds × cores_per_mold × avg_core_mass``
+                — так исключается ошибка округления средневзвешенных
+                (Σ Nф_i·nст_i·mст_i считается вызывающей стороной точно).
 
         Returns:
             Словарь с ``volumes`` (расход смеси), ``operations`` (позиции с
@@ -413,7 +419,10 @@ class SandPrepCalculator:
             else AVG_CORE_MASS_KG
         cores_mass_per_mold_kg = cores_per_mold * core_mass
         annual_cores = int(math.ceil(annual_molds * cores_per_mold))
-        cores_mass_t = annual_molds * cores_mass_per_mold_kg / 1000.0
+        cores_mass_t = (float(cores_mass_t_direct)
+                        if cores_mass_t_direct is not None
+                        and cores_mass_t_direct >= 0
+                        else annual_molds * cores_mass_per_mold_kg / 1000.0)
 
         volumes = calc_sand_volumes(
             annual_molds=annual_molds,
@@ -613,13 +622,29 @@ def calc_sand_prep(
                        / DENSITY_TAMPED_SHAKE if metal_per_mold > 0 else 0.216)
 
     avg_core_mass = float(getattr(project, "avg_core_mass_kg", 0.0) or 0.0)
-    if avg_core_mass <= 0 and castings:
+    # Годовая масса стержней по номенклатуре. Приоритет источников:
+    # 1) project.cores_annual_mass_t — явное значение из проекта;
+    # 2) Σ(Nф_i · nст_i · mст_i) — точная сумма по позициям (без ошибок
+    #    округления средневзвешенных);
+    # 3) оценка через среднее число/массу стержня (типовая, как в дипломах).
+    cores_mass_direct: Optional[float] = None
+    explicit_cores_t = float(getattr(project, "cores_annual_mass_t", 0.0) or 0.0)
+    if castings and explicit_cores_t > 0:
+        cores_mass_direct = explicit_cores_t
+    if castings:
         total_cores = sum(int(getattr(c, "cores_count", 0) or 0) * int(
             getattr(c, "molds_per_year", 0) or 0) for c in castings)
-        total_core_mass = sum(float(getattr(c, "core_mass_kg", 0.0) or 0.0) * int(
+        # Масса стержня — на ОДИН стержень: суммируем mст_i × nст_i × Nф_i
+        # (согласовано с core/cleaning.py и core/warehouse.py).
+        total_core_mass = sum(float(getattr(c, "core_mass_kg", 0.0) or 0.0)
+                              * int(getattr(c, "cores_count", 0) or 0) * int(
             getattr(c, "molds_per_year", 0) or 0) for c in castings)
-        if total_cores > 0:
+        if total_cores > 0 and avg_core_mass <= 0:
             avg_core_mass = total_core_mass / total_cores
+        if cores_mass_direct is None and total_core_mass > 0:
+            cores_mass_direct = total_core_mass / 1000.0
+    if cores_mass_direct is None and explicit_cores_t > 0:
+        cores_mass_direct = explicit_cores_t
 
     category = _alloy_category(str(getattr(project, "selected_alloy_id", "")))
     fund = float(getattr(project, "F_equipment_sand_h", 0.0) or
@@ -636,6 +661,7 @@ def calc_sand_prep(
         working_hours=fund,
         top_n=top_n,
         selected_ids=selected_ids,
+        cores_mass_t_direct=cores_mass_direct,
     )
 
 
