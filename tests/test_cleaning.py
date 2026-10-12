@@ -108,9 +108,14 @@ class TestCleaningCalculator(unittest.TestCase):
             self.assertIn("aluminum", mats)
 
     def test_options_sorted_optimal_first(self) -> None:
-        """Лучшие по баллу варианты — первыми (оптимальность важнее recommended)."""
+        """Лучшие по баллу варианты — первыми (оптимальность важнее recommended).
+
+        Программа 90 000 т/год мелкого литья: барабан DRUM-42322 попадает в
+        optimum-зону (Кзо ≈ 0.81), подвесная камера SHOT-BAY-15 проходит
+        фильтр масс [50; 2000] и остаётся «терпимым» сравнением (Кзо ≈ 0.65).
+        """
         options = self.calc.find_for_operation(
-            operation="shot_blasting", tonnage_t=50_000.0,
+            operation="shot_blasting", tonnage_t=90_000.0,
             fund_hours=3770.0, material_category="steel", avg_mass_kg=10.0)
         self.assertGreater(len(options), 1)
         # Балл должен быть монотонно неотрастающим по списку (или зоны
