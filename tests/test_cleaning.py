@@ -10,6 +10,7 @@ from pathlib import Path
 from core.casting_item import CastingItem
 from core.cleaning import (
     CleaningCalculator, OPERATIONS, OPERATION_TITLES, OPERATION_BASIS,
+    LOAD_OPTIMAL_MIN, LOAD_OPTIMAL_MAX,
     calc_annual_pieces, calc_department_masses, calc_units_required,
     load_factor, pick_unit_count,
 )
@@ -35,9 +36,16 @@ class TestMassBalance(unittest.TestCase):
         self.assertAlmostEqual(m["scrap_return_t"], 350.0, delta=0.1)
 
     def test_metal_charge_with_ugar(self) -> None:
-        """Металлозавалка = жидкий металл / (1 − угар)."""
+        """Металлозавалка = жидкий металл / (1 − угар).
+
+        Эталонная формула методички/дипломов: М = (Г + ЛП + Б)·100/(100−У),
+        где ЛП и Б — проценты от годного. При Г=1000, ЛП=30 %, Б=5 %:
+        жидкий металл = 1350 т, М = 1350/0.95 ≈ 1421 т.
+        """
         m = calc_department_masses(1000.0, 30.0, 5.0, ugar_pct=5.0)
-        self.assertAlmostEqual(m["metal_charge_t"], 1100.0 / 0.95, delta=0.5)
+        liquid = 1000.0 * (1 + 0.30 + 0.05)
+        self.assertAlmostEqual(m["liquid_metal_t"], liquid, delta=0.5)
+        self.assertAlmostEqual(m["metal_charge_t"], liquid / 0.95, delta=0.5)
 
     def test_zero_output(self) -> None:
         """Нулевой выпуск не ломает расчёт."""
@@ -105,8 +113,16 @@ class TestCleaningCalculator(unittest.TestCase):
             operation="shot_blasting", tonnage_t=50_000.0,
             fund_hours=3770.0, material_category="steel", avg_mass_kg=10.0)
         self.assertGreater(len(options), 1)
-        scores = [o["_score"] for o in options]
-        self.assertEqual(scores, sorted(scores, reverse=True))
+        # Балл должен быть монотонно неотрастающим по списку (или зоны
+        # "в optimum / вне optimum" с сортировкой внутри по баллу).
+        in_zone = [LOAD_OPTIMAL_MIN <= o["_load_factor"] <= LOAD_OPTIMAL_MAX
+                   for o in options]
+        self.assertEqual(in_zone, sorted(in_zone, reverse=True),
+                         "варианты из optimum-зоны должны идти первыми")
+        for a, b in zip(options, options[1:]):
+            if (LOAD_OPTIMAL_MIN <= a["_load_factor"] <= LOAD_OPTIMAL_MAX) == \
+               (LOAD_OPTIMAL_MIN <= b["_load_factor"] <= LOAD_OPTIMAL_MAX):
+                self.assertGreaterEqual(a["_score"], b["_score"])
 
     def test_chamber_preferring_for_heavy_castings(self) -> None:
         """Крупная отливка (>100 кг) не должна закрываться барабаном."""
@@ -140,7 +156,8 @@ class TestCleaningCalculator(unittest.TestCase):
         shake = res["operations"]["shakeout"]["tonnage_t"]
         cut = res["operations"]["gating_cutting"]["tonnage_t"]
         self.assertGreater(shake, cut)
-        self.assertAlmostEqual(shake - cut, 2_000.0, delta=1.0)  # 2 млн ст × 3 кг
+        # 1 млн форм × 2 стержня × 3 кг (типовая AVG_CORE_MASS_KG) = 6000 т
+        self.assertAlmostEqual(shake - cut, 6_000.0, delta=1.0)
 
     def test_selected_ids_restored(self) -> None:
         """Сохранённый id восстанавливается, если он в топе."""
