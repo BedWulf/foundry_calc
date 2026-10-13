@@ -200,7 +200,7 @@
       "type": "induction_crucible",
       "num_required": 6,
       "load_factor": 0.745,
-      "updated_at": "2026-10-13T12:58:59.362351"
+      "updated_at": "2026-10-13T13:10:03.294446"
     },
     "molding_line": {
       "equipment_id": "KV301",
@@ -208,7 +208,7 @@
       "type": "автоматическая формовочная линия",
       "num_required": 4,
       "load_factor": 0.793,
-      "updated_at": "2026-10-13T12:58:59.389126"
+      "updated_at": "2026-10-13T13:10:03.323056"
     },
     "core_machine": {
       "equipment_id": "ZB08Y-80",
@@ -216,7 +216,7 @@
       "type": "автомат стержлевой холодного спекания (ХFS)",
       "num_required": 3,
       "load_factor": 0.826,
-      "updated_at": "2026-10-13T12:58:59.412601"
+      "updated_at": "2026-10-13T13:10:03.346733"
     },
     "cleaning_equipment": {
       "cooling": {
@@ -226,7 +226,7 @@
         "num_required": 1,
         "load_factor": 0.331
       },
-      "updated_at": "2026-10-13T12:58:59.476968",
+      "updated_at": "2026-10-13T13:10:03.417072",
       "shakeout": {
         "equipment_id": "SHAKEOUT-ROT-30",
         "name": "Выбивная решётчатая установка роторная",
@@ -271,7 +271,7 @@
         "num_required": 1,
         "load_factor": 1.0
       },
-      "updated_at": "2026-10-13T12:59:43.875729",
+      "updated_at": "2026-10-13T13:10:03.484359",
       "molding_sand": {
         "equipment_id": "BIN-SAND-50",
         "name": "Бункер формовочного песка с электропитателем, 50 т (укрупнённая площадка)",
@@ -316,7 +316,7 @@
         "num_required": 16,
         "load_factor": 0.68
       },
-      "updated_at": "2026-10-13T12:58:47.552730",
+      "updated_at": "2026-10-13T13:10:25.728282",
       "crane": {
         "equipment_id": "CRANE-20T",
         "name": "Кран мостовой двухбалочный, 20 т",
