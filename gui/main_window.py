@@ -20,6 +20,7 @@ from gui.tabs.warehouse_tab import WarehouseTab
 from gui.tabs.workforce_tab import WorkforceTab
 from gui.tabs.areas_tab import AreasTab
 from gui.tabs.transport_tab import TransportTab
+from gui.tabs.summary_tab import SummaryTab
 
 
 class SideBarButton(QPushButton):
@@ -183,6 +184,11 @@ class MainWindow(QMainWindow):
             return AreasTab(self.project)
         elif key == "transport_tab":
             return TransportTab(self.project)
+        elif key == "summary_tab":
+            tab = SummaryTab(self.project)
+            # Поставщик сводок всех отделений (см. department_summaries)
+            tab.summaries_provider = self.department_summaries
+            return tab
 
         # Заглушка для нереализованных вкладок
         return self._make_placeholder(title)
@@ -362,6 +368,32 @@ class MainWindow(QMainWindow):
                 # для норм кранов → пересчёт при смене парка оборудования
                 areas_tab.areas_recalculated.connect(
                     lambda _data: transport_tab.refresh())
+
+        # ── Вкладка «Сводка»: реактивный пересчёт при любых изменениях ──
+        summary_tab = self.tabs.get("summary_tab")
+        if summary_tab is not None and isinstance(summary_tab, SummaryTab):
+            for key in ("project_tab", "time_funds_tab"):
+                tab = self.tabs.get(key)
+                sig = getattr(tab, "project_changed", None) or \
+                    getattr(tab, "funds_updated", None)
+                if sig is not None and hasattr(sig, "connect"):
+                    sig.connect(lambda _d=None: summary_tab.refresh())
+            for key in ("melting_tab", "molding_tab", "core_tab",
+                        "sand_tab", "cleaning_tab", "warehouse_tab",
+                        "transport_tab"):
+                sig = self._choice_signal(self.tabs.get(key))
+                if sig is not None:
+                    sig.connect(lambda _data: summary_tab.refresh())
+            wf = self.tabs.get("workforce_tab")
+            if wf is not None:
+                sig = getattr(wf, "workforce_changed", None)
+                if sig is not None and hasattr(sig, "connect"):
+                    sig.connect(lambda _data: summary_tab.refresh())
+            ar = self.tabs.get("areas_tab")
+            if ar is not None:
+                sig = getattr(ar, "areas_recalculated", None)
+                if sig is not None and hasattr(sig, "connect"):
+                    sig.connect(lambda _data: summary_tab.refresh())
 
     def department_summaries(self) -> dict:
         """Собрать сводки (`get_summary`) всех реализованных отделений.
