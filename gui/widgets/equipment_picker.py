@@ -279,11 +279,31 @@ class EquipmentPicker(QWidget):
             button = self.button_group.button(idx)
             if button is not None:
                 button.setChecked(True)
-                self.equipment_selected.emit(equipment_list[idx])
-    
+                # setChecked на уже выбранной кнопке сигнал НЕ эмитит —
+                # эмиссию выполняем явно (idx может совпасть с прежним
+                # выбором после пересчёта).
+                self._emit_selection(equipment_list[idx])
+
+    def _emit_selection(self, equipment_data: dict) -> None:
+        """Эмитировать ``equipment_selected``, подавляя рекурсивные refresh().
+
+        Обработчики сигнала во вкладках часто вызывают ``refresh()``, который
+        снова попадает в :meth:`set_equipment_options` и эмитит выбор обратно.
+        Без защиты получается каскад «формовка → стержни → склады → площади →
+        формовка …», способный зациклиться при смене материала проекта. Флаг
+        ``_blocked`` гарантирует: внешний слушатель получает ровно одно
+        уведомление о выборе, вложенные (reentrant) эмиссии игнорируются.
+        """
+        if getattr(self, "_blocked", False):
+            return
+        self._blocked = True
+        try:
+            self.equipment_selected.emit(equipment_data)
+        finally:
+            self._blocked = False
+
     def _on_equipment_selected(self, equipment_data: dict):
-        self.equipment_selected.emit(equipment_data)
-    
+        self._emit_selection(equipment_data)
     def get_selected_equipment(self) -> dict:
         """Получить выбранное оборудование."""
         checked_id = self.button_group.checkedId()
