@@ -1,4 +1,6 @@
 """Виджет выбора оборудования из нескольких вариантов."""
+from typing import Any, Dict, List, Optional
+
 from PySide6.QtCore import Qt, Signal
 from PySide6.QtGui import QFont
 from PySide6.QtWidgets import (
@@ -10,15 +12,61 @@ from config import COLORS
 
 
 class EquipmentCard(QFrame):
-    """Карточка одного варианта оборудования."""
-    
+    """Карточка одного варианта оборудования.
+
+    Ключ ``card_fields`` в словаре оборудования позволяет переопределить
+    строку характеристик (используется карточками формовочных линий, где
+    единицы — ф/ч и размеры опок, а не т и т/ч; стержневые машины задают
+    часы работы парка в ключе ``_hours_required`` — тогда вместо «Требуется
+    N шт.» показывается «N ч работы парка в год»).
+    """
+
     selected = Signal(dict)
-    
+
     def __init__(self, equipment_data: dict, parent=None):
         super().__init__(parent)
         self.equipment_data = equipment_data
         self._build_ui()
-        
+
+    def _specs_text(self) -> str:
+        """Собрать строку характеристик карточки (печь / АФЛ / стержневая машина)."""
+        specs = self.equipment_data.get("specs", {})
+        override = self.equipment_data.get("card_fields")
+        if override:
+            parts = []
+            for key, label in override:
+                value = specs.get(key)
+                if value in (None, "", 0):
+                    continue
+                parts.append(f"{label}: {value}")
+            return " | ".join(parts)
+
+        # Стержневые машины: свои единицы (цикл, гнезда, час. произв., опочный размер)
+        if "cycle_time_s" in specs or "hourly_output_cores_h" in specs:
+            parts = []
+            if specs.get("box_size_mm"):
+                parts.append(f"Ящик: {specs['box_size_mm']} мм")
+            if specs.get("cycle_time_s"):
+                parts.append(f"Цикл: {specs['cycle_time_s']:g} с")
+            if specs.get("cavities_per_box"):
+                parts.append(f"Гнезд: {specs['cavities_per_box']:g}")
+            if specs.get("hourly_output_cores_h"):
+                parts.append(f"Производительность: {specs['hourly_output_cores_h']:g} ст/ч")
+            if specs.get("installed_power_kw"):
+                parts.append(f"Мощность: {specs['installed_power_kw']:g} кВт")
+            return " | ".join(parts)
+
+        specs_text = []
+        if "capacity_t" in specs:
+            specs_text.append(f"Ёмкость: {specs['capacity_t']} т")
+        if "productivity_t_h" in specs:
+            specs_text.append(f"Производительность: {specs['productivity_t_h']} т/ч")
+        if "power_kw" in specs and specs["power_kw"] > 0:
+            specs_text.append(f"Мощность: {specs['power_kw']} кВт")
+        if "working_temp_C" in specs:
+            specs_text.append(f"T = {specs['working_temp_C']}°C")
+        return " | ".join(specs_text)
+
     def _build_ui(self):
         self.setFrameShape(QFrame.StyledPanel)
         self.setStyleSheet(f"""
@@ -70,21 +118,9 @@ class EquipmentCard(QFrame):
             header_layout.addWidget(rec_lbl)
         
         layout.addLayout(header_layout)
-        
-        # Характеристики
-        specs = self.equipment_data.get("specs", {})
-        specs_text = []
-        
-        if "capacity_t" in specs:
-            specs_text.append(f"Ёмкость: {specs['capacity_t']} т")
-        if "productivity_t_h" in specs:
-            specs_text.append(f"Производительность: {specs['productivity_t_h']} т/ч")
-        if "power_kw" in specs and specs["power_kw"] > 0:
-            specs_text.append(f"Мощность: {specs['power_kw']} кВт")
-        if "working_temp_C" in specs:
-            specs_text.append(f"T = {specs['working_temp_C']}°C")
-        
-        specs_lbl = QLabel(" | ".join(specs_text))
+
+        # Характеристики (печь либо линия АФЛ — см. _specs_text)
+        specs_lbl = QLabel(self._specs_text())
         specs_lbl.setStyleSheet(f"""
             QLabel {{
                 color: {COLORS['text_primary']};
@@ -96,8 +132,14 @@ class EquipmentCard(QFrame):
         # Расчётные данные
         if "_num_required" in self.equipment_data:
             calc_layout = QHBoxLayout()
-            
-            num_lbl = QLabel(f"Требуется: {self.equipment_data['_num_required']} шт.")
+
+            hours = self.equipment_data.get("_hours_required")
+            if hours is not None:
+                num_lbl = QLabel(
+                    f"Загрузка парка: {float(hours):,.0f} ч/год".replace(",", " "))
+            else:
+                num_lbl = QLabel(
+                    f"Требуется: {self.equipment_data['_num_required']} шт.")
             num_lbl.setStyleSheet(f"""
                 QLabel {{
                     color: {COLORS['text_secondary']};
@@ -187,16 +229,34 @@ class EquipmentPicker(QWidget):
         self.scroll.setWidget(self.cards_container)
         layout.addWidget(self.scroll, 1)
     
-    def set_equipment_options(self, equipment_list: list):
-        """Установить список доступных вариантов."""
+    def set_equipment_options(
+        self,
+        equipment_list: List[Dict[str, Any]],
+        selected_id: Optional[str] = None,
+    ) -> None:
+        """Установить список доступных вариантов.
+
+        Args:
+            equipment_list: карточки оборудования (первая — лучшая по скорингу)
+            selected_id: id печи, которую нужно отметить (восстановление
+                выбора пользователя); если None или не найдено —
+                автовыбор первой (лучшей) карточки
+        """
         self.equipment_list = equipment_list
         
-        # Очистить старые карточки
+        # Очистить старые карточки: удалить виджеты и отвязать radio-кнопки
+        # от группы. Без removeButton кнопки оставались в старой QButtonGroup
+        # и на экране одновременно подсвечивалось по две карточки (дефект
+        # проявлялся при повторных refresh(): смена материала/программы).
         while self.cards_layout.count() > 1:  # Не удаляем stretch
             item = self.cards_layout.takeAt(0)
-            if item.widget():
-                item.widget().deleteLater()
-        
+            widget = item.widget()
+            if widget is not None:
+                for btn in widget.findChildren(QRadioButton):
+                    self.button_group.removeButton(btn)
+                widget.deleteLater()
+                widget.setParent(None)
+
         self.button_group = QButtonGroup(self)
         
         # Создать карточки
@@ -208,13 +268,42 @@ class EquipmentPicker(QWidget):
             # Сигнал
             card.selected.connect(self._on_equipment_selected)
         
-        # Автовыбор первого (лучшего)
+        # Выбор: сохранённый пользователем либо первый (лучший) вариант
         if equipment_list:
-            self.button_group.button(0).setChecked(True)
-    
+            idx = 0
+            if selected_id is not None:
+                for i, equip in enumerate(equipment_list):
+                    if equip.get("id") == selected_id:
+                        idx = i
+                        break
+            button = self.button_group.button(idx)
+            if button is not None:
+                button.setChecked(True)
+                # setChecked на уже выбранной кнопке сигнал НЕ эмитит —
+                # эмиссию выполняем явно (idx может совпасть с прежним
+                # выбором после пересчёта).
+                self._emit_selection(equipment_list[idx])
+
+    def _emit_selection(self, equipment_data: dict) -> None:
+        """Эмитировать ``equipment_selected``, подавляя рекурсивные refresh().
+
+        Обработчики сигнала во вкладках часто вызывают ``refresh()``, который
+        снова попадает в :meth:`set_equipment_options` и эмитит выбор обратно.
+        Без защиты получается каскад «формовка → стержни → склады → площади →
+        формовка …», способный зациклиться при смене материала проекта. Флаг
+        ``_blocked`` гарантирует: внешний слушатель получает ровно одно
+        уведомление о выборе, вложенные (reentrant) эмиссии игнорируются.
+        """
+        if getattr(self, "_blocked", False):
+            return
+        self._blocked = True
+        try:
+            self.equipment_selected.emit(equipment_data)
+        finally:
+            self._blocked = False
+
     def _on_equipment_selected(self, equipment_data: dict):
-        self.equipment_selected.emit(equipment_data)
-    
+        self._emit_selection(equipment_data)
     def get_selected_equipment(self) -> dict:
         """Получить выбранное оборудование."""
         checked_id = self.button_group.checkedId()

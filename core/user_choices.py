@@ -67,3 +67,115 @@ class UserChoices:
         """Получить выбранный сплав для проекта."""
         choice = self.get_choice(project_id, "alloy")
         return choice.get("alloy_id") if choice else None
+
+    # ---------- удобное API для оборудования (Шаг 2) ----------
+    EQUIPMENT_CATEGORY: str = "melting_furnace"
+    #: Категория для выбора формовочной линии (Раздел 4, вкладка «Формовочное»)
+    MOLDING_LINE_CATEGORY: str = "molding_line"
+    #: Категория для выбора стержневой машины (Раздел 5, вкладка «Стержневое»)
+    CORE_MACHINE_CATEGORY: str = "core_machine"
+    #: Категория очистного отделения (Раздел 7). Внутри хранится словарь
+    #: подкатегорий по позициям техпроцесса: ``{"shot_blasting": {...}}`` —
+    #: там оборудования много, и для каждой позиции нужен свой выбор.
+    CLEANING_CATEGORY: str = "cleaning_equipment"
+    #: Категория смесеприготовительного отделения (Раздел 6). Хранит
+    #: подсловарь по операциям: ``{"molding_mix": {...}, "sieving": {...}}``.
+    SAND_PREP_CATEGORY: str = "sand_prep_equipment"
+    #: Категория складского хозяйства (Раздел 8/10). Хранит подсловарь по
+    #: ключам складов: ``{"charge": {...}, "molding_sand": {...}, ...}``.
+    WAREHOUSE_CATEGORY: str = "warehouse_units"
+    #: Транспорт: позиции ``ladle`` (ковш) и ``crane`` (мостовой кран)
+    TRANSPORT_CATEGORY: str = "transport_units"
+
+    def save_equipment_choice(
+        self,
+        project_id: str,
+        equipment_data: Dict[str, Any],
+        category: Optional[str] = None,
+    ) -> None:
+        """Сохранить выбранную единицу оборудования для проекта.
+
+        Args:
+            project_id: идентификатор проекта (Project.project_id)
+            equipment_data: карточка оборудования из селектора/калькулятора
+                (обязателен ключ "id")
+            category: категория выбора; по умолчанию ``EQUIPMENT_CATEGORY``
+                (плавильные печи). Для формовочных линий передавайте
+                ``MOLDING_LINE_CATEGORY``
+        """
+        payload = {
+            "equipment_id": equipment_data.get("id", ""),
+            "name": equipment_data.get("name", ""),
+            "type": equipment_data.get("type", ""),
+            "num_required": equipment_data.get("_num_required"),
+            "load_factor": equipment_data.get("_load_factor"),
+        }
+        self.set_choice(project_id, category or self.EQUIPMENT_CATEGORY, payload)
+
+    def get_equipment_choice(
+        self,
+        project_id: str,
+        category: Optional[str] = None,
+    ) -> Optional[Dict[str, Any]]:
+        """Загрузить сохранённый выбор оборудования (или None).
+
+        Args:
+            project_id: идентификатор проекта
+            category: категория выбора (по умолчанию — плавильные печи)
+
+        Returns:
+            Словарь с полями equipment_id/name/type/num_required/load_factor
+            либо None, если выбор не сохранялся
+        """
+        return self.get_choice(project_id, category or self.EQUIPMENT_CATEGORY)
+    # ---------- оборудование с подкатегориями (очистное отделение) ----------
+    def save_operation_choice(
+        self,
+        project_id: str,
+        category: str,
+        operation_key: str,
+        equipment_data: Dict[str, Any],
+    ) -> None:
+        """Сохранить выбор оборудования для одной позиции техпроцесса.
+
+        Позиции внутри ``category`` хранятся как подсловарь по ключу
+        ``operation_key`` — так в ``choices.json`` умещается весь парк
+        очистного отделения (охлаждение, выбивка, дробемёт, обрубка,
+        зачистка, термообработка).
+
+        Args:
+            project_id: идентификатор проекта
+            category: категория (например ``CLEANING_CATEGORY``)
+            operation_key: ключ позиции (``shot_blasting`` и т.п.)
+            equipment_data: карточка выбранного оборудования
+        """
+        stored = dict(self.get_choice(project_id, category) or {})
+        stored[operation_key] = {
+            "equipment_id": equipment_data.get("id", ""),
+            "name": equipment_data.get("name", ""),
+            "type": equipment_data.get("type", ""),
+            "num_required": equipment_data.get("_num_required"),
+            "load_factor": equipment_data.get("_load_factor"),
+        }
+        self.set_choice(project_id, category, stored)
+
+    def get_operation_choices(
+        self,
+        project_id: str,
+        category: str,
+    ) -> Dict[str, str]:
+        """Загрузить сохранённые id оборудования по всем позициям категории.
+
+        Args:
+            project_id: идентификатор проекта
+            category: категория (например ``CLEANING_CATEGORY``)
+
+        Returns:
+            Словарь ``{operation_key: equipment_id}`` (пустой, если выборов нет)
+        """
+        stored = self.get_choice(project_id, category) or {}
+        result: Dict[str, str] = {}
+        for key, value in stored.items():
+            if isinstance(value, dict) and value.get("equipment_id"):
+                result[key] = str(value["equipment_id"])
+        return result

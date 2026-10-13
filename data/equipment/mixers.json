@@ -1,0 +1,200 @@
+{
+  "version": "1.0",
+  "updated": "2026-10-11",
+  "source": "Методичка и дипломы-примеры (раздел 6 «Смесеприготовительное отделение»): бегуны 15126, 1А11, С-110; регенерация Д3Г/Д4Г, сита 175М/179, охладитель 11311",
+  "_comment": "Справочник оборудования смесеприготовительного отделения (только JSON, без SQLite). Единицы производительности: 'm3_h' — м3/ч смеси, 't_h' — т/ч. Операции: molding_mix — формовочная смесь, core_mix — стержневая смесь, lumps — раздавливание комьев, sieving — просев, cooling — охлаждение/стабилизация.",
+  "mixers": [
+    {
+      "id": "15126",
+      "name": "Бегуны смешивающие 15126",
+      "type": "смеситель периодического действия с вертикально-вращающимися катками",
+      "operation": "molding_mix",
+      "description": "Стандарт для единой формовочной смеси (ЕФС) и глинистых смесей: большое число замеса и высокая производительность.",
+      "specs": {
+        "batch_volume_m3": 3.0,
+        "productivity_min_m3_h": 9.0,
+        "productivity_m3_h": 12.0,
+        "rollers_count": 2,
+        "pan_diameter_mm": 2020,
+        "air_pressure_atm": 5,
+        "mass_kg": 5000,
+        "installed_power_kw": 30
+      },
+      "unit": "m3_h",
+      "applicable_for": {
+        "materials": ["steel", "cast_iron", "aluminum"],
+        "recommended": true
+      }
+    },
+    {
+      "id": "1A11",
+      "name": "Бегуны смешивающие 1А11",
+      "type": "смеситель периодического действия с вертикально-вращающимися катками",
+      "operation": "core_mix",
+      "description": "Стержневая песчано-глинистая смесь: меньший объём замеса, оптимальная производительность, лучшее качество обволакивания зерен.",
+      "specs": {
+        "batch_volume_m3": 0.25,
+        "productivity_min_m3_h": 0.75,
+        "productivity_m3_h": 1.0,
+        "rollers_count": 2,
+        "size_mm": "3400x3500x2800",
+        "mass_kg": 3200,
+        "installed_power_kw": 7.5
+      },
+      "unit": "m3_h",
+      "applicable_for": {
+        "materials": ["steel", "cast_iron", "aluminum"],
+        "recommended": true
+      }
+    },
+    {
+      "id": "C-110",
+      "name": "Смеситель шнековый С-110",
+      "type": "шнековый смеситель жидкого стекла (ХТС)",
+      "operation": "core_mix",
+      "description": "Приготовление химически-твердеющих стержневых смесей; быстрая полная выгрузка в конце цикла.",
+      "specs": {
+        "productivity_min_m3_h": 0.6,
+        "productivity_m3_h": 0.8,
+        "screws_count": 2,
+        "dosing_pumps": 3,
+        "arm_rotation_deg": 180,
+        "size_mm": "2295x510x2530",
+        "mass_kg": 1100,
+        "installed_power_kw": 5
+      },
+      "unit": "m3_h",
+      "applicable_for": {
+        "materials": ["steel", "cast_iron", "aluminum"],
+        "recommended": false
+      }
+    },
+    {
+      "id": "D3G-900x700",
+      "name": "Дробилка гладких вальцов Д3Г 900х700",
+      "type": "установка с гладкими вальцами",
+      "operation": "lumps",
+      "description": "Раздавливание комьев оборотной формовочной смеси при регенерации (т/ч).",
+      "specs": {
+        "feed_size_mm": 400,
+        "product_size_mm": "2…10",
+        "productivity_min_t_h": 6.0,
+        "productivity_t_h": 8.0,
+        "size_mm": "2094x1470x1736",
+        "mass_t": 6.53,
+        "installed_power_kw": 22
+      },
+      "unit": "t_h",
+      "applicable_for": {
+        "materials": ["steel", "cast_iron", "aluminum"],
+        "recommended": true
+      }
+    },
+    {
+      "id": "D4G-980x700",
+      "name": "Дробилка гладких вальцов Д4Г 980х700",
+      "type": "установка с гладкими вальцами",
+      "operation": "lumps",
+      "description": "Крупная программа: больше объём загрузки, обработка крупных кусков отработанной смеси (т/ч).",
+      "specs": {
+        "feed_size_mm": 400,
+        "product_size_mm": "2…10",
+        "productivity_min_t_h": 12.0,
+        "productivity_t_h": 15.0,
+        "size_mm": "3750x4175x2700",
+        "mass_t": 31.0,
+        "installed_power_kw": 90
+      },
+      "unit": "t_h",
+      "applicable_for": {
+        "materials": ["steel", "cast_iron", "aluminum"],
+        "recommended": false
+      }
+    },
+    {
+      "id": "Sito-175M",
+      "name": "Сито полигональное 175М",
+      "type": "барабанное полигональное сито",
+      "operation": "sieving",
+      "description": "Просев регенерируемой смеси; восьмигранный барабан, высокое качество разделения (м3/ч).",
+      "specs": {
+        "productivity_min_m3_h": 20.0,
+        "productivity_m3_h": 25.0,
+        "drum_rpm": 27,
+        "air_volume_m3_h": 5000,
+        "size_mm": "2995x1368x1325",
+        "mass_kg": 1060,
+        "installed_power_kw": 4
+      },
+      "unit": "m3_h",
+      "applicable_for": {
+        "materials": ["steel", "cast_iron", "aluminum"],
+        "recommended": true
+      }
+    },
+    {
+      "id": "Sito-179",
+      "name": "Сито полигональное 179",
+      "type": "барабанное полигональное сито",
+      "operation": "sieving",
+      "description": "Просев для больших программ: наибольшая производительность и малые габариты на тонну смеси (м3/ч).",
+      "specs": {
+        "productivity_min_m3_h": 100.0,
+        "productivity_m3_h": 125.0,
+        "drum_rpm": 19,
+        "air_volume_m3_h": 16000,
+        "drum_diameter_max_mm": 2500,
+        "drum_diameter_min_mm": 2000,
+        "mass_kg": 4980,
+        "installed_power_kw": 11
+      },
+      "unit": "m3_h",
+      "applicable_for": {
+        "materials": ["steel", "cast_iron", "aluminum"],
+        "recommended": false
+      }
+    },
+    {
+      "id": "Ohl-11311",
+      "name": "Охладитель смеси 11311",
+      "type": "охладитель-стабилизатор температуры и влажности",
+      "operation": "cooling",
+      "description": "Охлаждение и стабилизация просеянной смеси до 30–40 °С и влажности ~2% (м3/ч).",
+      "specs": {
+        "chamber_volume_m3": 1.0,
+        "productivity_min_m3_h": 20.0,
+        "productivity_m3_h": 25.0,
+        "inlet_temp_c": 85,
+        "outlet_temp_c": 50,
+        "shaft_rpm": 56,
+        "fan_volume_m3_h": 8000,
+        "size_mm": "4600x3500x3355",
+        "mass_kg": 5460,
+        "installed_power_kw": 15
+      },
+      "unit": "m3_h",
+      "applicable_for": {
+        "materials": ["steel", "cast_iron", "aluminum"],
+        "recommended": true
+      }
+    },
+    {
+      "id": "Separator-SChE-100-80",
+      "name": "Сепаратор магнитный ШЭ100–80",
+      "type": "электромагнитный сепаратор",
+      "operation": "magnetic_separation",
+      "description": "Извлечение металлических включений и скрапа из оборотной смеси; обязательная позиция конвейера регенерации (расчёт по throughput).",
+      "specs": {
+        "productivity_min_m3_h": 20.0,
+        "productivity_m3_h": 30.0,
+        "drum_width_mm": 800,
+        "installed_power_kw": 3
+      },
+      "unit": "m3_h",
+      "applicable_for": {
+        "materials": ["steel", "cast_iron", "aluminum"],
+        "recommended": true
+      }
+    }
+  ]
+}

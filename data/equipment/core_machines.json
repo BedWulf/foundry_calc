@@ -1,0 +1,120 @@
+{
+  "version": "1.0",
+  "updated": "2026-10-11",
+  "source": [
+    "Методичка проектирования литейных цехов (раздел «Стержневое отделение»)",
+    "Sample Diploma.pdf / Sample Diploma 2.pdf (характеристики стержневых автоматов)",
+    "Каталоги: Сиблитмаш, Спецавтоматика, НИИТракторосельхозмаш"
+  ],
+  "note": "Производительность расчётная: Qч = 3600/cycle_time_s * cavities_per_box. applicable_for.materials — категории сплавов, для которых применяется технология (ХFS — универсальна, горячеспек — типичен для стали/чугуна, газотвердение/маслоспек — чугун/алюминий). casting_mass_range_kg — масса отливки с ЛПС.",
+  "machines": [
+    {
+      "id": "SCL-540",
+      "name": "Автомат стержлевой СПЛ-540 (ХFS)",
+      "type": "автомат стержлевой холодного спекания (ХFS)",
+      "description": "Изготовление сложных полых стержней по технологии холодного газа; высокая точность и выбиваемость.",
+      "specs": {
+        "box_size_mm": "540x420",
+        "cycle_time_s": 30,
+        "cavities_per_box": 2,
+        "hourly_output_cores_h": 240,
+        "installed_power_kw": 8
+      },
+      "applicable_for": {
+        "materials": ["steel", "cast_iron", "aluminum"],
+        "casting_mass_range_kg": [0, 50],
+        "recommended": false
+      }
+    },
+    {
+      "id": "SCL-900",
+      "name": "Автомат стержлевой СПЛ-900 (ХFS)",
+      "type": "автомат стержлевой холодного спекания (ХFS)",
+      "description": "Крупногабаритные стержни по ХFS; производительность ниже из-за длинного цикла.",
+      "specs": {
+        "box_size_mm": "900x630",
+        "cycle_time_s": 45,
+        "cavities_per_box": 2,
+        "hourly_output_cores_h": 160,
+        "installed_power_kw": 12
+      },
+      "applicable_for": {
+        "materials": ["steel", "cast_iron", "aluminum"],
+        "casting_mass_range_kg": [0, 250],
+        "recommended": false
+      }
+    },
+    {
+      "id": "C-23229A2A",
+      "name": "Автомат стержлевой 23229А2А (газотвердение)",
+      "type": "автомат стержлевой газотвердевающий",
+      "description": "Стержни на жидкостекольной смеси с отвердкой CO2; простой уход, надёжен; устаревает из-за низкой производительности.",
+      "specs": {
+        "box_size_mm": "1600x800x300",
+        "cycle_time_s": 60,
+        "cavities_per_box": 1,
+        "hourly_output_cores_h": 60,
+        "installed_power_kw": 10
+      },
+      "applicable_for": {
+        "materials": ["steel", "cast_iron"],
+        "casting_mass_range_kg": [0, 300],
+        "recommended": true
+      }
+    },
+    {
+      "id": "C-1701M",
+      "name": "Полуавтомат стержлевой 1701М (маслоспек)",
+      "type": "полуавтомат стержлевой горячей сушки (маслоспек)",
+      "description": "Стержни на масляной связке, сушка в подвесных туннельных печах; для крупных простых стержней.",
+      "specs": {
+        "box_size_mm": "1100x700",
+        "cycle_time_s": 90,
+        "cavities_per_box": 1,
+        "hourly_output_cores_h": 40,
+        "installed_power_kw": 7.5
+      },
+      "applicable_for": {
+        "materials": ["cast_iron", "aluminum"],
+        "casting_mass_range_kg": [0, 400],
+        "recommended": false
+      }
+    },
+    {
+      "id": "Z8612-2",
+      "name": "Автомат стержлевой Z8612-2 (горячеспечный)",
+      "type": "автомат стержлевой горячей печати (smash-box)",
+      "description": "Горячеспекание смолистых смесей; высокая цикловая производительность, крупные ящики.",
+      "specs": {
+        "box_size_mm": "1200x800",
+        "cycle_time_s": 20,
+        "cavities_per_box": 4,
+        "hourly_output_cores_h": 720,
+        "installed_power_kw": 25
+      },
+      "applicable_for": {
+        "materials": ["steel", "cast_iron"],
+        "casting_mass_range_kg": [0, 150],
+        "recommended": false
+      }
+    },
+    {
+      "id": "ZB08Y-80",
+      "name": "Автомат стержлевой ZB08Y-80 (ХFS, 8 гнезд)",
+      "type": "автомат стержлевой холодного спекания (ХFS)",
+      "description": "Восьмигнездный ХFS-автомат для мелких серийных стержней; максимальная часовая производительность парка.",
+      "specs": {
+        "box_size_mm": "800x500",
+        "cycle_time_s": 40,
+        "cavities_per_box": 8,
+        "hourly_output_cores_h": 576,
+        "installed_power_kw": 15
+      },
+      "applicable_for": {
+        "materials": ["steel", "cast_iron", "aluminum"],
+        "casting_mass_range_kg": [0, 60],
+        "recommended": false
+      }
+    }
+  ]
+}

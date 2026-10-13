@@ -89,6 +89,68 @@ QTabBar::tab:selected {
     font-weight: bold;
 }
 
+/* --- Диалоги и всплывающие окна (белый фон запрещён) --- */
+QDialog, QMessageBox, QInputDialog, QFileDialog {
+    background-color: #2D0A0A;
+    color: #F4D03F;
+}
+QMessageBox QLabel, QInputDialog QLabel, QFileDialog QLabel {
+    background-color: transparent;
+    color: #F4D03F;
+}
+QDialogButtonBox QPushButton {
+    background-color: #FF6B35;
+    color: #2D0A0A;
+    border: none;
+    border-radius: 4px;
+    padding: 8px 16px;
+    font-weight: bold;
+}
+QMenu {
+    background-color: #4A1515;
+    color: #F4D03F;
+    border: 1px solid #B87333;
+}
+QMenu::item:selected {
+    background-color: #FF6B35;
+    color: #2D0A0A;
+}
+QToolTip {
+    background-color: #4A1515;
+    color: #F4D03F;
+    border: 1px solid #B87333;
+}
+QListView, QTreeView {
+    background-color: #3A1010;
+    alternate-background-color: #4A1515;
+    color: #F4D03F;
+    border: 1px solid #B87333;
+    selection-background-color: #FF6B35;
+    selection-color: #2D0A0A;
+}
+QAbstractItemView {
+    background-color: #3A1010;
+    color: #F4D03F;
+}
+QComboBox QAbstractItemView {
+    background-color: #3A1010;
+    color: #F4D03F;
+    selection-background-color: #FF6B35;
+    selection-color: #2D0A0A;
+    border: 1px solid #B87333;
+}
+
+/* --- Чекбоксы и радио --- */
+QCheckBox, QRadioButton {
+    background-color: transparent;
+    color: #F4D03F;
+}
+
+/* --- Подложка для виджетов без собственного фона --- */
+QScrollArea, QScrollArea > QWidget > QWidget {
+    background-color: #2D0A0A;
+}
+
 /* --- Полосы прокрутки --- */
 QScrollBar:vertical {
     background-color: #2D0A0A;

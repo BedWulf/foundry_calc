@@ -1,0 +1,249 @@
+{
+  "version": "1.0",
+  "description": "Справочник внутрицехового транспорта литейного цеха (раздел 12 дипломных проектов). Источники: 'Sample Diploma.pdf' (табл. 15, 16), 'Sample Diploma 2.pdf' (табл. 17, 18), методичка. Площади — габариты в плане без зон обслуживания; зоны учитывает core/areas.py через K_исп.",
+  "categories": {
+    "crane": "Мостовые краны",
+    "conveyor": "Конвейеры",
+    "pneumatic": "Пневмотранспорт",
+    "ladle": "Транспортные ковши",
+    "auxiliary": "Вспомогательный транспорт"
+  },
+  "equipment": [
+    {
+      "id": "CRANE-5T",
+      "name": "Кран мостовой двухбалочный, 5 т",
+      "category": "crane",
+      "model": "2703.00.000",
+      "capacity_t": 5.0,
+      "span_m": 22.5,
+      "applicable_for": {"departments": ["molding", "pouring", "cleaning"]},
+      "specs": {
+        "footprint_mm": "24000x6500 мм",
+        "power_kw": 45.0,
+        "group_area_m2": 90.0,
+        "notes": "Группа крана с проходами и зоной работы крюка"
+      },
+      "recommended": false
+    },
+    {
+      "id": "CRANE-10T",
+      "name": "Кран мостовой двухбалочный, 10 т",
+      "category": "crane",
+      "model": "2704.00.000",
+      "capacity_t": 10.0,
+      "span_m": 22.5,
+      "applicable_for": {"departments": ["melting", "shakeout", "cleaning"]},
+      "specs": {
+        "footprint_mm": "24000x7000 мм",
+        "power_kw": 62.0,
+        "group_area_m2": 100.0,
+        "notes": "Обслуживание печей, завалка шихты, выбивка"
+      },
+      "recommended": true
+    },
+    {
+      "id": "CRANE-20T",
+      "name": "Кран мостовой двухбалочный, 20 т",
+      "category": "crane",
+      "model": "2705.00.000",
+      "capacity_t": 20.0,
+      "span_m": 31.0,
+      "applicable_for": {"departments": ["melting", "thermal"]},
+      "specs": {
+        "footprint_mm": "32000x8000 мм",
+        "power_kw": 95.0,
+        "group_area_m2": 120.0,
+        "notes": "Крупные печи и термообработка, садка колодцев"
+      },
+      "recommended": false
+    },
+    {
+      "id": "CRANE-3T",
+      "name": "Кран мостовой опорный, 3.2 т",
+      "category": "crane",
+      "model": "КМ-3.2",
+      "capacity_t": 3.2,
+      "span_m": 10.5,
+      "applicable_for": {"departments": ["warehouse", "aux"]},
+      "specs": {
+        "footprint_mm": "11500x4000 мм",
+        "power_kw": 16.0,
+        "group_area_m2": 46.0,
+        "notes": "Склады, ремонтные участки"
+      },
+      "recommended": false
+    },
+    {
+      "id": "CONV-ROLLER",
+      "name": "Конвейер роликовый (транспорт опок)",
+      "category": "conveyor",
+      "model": "ИЛ-225/рольганг",
+      "capacity_t": null,
+      "speed_m_min": 6.75,
+      "applicable_for": {"departments": ["molding", "pouring"]},
+      "specs": {
+        "width_mm": 1000,
+        "group_area_m2_per_10m": 12.0,
+        "power_kw_per_10m": 1.5,
+        "notes": "Скорость движения опок 4…6.75 м/мин (диплом 1, ИЛ-225)"
+      },
+      "recommended": true
+    },
+    {
+      "id": "CONV-PLATE",
+      "name": "Конвейер пластинчатый (охлаждение литья)",
+      "category": "conveyor",
+      "model": "1126Б",
+      "capacity_t": null,
+      "speed_m_min": 1.0,
+      "applicable_for": {"departments": ["shakeout", "cleaning"]},
+      "specs": {
+        "width_mm": 1000,
+        "group_area_m2_per_10m": 14.0,
+        "power_kw_per_10m": 2.2,
+        "notes": "Охлаждение выбитого литья перед обрубкой (методичка, раздел 7)"
+      },
+      "recommended": true
+    },
+    {
+      "id": "CONV-BELT",
+      "name": "Конвейер ленточный (сыпучие материалы)",
+      "category": "conveyor",
+      "model": "КЛЛ-2У",
+      "capacity_t": null,
+      "belt_width_mm": 800,
+      "speed_m_s": 2.0,
+      "throughput_t_h": 60.0,
+      "applicable_for": {"departments": ["warehouse", "sand_prep", "charge"]},
+      "specs": {
+        "width_mm": 1200,
+        "group_area_m2_per_10m": 10.0,
+        "power_kw_per_10m": 3.0,
+        "notes": "Подача песков и шихты; дозировка ленточными устройствами (дипломы, раздел смесеприготовления)"
+      },
+      "recommended": true
+    },
+    {
+      "id": "CONV-VERT",
+      "name": "Конвейер вертикальный (элеватор подопочный)",
+      "category": "conveyor",
+      "model": "ИЛ-225/элеватор",
+      "capacity_t": null,
+      "applicable_for": {"departments": ["molding", "shakeout"]},
+      "specs": {
+        "width_mm": 1400,
+        "height_m": 8.0,
+        "group_area_m2": 12.0,
+        "power_kw": 7.5,
+        "notes": "Подъём форм / распаровка опок между ярусами"
+      },
+      "recommended": false
+    },
+    {
+      "id": "PNEU-8",
+      "name": "Пневмотранспортная установка, 8 т/ч",
+      "category": "pneumatic",
+      "model": "ПСУ-8",
+      "throughput_t_h": 8.0,
+      "distance_max_m": 100.0,
+      "applicable_for": {"departments": ["warehouse", "sand_prep", "core_shop"]},
+      "specs": {
+        "power_kw": 55.0,
+        "energy_kwh_per_t": 1.25,
+        "group_area_m2": 25.0,
+        "notes": "Перемещение сыпучих материалов на дистанцию до 100 м; 1…1.5 кВт·ч на 1 т (дипломы, раздел 12)"
+      },
+      "recommended": true
+    },
+    {
+      "id": "PNEU-15",
+      "name": "Пневмотранспортная установка, 15 т/ч",
+      "category": "pneumatic",
+      "model": "ПСУ-15",
+      "throughput_t_h": 15.0,
+      "distance_max_m": 150.0,
+      "applicable_for": {"departments": ["warehouse", "sand_prep"]},
+      "specs": {
+        "power_kw": 90.0,
+        "energy_kwh_per_t": 1.25,
+        "group_area_m2": 30.0,
+        "notes": "Фазотранспорт регенерированных песков на крупные заводы"
+      },
+      "recommended": false
+    },
+    {
+      "id": "LADLE-2.5T",
+      "name": "Ковш транспортный сталеразливочный, 2.5 т",
+      "category": "ladle",
+      "model": "КР-2.5",
+      "capacity_t": 2.5,
+      "applicable_for": {"materials": ["steel"], "departments": ["melting", "pouring"]},
+      "specs": {
+        "cycle_time_min": 137.0,
+        "repair_reserve_pct": 20.0,
+        "spare_reserve_pct": 10.0,
+        "notes": "Диплом 1: Тц=137 мин, ёмкость 2.5 т, фонд ковшей 3645 ч → 14 рабочих + запас/ремонт = 19"
+      },
+      "recommended": true
+    },
+    {
+      "id": "LADLE-2.5T-D2",
+      "name": "Ковш транспортный, 2.5 т (цикл 120 мин)",
+      "category": "ladle",
+      "model": "КР-2.5/120",
+      "capacity_t": 2.5,
+      "applicable_for": {"materials": ["steel", "cast_iron"], "departments": ["melting", "pouring"]},
+      "specs": {
+        "cycle_time_min": 120.0,
+        "repair_reserve_pct": 20.0,
+        "spare_reserve_pct": 10.0,
+        "notes": "Диплом 2: tзал=2, l=20м, tожид=15, tост=45, tрем=8, tсушки=3 → Тц=120 мин"
+      },
+      "recommended": false
+    },
+    {
+      "id": "LADLE-1.0T",
+      "name": "Ковш транспортный малоёмкостный, 1.0 т",
+      "category": "ladle",
+      "model": "КР-1.0",
+      "capacity_t": 1.0,
+      "applicable_for": {"materials": ["aluminum", "cast_iron"], "departments": ["melting", "pouring"]},
+      "specs": {
+        "cycle_time_min": 120.0,
+        "repair_reserve_pct": 20.0,
+        "spare_reserve_pct": 10.0,
+        "notes": "Для малотоннажных цехов алюминия/чугуна"
+      },
+      "recommended": false
+    },
+    {
+      "id": "TROLLEY-CRANE",
+      "name": "Электротельфер подвесной, 1 т",
+      "category": "auxiliary",
+      "model": "БЭ-512.01",
+      "capacity_t": 1.0,
+      "applicable_for": {"departments": ["aux", "repair"]},
+      "specs": {
+        "group_area_m2": 0.0,
+        "power_kw": 3.7,
+        "notes": "Ремонтные участки, вспомогательные операции"
+      },
+      "recommended": false
+    },
+    {
+      "id": "FORKLIFT-3T",
+      "name": "Электропогрузчик, 3 т",
+      "category": "auxiliary",
+      "model": "ЭП-400",
+      "capacity_t": 3.0,
+      "applicable_for": {"departments": ["warehouse", "cleaning"]},
+      "specs": {
+        "aisle_width_m": 4.0,
+        "group_area_m2": 16.0,
+        "power_kw": 11.0,
+        "notes": "Тара, грузы на складах готовой продукции"
+      },
+      "recommended": false
+    }
+  ]
+}
