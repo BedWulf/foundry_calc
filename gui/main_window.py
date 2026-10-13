@@ -19,6 +19,7 @@ from gui.tabs.cleaning_tab import CleaningTab
 from gui.tabs.warehouse_tab import WarehouseTab
 from gui.tabs.workforce_tab import WorkforceTab
 from gui.tabs.areas_tab import AreasTab
+from gui.tabs.transport_tab import TransportTab
 
 
 class SideBarButton(QPushButton):
@@ -67,6 +68,7 @@ class MainWindow(QMainWindow):
         ("📦 Склады",             "warehouse_tab"),
         ("👷 Рабочая сила",       "workforce_tab"),
         ("📐 Площади",            "areas_tab"),
+        ("🚛 Транспорт",          "transport_tab"),
         ("📊 Сводка",             "summary_tab"),
     ]
 
@@ -179,6 +181,8 @@ class MainWindow(QMainWindow):
             return WorkforceTab(self.project)
         elif key == "areas_tab":
             return AreasTab(self.project)
+        elif key == "transport_tab":
+            return TransportTab(self.project)
 
         # Заглушка для нереализованных вкладок
         return self._make_placeholder(title)
@@ -270,6 +274,7 @@ class MainWindow(QMainWindow):
         warehouse_tab = self.tabs.get("warehouse_tab")
         workforce_tab = self.tabs.get("workforce_tab")
         areas_tab = self.tabs.get("areas_tab")
+        transport_tab = self.tabs.get("transport_tab")
 
         if project_tab and warehouse_tab:
             # При изменении исходных данных → пересчёт нормативов складов
@@ -320,6 +325,22 @@ class MainWindow(QMainWindow):
                 if tab is not None and sig is not None:
                     sig.connect(lambda _data: areas_tab.refresh())
 
+        # ── Вкладка «Транспорт»: зависит от жидкого металла и площадей ──
+        if transport_tab is not None:
+            if project_tab is not None:
+                project_tab.project_changed.connect(
+                    transport_tab.on_project_changed)
+            if melting_tab is not None:
+                # Металлозавалка/жидкий металл задают парк ковшей;
+                # выбор печей влияет на заливочное хозяйство
+                melting_tab.equipment_choice_changed.connect(
+                    lambda _data: transport_tab.refresh())
+            if areas_tab is not None:
+                # Ведомость площадей даёт фактические длины участков
+                # для норм кранов → пересчёт при смене парка оборудования
+                areas_tab.areas_recalculated.connect(
+                    lambda _data: transport_tab.refresh())
+
     def department_summaries(self) -> dict:
         """Собрать сводки (`get_summary`) всех реализованных отделений.
 
@@ -347,6 +368,7 @@ class MainWindow(QMainWindow):
             "warehouses": summary("warehouse_tab"),
             "workforce": summary("workforce_tab"),
             "areas": summary("areas_tab"),
+            "transport": summary("transport_tab"),
         }
 
     def _select_section(self, index: int) -> None:

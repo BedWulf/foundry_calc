@@ -84,6 +84,8 @@ class UserChoices:
     #: Категория складского хозяйства (Раздел 8/10). Хранит подсловарь по
     #: ключам складов: ``{"charge": {...}, "molding_sand": {...}, ...}``.
     WAREHOUSE_CATEGORY: str = "warehouse_units"
+    #: Транспорт: позиции ``ladle`` (ковш) и ``crane`` (мостовой кран)
+    TRANSPORT_CATEGORY: str = "transport_units"
 
     def save_equipment_choice(
         self,
