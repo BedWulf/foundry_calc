@@ -18,6 +18,7 @@ from gui.tabs.sand_tab import SandTab
 from gui.tabs.cleaning_tab import CleaningTab
 from gui.tabs.warehouse_tab import WarehouseTab
 from gui.tabs.workforce_tab import WorkforceTab
+from gui.tabs.areas_tab import AreasTab
 
 
 class SideBarButton(QPushButton):
@@ -176,6 +177,8 @@ class MainWindow(QMainWindow):
             return WarehouseTab(self.project)
         elif key == "workforce_tab":
             return WorkforceTab(self.project)
+        elif key == "areas_tab":
+            return AreasTab(self.project)
 
         # Заглушка для нереализованных вкладок
         return self._make_placeholder(title)
@@ -266,6 +269,7 @@ class MainWindow(QMainWindow):
 
         warehouse_tab = self.tabs.get("warehouse_tab")
         workforce_tab = self.tabs.get("workforce_tab")
+        areas_tab = self.tabs.get("areas_tab")
 
         if project_tab and warehouse_tab:
             # При изменении исходных данных → пересчёт нормативов складов
@@ -301,6 +305,21 @@ class MainWindow(QMainWindow):
             if tab is not None and sig is not None and warehouse_tab is not None:
                 sig.connect(lambda _data: warehouse_tab.refresh())
 
+        # ── Вкладка «Площади»: финальная ведомость по всем отделениям ──
+        if areas_tab is not None:
+            if project_tab is not None:
+                project_tab.project_changed.connect(areas_tab.on_project_changed)
+            if time_funds_tab is not None:
+                time_funds_tab.funds_updated.connect(areas_tab.on_project_changed)
+            # Любая смена выбора оборудования в любом отделении (и складах)
+            # меняет габаритную площадь → пересчёт ведомости площадей
+            for tab in (melting_tab, molding_tab, core_tab, sand_tab,
+                        cleaning_tab, warehouse_tab, workforce_tab):
+                sig = getattr(tab, "equipment_choice_changed", None) \
+                    or getattr(tab, "line_choice_changed", None)
+                if tab is not None and sig is not None:
+                    sig.connect(lambda _data: areas_tab.refresh())
+
     def department_summaries(self) -> dict:
         """Собрать сводки (`get_summary`) всех реализованных отделений.
 
@@ -327,6 +346,7 @@ class MainWindow(QMainWindow):
             "cleaning": summary("cleaning_tab"),
             "warehouses": summary("warehouse_tab"),
             "workforce": summary("workforce_tab"),
+            "areas": summary("areas_tab"),
         }
 
     def _select_section(self, index: int) -> None:
