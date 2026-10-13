@@ -192,5 +192,138 @@
         "load_factor": 1.0
       }
     }
+  },
+  "c4c87f7cb3b6": {
+    "melting_furnace": {
+      "equipment_id": "IST-6M1",
+      "name": "ИСТ-6М1",
+      "type": "induction_crucible",
+      "num_required": 6,
+      "load_factor": 0.745,
+      "updated_at": "2026-10-13T12:39:54.289014"
+    },
+    "molding_line": {
+      "equipment_id": "KV301",
+      "name": "АФЛ КВ301",
+      "type": "автоматическая формовочная линия",
+      "num_required": 4,
+      "load_factor": 0.793,
+      "updated_at": "2026-10-13T12:39:54.313791"
+    },
+    "core_machine": {
+      "equipment_id": "ZB08Y-80",
+      "name": "Автомат стержлевой ZB08Y-80 (ХFS, 8 гнезд)",
+      "type": "автомат стержлевой холодного спекания (ХFS)",
+      "num_required": 3,
+      "load_factor": 0.826,
+      "updated_at": "2026-10-13T12:39:54.339640"
+    },
+    "cleaning_equipment": {
+      "cooling": {
+        "equipment_id": "CONV-PLAST-50",
+        "name": "Конвейер пластинчатый охлаждения литья",
+        "type": "cooling_conveyor",
+        "num_required": 1,
+        "load_factor": 0.331
+      },
+      "updated_at": "2026-10-13T12:39:54.408755",
+      "shakeout": {
+        "equipment_id": "SHAKEOUT-ROT-30",
+        "name": "Выбивная решётчатая установка роторная",
+        "type": "shakeout",
+        "num_required": 1,
+        "load_factor": 0.8
+      },
+      "shot_blasting": {
+        "equipment_id": "DRUM-42322",
+        "name": "Дробемётный барабан непрерывного действия мод. 42322",
+        "type": "shot_blasting_drum",
+        "num_required": 3,
+        "load_factor": 0.812
+      },
+      "gating_cutting": {
+        "equipment_id": "PMR-1000",
+        "name": "Установка механизированной резки ПМР-1000",
+        "type": "gating_cutting",
+        "num_required": 20,
+        "load_factor": 0.828
+      },
+      "grinding": {
+        "equipment_id": "ZM636",
+        "name": "Станок обдирочно-шлифовальный ЗМ636",
+        "type": "grinding",
+        "num_required": 16,
+        "load_factor": 0.811
+      },
+      "heat_treatment": {
+        "equipment_id": "NORMALIZE-CHAIN-20",
+        "name": "Линия нормализации на цепочном конвейере (поточная)",
+        "type": "heat_treatment",
+        "num_required": 1,
+        "load_factor": 0.828
+      }
+    },
+    "warehouse_units": {
+      "charge": {
+        "equipment_id": "BIN-STEEL-60",
+        "name": "Бункер для стального лома, 60 т (укрупнённая площадка)",
+        "type": "bin",
+        "num_required": 1,
+        "load_factor": 1.0
+      },
+      "updated_at": "2026-10-13T12:39:54.462805",
+      "molding_sand": {
+        "equipment_id": "BIN-SAND-50",
+        "name": "Бункер формовочного песка с электропитателем, 50 т (укрупнённая площадка)",
+        "type": "bin",
+        "num_required": 1,
+        "load_factor": 1.0
+      },
+      "core_materials": {
+        "equipment_id": "SHELF-BINDER-5",
+        "name": "Стеллаж связующих и добавок, 5 т (укрупнённая площадка)",
+        "type": "shelf",
+        "num_required": 1,
+        "load_factor": 1.0
+      },
+      "flasks": {
+        "equipment_id": "RACK-FLASK-20",
+        "name": "Кассетный стеллаж опок, 20 т комплекта",
+        "type": "rack",
+        "num_required": 3,
+        "load_factor": 0.889
+      },
+      "patterns": {
+        "equipment_id": "CRANE-PATTERNS-40",
+        "name": "Зона кранного хранения крупной оснастки, 40 т",
+        "type": "crane_area",
+        "num_required": 5,
+        "load_factor": 0.987
+      },
+      "tools": {
+        "equipment_id": "SHELF-TOOLS-3",
+        "name": "Стеллаж приспособлений и инструмента, 3 т (укрупнённая площадка)",
+        "type": "shelf",
+        "num_required": 1,
+        "load_factor": 1.0
+      }
+    },
+    "transport_units": {
+      "ladle": {
+        "equipment_id": "LADLE-2.5T-D2",
+        "name": "Ковш транспортный, 2.5 т (цикл 120 мин)",
+        "type": "",
+        "num_required": 16,
+        "load_factor": 0.68
+      },
+      "updated_at": "2026-10-13T12:40:31.078294",
+      "crane": {
+        "equipment_id": "CRANE-20T",
+        "name": "Кран мостовой двухбалочный, 20 т",
+        "type": "",
+        "num_required": null,
+        "load_factor": null
+      }
+    }
   }
 }

@@ -203,6 +203,31 @@ class MainWindow(QMainWindow):
         layout.addWidget(lbl)
         return w
 
+    @staticmethod
+    def _choice_signal(tab: object):
+        """Вернуть сигнал смены выбора оборудования вкладки.
+
+        Вкладки называют сигнал по-разному (``equipment_choice_changed``,
+        ``line_choice_changed``, ``furnace_choice_changed``,
+        ``machine_choice_changed``); метод унифицирует подключение
+        реактивных связок в главном окне.
+
+        Args:
+            tab: вкладка или ``None``
+
+        Returns:
+            Привязанный сигнал либо ``None``, если у вкладки нет
+            ни одного из известных сигналов выбора
+        """
+        if tab is None:
+            return None
+        for name in ("equipment_choice_changed", "line_choice_changed",
+                     "furnace_choice_changed", "machine_choice_changed"):
+            sig = getattr(tab, name, None)
+            if sig is not None and hasattr(sig, "connect"):
+                return sig
+        return None
+
     def _connect_signals(self) -> None:
         """Связать сигналы между вкладками для реактивности."""
         project_tab = self.tabs.get("project_tab")
@@ -287,8 +312,7 @@ class MainWindow(QMainWindow):
         # Реактивная связка «отделения → рабочая сила»: любое изменение
         # выбора оборудования или программы пересчитывает численность
         for tab in (melting_tab, molding_tab, core_tab, sand_tab, cleaning_tab):
-            sig = getattr(tab, "equipment_choice_changed", None) \
-                or getattr(tab, "line_choice_changed", None)
+            sig = self._choice_signal(tab)
             if tab is not None and sig is not None and workforce_tab is not None:
                 sig.connect(lambda _data: workforce_tab.refresh())
 
@@ -305,8 +329,7 @@ class MainWindow(QMainWindow):
         # Связки «отделения → склады»: запасы шихты зависят от
         # металлозавалки, склады материалов — от тоннажей смесей
         for tab in (melting_tab, molding_tab, core_tab, sand_tab):
-            sig = getattr(tab, "equipment_choice_changed", None) \
-                or getattr(tab, "line_choice_changed", None)
+            sig = self._choice_signal(tab)
             if tab is not None and sig is not None and warehouse_tab is not None:
                 sig.connect(lambda _data: warehouse_tab.refresh())
 
@@ -320,8 +343,7 @@ class MainWindow(QMainWindow):
             # меняет габаритную площадь → пересчёт ведомости площадей
             for tab in (melting_tab, molding_tab, core_tab, sand_tab,
                         cleaning_tab, warehouse_tab, workforce_tab):
-                sig = getattr(tab, "equipment_choice_changed", None) \
-                    or getattr(tab, "line_choice_changed", None)
+                sig = self._choice_signal(tab)
                 if tab is not None and sig is not None:
                     sig.connect(lambda _data: areas_tab.refresh())
 
@@ -333,7 +355,7 @@ class MainWindow(QMainWindow):
             if melting_tab is not None:
                 # Металлозавалка/жидкий металл задают парк ковшей;
                 # выбор печей влияет на заливочное хозяйство
-                melting_tab.equipment_choice_changed.connect(
+                self._choice_signal(melting_tab).connect(
                     lambda _data: transport_tab.refresh())
             if areas_tab is not None:
                 # Ведомость площадей даёт фактические длины участков
