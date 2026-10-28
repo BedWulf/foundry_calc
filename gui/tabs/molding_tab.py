@@ -32,6 +32,7 @@ from PySide6.QtGui import QFont
 from PySide6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QGroupBox, QLabel, QPushButton,
     QGridLayout, QScrollArea, QMessageBox, QDialog,
+    QSpinBox, QDoubleSpinBox, QTextEdit, QFormLayout,
 )
 
 from config import COLORS
@@ -218,6 +219,36 @@ class MoldingTab(QWidget):
             rgrid.addWidget(val_lbl, r, 1)
             self._result_labels[key] = val_lbl
         self._layout.addWidget(result_box)
+        # Общий парк: разные отливки последовательно на общих линиях.
+        plan_box = QGroupBox("Общий парк — последовательный выпуск партиями")
+        plan_box.setStyleSheet(GROUP_STYLE)
+        plan_lay = QVBoxLayout(plan_box)
+        form = QFormLayout()
+        self._batch_count = QSpinBox()
+        self._batch_count.setRange(1, 10000)
+        self._batch_count.setValue(self.project.molding_batches_per_year)
+        form.addRow("Партий в год на позицию:", self._batch_count)
+        self._setup_h = QDoubleSpinBox()
+        self._setup_h.setRange(0, 1000)
+        self._setup_h.setDecimals(2)
+        self._setup_h.setSuffix(" ч")
+        self._setup_h.setValue(self.project.molding_setup_h)
+        form.addRow("Переналадка каждой партии:", self._setup_h)
+        self._max_load = QDoubleSpinBox()
+        self._max_load.setRange(0.01, 1.0)
+        self._max_load.setDecimals(2)
+        self._max_load.setSingleStep(0.05)
+        self._max_load.setValue(self.project.molding_max_load_factor)
+        form.addRow("Максимальная годовая загрузка:", self._max_load)
+        plan_lay.addLayout(form)
+        self._batch_report = QTextEdit()
+        self._batch_report.setReadOnly(True)
+        self._batch_report.setMinimumHeight(210)
+        plan_lay.addWidget(self._batch_report)
+        self._layout.addWidget(plan_box)
+        self._batch_count.valueChanged.connect(self._on_batch_options_changed)
+        self._setup_h.valueChanged.connect(self._on_batch_options_changed)
+        self._max_load.valueChanged.connect(self._on_batch_options_changed)
         self._layout.addStretch()
 
     # ─────────────────────── данные/расчёт ───────────────────────
@@ -241,6 +272,7 @@ class MoldingTab(QWidget):
             selected_line_id=saved_id,
         )
         self._last_result = result
+        self._render_batch_plan(result)
 
         cat_title = CATEGORY_TITLES.get(result.material_category,
                                         result.material_category)
@@ -275,6 +307,34 @@ class MoldingTab(QWidget):
             "— (номенклатура не загружена)")
 
     # ─────────────────────── обработчики ───────────────────────
+    def _on_batch_options_changed(self, *_args: Any) -> None:
+        self.project.molding_batches_per_year = self._batch_count.value()
+        self.project.molding_setup_h = self._setup_h.value()
+        self.project.molding_max_load_factor = self._max_load.value()
+        self.refresh()
+        # Give dependent tabs a chance to update.
+        self.line_choice_changed.emit(self._selected)
+
+    def _render_batch_plan(self, result: MoldingCalculation) -> None:
+        plan = result.batch_plan
+        if plan is None:
+            self._batch_report.setPlainText(
+                "План не построен: " + (result.planning_error or "загрузите номенклатуру"))
+            return
+        out = [f"Распределено {plan.assigned_molds:,} / {plan.total_molds:,} форм; "
+               + ("выполнимо по годовому фонду" if plan.feasible else "НЕ ВЫПОЛНЕНО")]
+        for ln in plan.lines:
+            out.append(f"{ln.equipment_name} №{ln.instance_no}: "
+                       f"{ln.used_hours:.1f}/{ln.allowed_hours:.1f} ч допустимого фонда, "
+                       f"загрузка {ln.utilization:.1%}")
+            for c in ln.campaigns:
+                out.append(f"  {c.job_name}: {c.molds:,} форм; "
+                           f"{c.process_hours:.1f} ч + {c.setup_hours:.1f} ч переналадки")
+        if plan.unassigned:
+            out.append("Не распределены: " + ", ".join(plan.unassigned))
+        out.extend("⚠ " + w for w in plan.warnings)
+        self._batch_report.setPlainText("\n".join(out))
+
     def _on_line_selected(self, equipment: Dict[str, Any]) -> None:
         """Обработать выбор линии: пересчёт итогов и сохранение выбора."""
         self._selected = equipment
@@ -342,10 +402,21 @@ class MoldingTab(QWidget):
                                    if self._last_result else 0),
             "required_productivity": (self._last_result.required_productivity_molds_h
                                       if self._last_result else 0.0),
-            "line_name": self._selected.get("name", ""),
-            "line_count": int(self._selected.get("_num_required", 0)),
-            "load_factor": float(self._selected.get("_load_factor", 0.0)),
+            "line_name": (", ".join(sorted({ln.equipment_name for ln in self._last_result.batch_plan.lines}))
+                          if self._last_result and self._last_result.batch_plan and self._last_result.batch_plan.feasible
+                          else self._selected.get("name", "")),
+            "line_count": (len(self._last_result.batch_plan.lines)
+                           if self._last_result and self._last_result.batch_plan and self._last_result.batch_plan.feasible
+                           else (0 if self._last_result and self._last_result.batch_plan
+                                 else int(self._selected.get("_num_required", 0)))),
+            "load_factor": (sum(ln.used_hours for ln in self._last_result.batch_plan.lines) /
+                            sum(ln.annual_fund_hours for ln in self._last_result.batch_plan.lines)
+                            if self._last_result and self._last_result.batch_plan and self._last_result.batch_plan.feasible
+                            and self._last_result.batch_plan.lines
+                            else float(self._selected.get("_load_factor", 0.0))),
             "material_category": (self._last_result.material_category
                                   if self._last_result else ""),
             "shakeout_in_line": bool(line.get("has_shakeout", False)),
+            "batch_plan_feasible": bool(self._last_result and self._last_result.batch_plan and self._last_result.batch_plan.feasible),
+            "batch_planning_error": self._last_result.planning_error if self._last_result else "",
         }
