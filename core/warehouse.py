@@ -29,7 +29,8 @@ from core.warehouse_meta import WAREHOUSES, WAREHOUSE_TITLES
 from data.loader import DataLoader
 
 #: Каталог пользовательских данных рядом с каталогом приложения
-USER_DATA_DIR = DATA_DIR.parent / "user_data"
+# Пользовательские справочники не должны храниться внутри PyInstaller bundle.
+from config import USER_DATA_DIR
 
 # ---------------------------------------------------------------------------
 # Константы нормативов (методичка + оба диплома)
