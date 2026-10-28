@@ -75,6 +75,8 @@ class SummaryResult:
     cranes_total: int = 0
     rows: List[SummaryRow] = field(default_factory=list)
     missing_sections: List[str] = field(default_factory=list)
+    warnings: List[str] = field(default_factory=list)
+    ready: bool = True
 
     def as_dict(self) -> Dict[str, Any]:
         """Представить сводку словарём (для UI и экспорта)."""
@@ -90,6 +92,8 @@ class SummaryResult:
             "cranes_total": self.cranes_total,
             "rows": [r.as_dict() for r in self.rows],
             "missing_sections": list(self.missing_sections),
+            "warnings": list(self.warnings),
+            "ready": self.ready,
         }
 
 
@@ -181,8 +185,9 @@ def build_summary(summaries: Dict[str, Dict[str, Any]],
     res.metal_charge_t = _f(melt, "metal_charge_t")
     res.annual_molds = _i(mold, "annual_molds_total")
     res.annual_cores = _i(cores, "annual_cores")
-    res.workforce_total = _i(wf, "total")
-    res.building_area_m2 = _f(areas, "building_total_m2")
+    res.workforce_total = _i(wf, "total") if wf.get("complete", True) else 0
+    res.building_area_m2 = (_f(areas, "building_total_m2")
+                            if areas.get("complete", True) else 0.0)
     res.cranes_total = _i(tr, "cranes_total")
 
     # --- Ведомость оборудования по отделениям -------------------------
@@ -195,9 +200,17 @@ def build_summary(summaries: Dict[str, Dict[str, Any]],
             _i(melt, "furnace_count"), _f(melt, "load_factor"),
             f"Металлозавалка {res.metal_charge_t:,.0f} т/год")
     if mold:
-        one("Формовочное", mold.get("line_name", ""),
-            _i(mold, "line_count"), _f(mold, "load_factor"),
-            f"{_i(mold, 'annual_molds_total'):,} форм/год")
+        if mold.get("batch_plan_feasible") is False and getattr(project, "castings", None):
+            res.ready = False
+            res.warnings.append(
+                "НЕ ГОТОВО: формовочная программа не распределена полностью. "
+                + str(mold.get("batch_planning_error") or "Не найден совместимый парк"))
+        elif mold.get("park"):
+            res.rows.extend(_park_rows(mold["park"], "Формовочное"))
+        else:
+            one("Формовочное", mold.get("line_name", ""),
+                _i(mold, "line_count"), _f(mold, "load_factor"),
+                f"{_i(mold, 'annual_molds_total'):,} форм/год")
     if cores:
         one("Стержневое", cores.get("machine_name", ""),
             _i(cores, "machine_count"), _f(cores, "load_factor"),
@@ -217,10 +230,21 @@ def build_summary(summaries: Dict[str, Dict[str, Any]],
     if trows:
         res.rows.extend(trows)
 
+    if wf.get("complete") is False:
+        res.ready = False
+        res.warnings.extend("Не рассчитана численность: " + str(v)
+                            for v in wf.get("warnings", []))
+    if areas.get("complete") is False:
+        res.ready = False
+        res.warnings.extend("Не рассчитана полная площадь: " + str(v)
+                            for v in areas.get("warnings", []))
+
     # --- Какие секции не готовы ---------------------------------------
     for key, title in SECTION_ORDER:
         if not (summaries.get(key) or {}):
             res.missing_sections.append(title)
+    if res.missing_sections:
+        res.ready = False
     return res
 
 
@@ -288,6 +312,12 @@ def export_to_excel(result: SummaryResult, path: Path | str) -> Path:
     row_idx += 1
     ws.cell(row=row_idx, column=1,
             value=f"Проект: {result.project_name or 'без названия'}")
+    ws.cell(row=row_idx, column=1).font = f_head
+    paint(row_idx, ncols, fill_panel)
+    row_idx += 1
+    ws.cell(row=row_idx, column=1,
+            value=("СТАТУС: НЕПОЛНЫЙ ПРОЕКТ" if not result.ready
+                   else "СТАТУС: предварительная инженерная оценка"))
     ws.cell(row=row_idx, column=1).font = f_head
     paint(row_idx, ncols, fill_panel)
     row_idx += 2
