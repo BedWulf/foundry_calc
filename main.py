@@ -23,6 +23,11 @@ def main() -> int:
 
     window = MainWindow()
     window.show()
+    # CI-only check of the packaged executable (real Qt startup).
+    import os
+    if os.environ.get("FOUNDRY_SMOKE_TEST") == "1":
+        from PySide6.QtCore import QTimer
+        QTimer.singleShot(1000, app.quit)
 
     return app.exec()
 
