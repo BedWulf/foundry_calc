@@ -1,8 +1,10 @@
 """Конфигурация приложения «ЛитейныйЦех PRO»."""
 from pathlib import Path
+import os
+import sys
 
 APP_NAME = "ЛитейныйЦех PRO"
-APP_VERSION = "0.1.0"
+APP_VERSION = "0.3.0-stage3"
 APP_AUTHOR = "Foundry Engineering Team"
 
 # Корневая директория проекта
@@ -11,6 +13,14 @@ DATA_DIR = BASE_DIR / "data"
 ASSETS_DIR = BASE_DIR / "assets"
 STYLES_DIR = ASSETS_DIR / "styles"
 ICONS_DIR = ASSETS_DIR / "icons"
+
+# Упакованные справочники читаются из каталога PyInstaller; настройки
+# пользователя ВСЕГДА в доступном для записи профиле Windows.
+if getattr(sys, "frozen", False):
+    USER_DATA_DIR = Path(os.environ.get("APPDATA") or
+                         (Path.home() / "AppData" / "Roaming")) / "LiteynyiTsehPRO"
+else:
+    USER_DATA_DIR = BASE_DIR / "user_data"
 
 # Тема
 THEME_QSS = STYLES_DIR / "dark_theme.qss"
