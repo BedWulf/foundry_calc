@@ -11,7 +11,7 @@ import math
 from datetime import datetime
 from typing import List, Dict, Any
 
-from config import DATA_DIR
+from config import DATA_DIR, USER_DATA_DIR
 from data.loader import DataLoader
 
 # Справочник печей (Шаг 1) — всегда через config.DATA_DIR (правило №2).
@@ -50,7 +50,7 @@ class EquipmentSelector:
         Returns:
             Список карточек печёк из user_data/custom_furnaces.json
         """
-        path = DATA_DIR.parent / "user_data" / "custom_furnaces.json"
+        path = USER_DATA_DIR / "custom_furnaces.json"
         if not path.exists():
             return []
         try:
@@ -78,7 +78,7 @@ class EquipmentSelector:
         records = self.load_custom_furnaces()
         records = [r for r in records if r.get("id") != record["id"]]
         records.append(record)
-        path = DATA_DIR.parent / "user_data" / "custom_furnaces.json"
+        path = USER_DATA_DIR / "custom_furnaces.json"
         path.parent.mkdir(parents=True, exist_ok=True)
         with open(path, "w", encoding="utf-8") as f:
             json.dump({"version": "1.0", "furnaces": records},
