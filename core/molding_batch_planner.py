@@ -147,7 +147,11 @@ def _compatible(line: Mapping[str, Any], job: MoldingJob) -> bool:
     if dims is None or needed is None or dims[:2] != needed[:2]:
         return False
     heights = spec.get("flask_heights_mm") or []
-    if needed[2] and heights and needed[2] not in heights:
+    # В спецификации вида 900x600x200/250 указаны ДВЕ высоты.
+    # Проверять только первую опасно: вторую опоку линия может не принять.
+    height_fields = re.findall(r"\\d+(?:[.,]\\d+)?", str(job.flask_size_mm))[2:]
+    if heights and any(float(h.replace(",", ".")) not in heights
+                       for h in height_fields):
         return False
     if job.material not in (app.get("materials") or []):
         return False
