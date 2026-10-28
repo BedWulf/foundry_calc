@@ -214,6 +214,10 @@ class AreasTab(QWidget):
             f"{n_units} единиц. Принятая площадь = полезная / Kисп (0.7). "
             "Габариты — из справочников; для позиций без размеров взяты "
             "укрупнённые нормы площадей (методичка, раздел 10).")
+        if not result.complete:
+            self._basis_lbl.setText(
+                "⚠ НЕПОЛНЫЙ РАСЧЁТ. " + "; ".join(result.warnings)
+                + " Полная площадь здания не определена.")
 
         self._table.setRowCount(len(result.rows))
         for i, r in enumerate(result.rows):
@@ -237,7 +241,8 @@ class AreasTab(QWidget):
         self._summary_labels["aux"].setText(_fmt_m2(result.aux_repair_m2))
         self._summary_labels["sanitary"].setText(_fmt_m2(result.sanitary_m2))
         self._summary_labels["building"].setText(
-            _fmt_m2(result.building_total_m2))
+            _fmt_m2(result.building_total_m2) if result.complete
+            else "— (проект неполный)")
 
         self.areas_recalculated.emit(result.as_dict())
 
