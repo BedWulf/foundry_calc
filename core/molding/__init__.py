@@ -14,6 +14,7 @@ from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional
 
 from core.casting_item import CastingItem
+from core.molding_batch_planner import BatchPlan, build_jobs_from_castings, plan_molding_batches
 from core.molding.afl_calc import (
     MoldingCalculator, calc_annual_molds, calc_lines_count,
     calc_required_productivity,
@@ -92,6 +93,8 @@ class MoldingCalculation:
     selected_line_id: str = ""
     line_count: int = 0
     load_factor: float = 0.0
+    batch_plan: Optional[BatchPlan] = None
+    planning_error: str = ""
 
     @property
     def selected_line(self) -> Dict[str, Any]:
@@ -213,6 +216,22 @@ def calc_molding(
         chosen_id = options[0].get("id", "")
 
     chosen = next((o for o in options if o.get("id") == chosen_id), {})
+    batch_plan = None
+    planning_error = ""
+    if castings:
+        try:
+            jobs = build_jobs_from_castings(
+                castings, category,
+                batches_per_year=int(getattr(project, "molding_batches_per_year", 1)),
+                setup_hours_per_batch=float(getattr(project, "molding_setup_h", 0.0)),
+            )
+            batch_plan = plan_molding_batches(
+                jobs, calc._all_lines(), fund,
+                max_load_factor=float(getattr(project, "molding_max_load_factor", 0.85)),
+            )
+        except (ValueError, TypeError, KeyError) as exc:
+            planning_error = str(exc)
+
     return MoldingCalculation(
         groups=groups,
         annual_molds_total=annual_molds,
@@ -223,4 +242,6 @@ def calc_molding(
         selected_line_id=chosen_id,
         line_count=int(chosen.get("_num_required", 0)),
         load_factor=float(chosen.get("_load_factor", 0.0)),
+        batch_plan=batch_plan,
+        planning_error=planning_error,
     )
