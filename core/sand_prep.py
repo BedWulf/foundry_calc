@@ -41,7 +41,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
-from config import DATA_DIR
+from config import DATA_DIR, USER_DATA_DIR
 from data.loader import DataLoader
 
 #: Справочник смесеприготовительного оборудования — всегда через DATA_DIR.
@@ -213,7 +213,7 @@ class SandPrepCalculator:
     @staticmethod
     def custom_path() -> Path:
         """Путь к файлу пользовательского смесеприготовительного оборудования."""
-        return DATA_DIR.parent / "user_data" / "custom_mixers.json"
+        return USER_DATA_DIR / "custom_mixers.json"
 
     def load_custom_mixers(self) -> List[Dict[str, Any]]:
         """Загрузить пользовательские установки (файл может отсутствовать)."""
