@@ -1,0 +1,22 @@
+name: Calculation checks
+on:
+  push:
+    branches:
+      - engineering-audit-batch-planning-20261028
+  pull_request:
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install test dependencies
+        run: python -m pip install --upgrade pytest openpyxl
+      - name: Verify syntax
+        run: python -m compileall -q core gui data import_export tests
+      - name: Run tests
+        env:
+          PYTHONPATH: .
+        run: python -m pytest -q
