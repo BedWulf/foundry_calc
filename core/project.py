@@ -26,6 +26,11 @@ class Project:
     shift_duration_h: float = 8.0
     working_days_per_year: int = 249
 
+    # План общих формовочных линий: партии, переналадки и резерв фонда.
+    molding_batches_per_year: int = 1
+    molding_setup_h: float = 0.0  # не задано; оптимистичная оценка
+    molding_max_load_factor: float = 0.85
+
     # --- Брак и потери ---
     brak_pct: float = 5.0
     litniki_pribyli_pct: float = 28.9
