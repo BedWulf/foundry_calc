@@ -31,7 +31,7 @@ import math
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 
-from config import DATA_DIR
+from config import DATA_DIR, USER_DATA_DIR
 from data.loader import DataLoader
 
 #: Справочник формовочного оборудования (Шаг 1) — только через DATA_DIR.
@@ -136,7 +136,7 @@ class MoldingCalculator:
     @staticmethod
     def custom_path() -> Any:
         """Путь к файлу пользовательских формовочных линий."""
-        return DATA_DIR.parent / "user_data" / "custom_molding_lines.json"
+        return USER_DATA_DIR / "custom_molding_lines.json"
 
     def load_custom_lines(self) -> List[Dict[str, Any]]:
         """Загрузить пользовательские линии (файл может отсутствовать)."""
