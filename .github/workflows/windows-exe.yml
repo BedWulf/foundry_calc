@@ -1,0 +1,54 @@
+name: Build Windows EXE (PySide6)
+on:
+  workflow_dispatch:
+  push:
+    branches: [engineering-audit-batch-planning-20261028]
+    paths:
+      - '**/*.py'
+      - 'requirements.txt'
+      - 'data/**'
+      - 'assets/**'
+      - '.github/workflows/windows-exe.yml'
+      - 'build_windows.bat'
+
+jobs:
+  windows-exe:
+    runs-on: windows-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          architecture: 'x64'
+          cache: 'pip'
+      - name: Install dependencies
+        shell: pwsh
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements.txt "pyinstaller>=6.12,<7" pytest
+      - name: Compile Python modules
+        run: python -m compileall -q core gui data import_export tests
+      - name: Run calculation tests
+        env:
+          PYTHONPATH: .
+        run: python -m pytest -q
+      - name: Smoke test GUI construction (no user interaction)
+        shell: pwsh
+        env:
+          QT_QPA_PLATFORM: offscreen
+          PYTHONPATH: .
+        run: |
+          python -c "from PySide6.QtWidgets import QApplication; from gui.main_window import MainWindow; app=QApplication([]); w=MainWindow(); print('GUI initialization OK')"
+      - name: Bundle EXE
+        shell: pwsh
+        run: |
+          python -m PyInstaller --noconfirm --clean --onedir --windowed --name LiteynyiTsehPRO --icon "assets/icons/app_icon.ico" --add-data "data;data" --add-data "assets;assets" main.py
+          if (!(Test-Path "dist/LiteynyiTsehPRO/LiteynyiTsehPRO.exe")) { throw "EXE not produced" }
+      - name: Upload portable Windows folder
+        uses: actions/upload-artifact@v4
+        with:
+          name: LiteynyiTsehPRO-Windows-x64
+          path: dist/LiteynyiTsehPRO/
+          retention-days: 30
+          if-no-files-found: error
