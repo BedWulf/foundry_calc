@@ -419,6 +419,11 @@ def calc_areas(
 
     complete = True
     warnings: List[str] = []
+    if not getattr(project, "castings", None):
+        complete = False
+        warnings.append(
+            "Номенклатура отливок не задана: площади оценены по "
+            "усреднённой программе, итог здания не подтверждён.")
     if getattr(project, "castings", None):
         from core.molding import calc_molding
         molding = calc_molding(project)
