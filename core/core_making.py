@@ -21,7 +21,7 @@ import math
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 
-from config import DATA_DIR
+from config import DATA_DIR, USER_DATA_DIR
 from data.loader import DataLoader
 
 #: Справочник стержневого оборудования — только через DATA_DIR.
@@ -116,7 +116,7 @@ class CoreCalculator:
     @staticmethod
     def custom_path() -> Any:
         """Путь к файлу пользовательских стержневых машин."""
-        return DATA_DIR.parent / "user_data" / "custom_core_machines.json"
+        return USER_DATA_DIR / "custom_core_machines.json"
 
     def load_custom_machines(self) -> List[Dict[str, Any]]:
         """Загрузить пользовательские машины (файл может отсутствовать)."""
