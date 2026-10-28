@@ -386,37 +386,52 @@ class MoldingTab(QWidget):
         self.refresh()
 
     def get_summary(self) -> Dict[str, Any]:
-        """Вернуть итоговые данные вкладки для сводной таблицы.
-
-        Returns:
-            Словарь с ключами: annual_molds_total, required_productivity,
-            line_name, line_count, load_factor, material_category,
-            shakeout_in_line (входит ли выбивка в состав принятой линии —
-            используется очистным отделением, чтобы не предлагать отдельную
-            выбивную установку там, где она уже есть на АФЛ)
-        """
-        line = (self._last_result.selected_line
-                if self._last_result else {}) or {}
+        """Сводка фактически принятого ПАРКА, а не одной карточки линии."""
+        calc = self._last_result
+        plan = calc.batch_plan if calc else None
+        planned = bool(plan and plan.feasible and plan.lines)
+        has_positions = bool(getattr(self.project, "castings", None))
+        park: list[dict] = []
+        if planned:
+            by_model: Dict[str, list] = {}
+            for line in plan.lines:
+                by_model.setdefault(line.equipment_id, []).append(line)
+            for model_id, instances in sorted(by_model.items()):
+                hours = sum(line.used_hours for line in instances)
+                fund = sum(line.annual_fund_hours for line in instances)
+                card = self.calculator.get_line_by_id(model_id)
+                park.append({
+                    "id": model_id,
+                    "name": instances[0].equipment_name,
+                    "units": len(instances),
+                    "load_factor": hours / fund if fund else 0,
+                    "has_shakeout": bool(card.get("has_shakeout", False)),
+                    "note": f"{sum(c.molds for line in instances for c in line.campaigns):,} форм/год",
+                })
+        elif not has_positions and self._selected:
+            park = [{
+                "id": self._selected.get("id", ""),
+                "name": self._selected.get("name", ""),
+                "units": int(self._selected.get("_num_required", 0)),
+                "load_factor": float(self._selected.get("_load_factor", 0)),
+                "has_shakeout": bool(self._selected.get("has_shakeout", False)),
+                "note": "Предварительная оценка без номенклатуры",
+            }]
+        count = sum(row["units"] for row in park)
+        hours_used = sum(line.used_hours for line in plan.lines) if planned else 0.0
+        hours_fund = sum(line.annual_fund_hours for line in plan.lines) if planned else 0.0
+        loading = hours_used / hours_fund if hours_fund else (
+            float(self._selected.get("_load_factor", 0)) if not has_positions else 0.0)
         return {
-            "annual_molds_total": (self._last_result.annual_molds_total
-                                   if self._last_result else 0),
-            "required_productivity": (self._last_result.required_productivity_molds_h
-                                      if self._last_result else 0.0),
-            "line_name": (", ".join(sorted({ln.equipment_name for ln in self._last_result.batch_plan.lines}))
-                          if self._last_result and self._last_result.batch_plan and self._last_result.batch_plan.feasible
-                          else self._selected.get("name", "")),
-            "line_count": (len(self._last_result.batch_plan.lines)
-                           if self._last_result and self._last_result.batch_plan and self._last_result.batch_plan.feasible
-                           else (0 if self._last_result and self._last_result.batch_plan
-                                 else int(self._selected.get("_num_required", 0)))),
-            "load_factor": (sum(ln.used_hours for ln in self._last_result.batch_plan.lines) /
-                            sum(ln.annual_fund_hours for ln in self._last_result.batch_plan.lines)
-                            if self._last_result and self._last_result.batch_plan and self._last_result.batch_plan.feasible
-                            and self._last_result.batch_plan.lines
-                            else float(self._selected.get("_load_factor", 0.0))),
-            "material_category": (self._last_result.material_category
-                                  if self._last_result else ""),
-            "shakeout_in_line": bool(line.get("has_shakeout", False)),
-            "batch_plan_feasible": bool(self._last_result and self._last_result.batch_plan and self._last_result.batch_plan.feasible),
-            "batch_planning_error": self._last_result.planning_error if self._last_result else "",
+            "annual_molds_total": calc.annual_molds_total if calc else 0,
+            "required_productivity": calc.required_productivity_molds_h if calc else 0.0,
+            "line_name": ", ".join(row["name"] for row in park),
+            "line_count": count,
+            "load_factor": loading,
+            "park": park,
+            "batch_plan_feasible": planned,
+            "batch_planning_error": calc.planning_error if calc else "",
+            "batch_plan_warnings": list(plan.warnings) if plan else [],
+            "material_category": calc.material_category if calc else "",
+            "shakeout_in_line": bool(park) and all(row["has_shakeout"] for row in park),
         }
