@@ -10,9 +10,10 @@ class UserChoices:
 
     def __init__(self, base_dir: Optional[Path] = None):
         if base_dir is None:
-            from config import BASE_DIR
-            base_dir = BASE_DIR
-        self.choices_dir = base_dir / "user_data"
+            from config import USER_DATA_DIR
+            self.choices_dir = USER_DATA_DIR
+        else:
+            self.choices_dir = Path(base_dir) / "user_data"
         self.choices_dir.mkdir(parents=True, exist_ok=True)
         self.choices_file = self.choices_dir / "choices.json"
         self._data: Dict[str, Any] = {}
