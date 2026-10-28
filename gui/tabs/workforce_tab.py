@@ -269,6 +269,11 @@ class WorkforceTab(QWidget):
         self._result_labels["total"].setText(f"{result.total} чел.")
         self._result_labels["peak_shift"].setText(
             f"{result.peak_shift} чел.")
+        if not result.complete:
+            for lbl in self._result_labels.values():
+                lbl.setText("— (расчёт заблокирован)")
+            self._param_labels["output"].setText(
+                "⚠ Невыполнима формовочная программа; численность не подтверждена")
         self.workforce_changed.emit(result.as_dict())
 
     # ─────────────────────── внешний API ───────────────────────
