@@ -420,7 +420,10 @@ def calc_workforce(
         total=main_total + aux_total, peak_shift=peak,
         repair_units_total=round(repair_units, 1),
         fund_equipment_h=t_eq, fund_workers_h=round(t_wr, 1),
-        shifts=shifts)
+        shifts=shifts,
+        complete=bool(getattr(project, "castings", None)),
+        warnings=([] if getattr(project, "castings", None) else
+                  ["Отсутствует номенклатура: расчёт персонала предварительный"]),)
 
 
 # ----------------------------------------------------------------------
