@@ -66,9 +66,14 @@ class TestAreasLedger(unittest.TestCase):
     def test_departments_collected(self) -> None:
         """Собираются все ключевые отделения с ненулевой площадью."""
         keys = {d["key"] for d in self.deps}
-        for expected in ("melting_tab", "molding_tab", "core_tab",
+        # В тестовой номенклатуре две нестандартные опоки без полностью
+        # совместимого парка; нельзя добавлять вымышленную линию.
+        self.assertNotIn("molding_tab", keys)
+        for expected in ("melting_tab", "core_tab",
                          "sand_tab", "cleaning_tab"):
             self.assertIn(expected, keys)
+        self.assertFalse(self.result.complete)
+        self.assertTrue(self.result.warnings)
         for d in self.deps:
             self.assertGreater(d["count"], 0)
             self.assertGreaterEqual(d["footprint_m2"], 0.0)
