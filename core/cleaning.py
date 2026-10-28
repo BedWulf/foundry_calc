@@ -39,7 +39,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
-from config import DATA_DIR
+from config import DATA_DIR, USER_DATA_DIR
 from data.loader import DataLoader
 
 #: Справочник очистного/термического оборудования — всегда через DATA_DIR.
@@ -294,7 +294,7 @@ class CleaningCalculator:
     @staticmethod
     def custom_path() -> Path:
         """Путь к файлу пользовательского очистного оборудования."""
-        return DATA_DIR.parent / "user_data" / "custom_cleaning_machines.json"
+        return USER_DATA_DIR / "custom_cleaning_machines.json"
 
     def load_custom_machines(self) -> List[Dict[str, Any]]:
         """Загрузить пользовательское оборудование (файл может отсутствовать).
