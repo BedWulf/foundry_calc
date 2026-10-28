@@ -250,10 +250,13 @@ class SummaryTab(QWidget):
                     it.setTextAlignment(Qt.AlignCenter)
                 self.table.setItem(i, j, it)
 
+        messages = list(r.warnings)
         if r.missing_sections:
-            self.warn_label.setText(
-                "⚠ Разделы без данных: " + ", ".join(r.missing_sections)
-                + ". Проверьте исходные данные и расчёты отделений.")
+            messages.append("Разделы без данных: " + ", ".join(r.missing_sections))
+        if not r.ready:
+            messages.insert(0, "ПРОЕКТ НЕ ГОТОВ: результаты предварительные.")
+        if messages:
+            self.warn_label.setText("\n".join("⚠ " + m for m in messages))
             self.warn_label.show()
         else:
             self.warn_label.hide()
