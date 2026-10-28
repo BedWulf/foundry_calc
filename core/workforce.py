@@ -140,6 +140,8 @@ class WorkforceResult:
     fund_equipment_h: float = 3890.0     # Тд
     fund_workers_h: float = 1840.0       # Тр (действительный фонд 1 рабочего)
     shifts: int = 2
+    complete: bool = True
+    warnings: List[str] = field(default_factory=list)
 
     @property
     def departments(self) -> List[str]:
@@ -166,6 +168,8 @@ class WorkforceResult:
             "fund_equipment_h": self.fund_equipment_h,
             "fund_workers_h": self.fund_workers_h,
             "shifts": self.shifts,
+            "complete": self.complete,
+            "warnings": list(self.warnings),
         }
 
 
@@ -277,6 +281,17 @@ def calc_workforce(
         t_wr = 1840.0
 
     category = _category_of(project, loader)
+    # Не заменяем невыполнимую программу условной одной линией:
+    # это давало якобы точную численность для несуществующего цеха.
+    if (getattr(project, "castings", None)
+            and isinstance(molding, dict)
+            and molding.get("batch_plan_feasible") is False):
+        return WorkforceResult(
+            complete=False,
+            warnings=["Нельзя определить численность: формовочная программа "
+                      "не распределена по совместимому оборудованию"],
+            fund_equipment_h=t_eq, fund_workers_h=t_wr, shifts=shifts,
+        )
     rows: List[WorkforceRow] = []
 
     def add(dept: str, prof: str, n_shift: float, formula: str,
