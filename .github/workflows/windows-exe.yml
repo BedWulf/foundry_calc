@@ -45,6 +45,19 @@ jobs:
         run: |
           python -m PyInstaller --noconfirm --clean --onedir --windowed --name LiteynyiTsehPRO --icon "assets/icons/app_icon.ico" --add-data "data;data" --add-data "assets;assets" main.py
           if (!(Test-Path "dist/LiteynyiTsehPRO/LiteynyiTsehPRO.exe")) { throw "EXE not produced" }
+      - name: Smoke test packaged Windows EXE
+        shell: pwsh
+        env:
+          QT_QPA_PLATFORM: offscreen
+          FOUNDRY_SMOKE_TEST: '1'
+        run: |
+          $exe = (Resolve-Path "dist/LiteynyiTsehPRO/LiteynyiTsehPRO.exe").Path
+          $p = Start-Process -FilePath $exe -PassThru
+          if (-not $p.WaitForExit(20000)) {
+            $p.Kill()
+            throw "Packaged GUI did not exit after smoke-test timer"
+          }
+          if ($p.ExitCode -ne 0) { throw "Packaged GUI exited with code $($p.ExitCode)" }
       - name: Upload portable Windows folder
         uses: actions/upload-artifact@v4
         with:
