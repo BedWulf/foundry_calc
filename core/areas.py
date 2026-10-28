@@ -157,6 +157,8 @@ class AreasResult:
     aux_repair_m2: float = 0.0         # подсобно-ремонтные помещения
     sanitary_m2: float = 0.0           # бытовые помещения
     building_total_m2: float = 0.0      # общая площадь здания цеха
+    complete: bool = True              # все обязательные участки рассчитаны
+    warnings: List[str] = field(default_factory=list)
 
     @property
     def sections(self) -> List[Tuple[str, float]]:
@@ -175,6 +177,8 @@ class AreasResult:
             "aux_repair_m2": round(self.aux_repair_m2, 1),
             "sanitary_m2": round(self.sanitary_m2, 1),
             "building_total_m2": round(self.building_total_m2, 1),
+            "complete": self.complete,
+            "warnings": list(self.warnings),
         }
 
 
@@ -320,8 +324,24 @@ def collect_departments(
     molding = calc_molding(project,
                            selected_line_id=saved_id(
                                UserChoices.MOLDING_LINE_CATEGORY))
-    add("molding_tab", "Формовочное отделение", molding.selected_line,
-        count=molding.line_count)
+    # Для номенклатуры используем ПАРК общих линий, а не одну выбранную
+    # модель. Невыполнимый план нельзя заменить старым оптимистичным подбором.
+    if getattr(project, "castings", None):
+        plan = molding.batch_plan
+        if plan is not None and plan.feasible:
+            from collections import Counter
+            from core.molding.afl_calc import MoldingCalculator
+            catalog = MoldingCalculator()
+            counts = Counter(line.equipment_id for line in plan.lines)
+            for equipment_id, count in sorted(counts.items()):
+                card = catalog.get_line_by_id(equipment_id)
+                if not card:
+                    raise ValueError(f"Нет габаритов принятой линии {equipment_id}")
+                add("molding_tab", "Формовочное: " + str(card.get("name", equipment_id)),
+                    card, count=count)
+    else:
+        add("molding_tab", "Формовочное отделение", molding.selected_line,
+            count=molding.line_count)
 
     # ── Стержневое ────────────────────────────────────────────────
     from core.core_making import CoreCalculator
@@ -397,6 +417,20 @@ def calc_areas(
 
     departments = collect_departments(project, loader=loader)
 
+    complete = True
+    warnings: List[str] = []
+    if getattr(project, "castings", None):
+        from core.molding import calc_molding
+        molding = calc_molding(project)
+        if molding.batch_plan is None or not molding.batch_plan.feasible:
+            complete = False
+            warnings.append(
+                "Не подобран полный парк формовочных линий: площадь здания "
+                "является частичной оценкой, а не итоговым проектом. "
+                + (molding.planning_error or
+                   ("Не распределены: " + ", ".join(molding.batch_plan.unassigned)
+                    if molding.batch_plan else "Расчёт плана не выполнен")))
+
     rows: List[AreaRow] = []
     prod_sum = 0.0
     for dep in departments:
@@ -437,6 +471,8 @@ def calc_areas(
         aux_repair_m2=round(aux_repair, 1),
         sanitary_m2=round(sanitary, 1),
         building_total_m2=round(building_total, 1),
+        complete=complete,
+        warnings=warnings,
     )
 
 
