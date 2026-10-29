@@ -172,6 +172,26 @@ class SummaryTab(QWidget):
         capacity_layout.addWidget(self.capacity_table)
         layout.addWidget(capacity_box)
 
+        shift_box = QGroupBox("Сменный сценарий — одновременная работа линий")
+        shift_box.setStyleSheet(GROUP_STYLE)
+        shift_layout = QVBoxLayout(shift_box)
+        self.shift_description = QLabel(
+            "Это проверка пикового потребления, а не посменное расписание.")
+        self.shift_description.setWordWrap(True)
+        shift_layout.addWidget(self.shift_description)
+        self.shift_table = QTableWidget(0, 5)
+        self.shift_table.setHorizontalHeaderLabels([
+            "Поток", "Потребность", "Подача", "Статус", "Ограничения"])
+        self.shift_table.setStyleSheet(TABLE_STYLE)
+        self.shift_table.setEditTriggers(QAbstractItemView.NoEditTriggers)
+        self.shift_table.verticalHeader().setVisible(False)
+        self.shift_table.horizontalHeader().setSectionResizeMode(
+            0, QHeaderView.Stretch)
+        self.shift_table.horizontalHeader().setSectionResizeMode(
+            4, QHeaderView.Stretch)
+        shift_layout.addWidget(self.shift_table)
+        layout.addWidget(shift_box)
+
         # ── Предупреждения ─────────────────────────────────────────────
         self.warn_label = QLabel("")
         self.warn_label.setWordWrap(True)
@@ -287,6 +307,25 @@ class SummaryTab(QWidget):
             for column, value in enumerate(values):
                 self.capacity_table.setItem(i, column, QTableWidgetItem(value))
         self.capacity_table.resizeRowsToContents()
+        self.shift_description.setText(
+            f"В сценарии: {r.shift_lines_running} производящих линий, "
+            f"{r.shift_hours:g} ч/смену. Независимые верхние оценки расхода; "
+            "не календарный график, без буферов и запасов.")
+        self.shift_table.setRowCount(len(r.shift_rows))
+        for i, entry in enumerate(r.shift_rows):
+            unit = entry.get("unit", "")
+            demand = entry.get("demand")
+            available = entry.get("available")
+            row_values = [
+                str(entry.get("stream", "")),
+                f"{demand:,.1f} {unit}" if demand is not None else "—",
+                f"{available:,.1f} {unit}" if available is not None else "—",
+                status_labels.get(entry.get("status"), "Не проверено"),
+                str(entry.get("note", "")),
+            ]
+            for j, value in enumerate(row_values):
+                self.shift_table.setItem(i, j, QTableWidgetItem(value))
+        self.shift_table.resizeRowsToContents()
 
         if r.missing_sections:
             messages.append("Разделы без данных: " + ", ".join(r.missing_sections))
