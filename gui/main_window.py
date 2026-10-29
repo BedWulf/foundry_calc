@@ -1,12 +1,17 @@
 """Главное окно приложения с боковой навигацией."""
-from PySide6.QtCore import Qt
+from pathlib import Path
+
+from PySide6.QtCore import Qt, QTimer
 from PySide6.QtWidgets import (
     QMainWindow, QWidget, QHBoxLayout, QVBoxLayout,
-    QStackedWidget, QPushButton, QLabel, QFrame,
+    QStackedWidget, QPushButton, QLabel, QFrame, QScrollArea,
+    QMessageBox, QFileDialog,
 )
 
 from config import APP_NAME, APP_VERSION, COLORS, THEME_QSS
 from core.project import Project
+from core.onboarding import OnboardingState, TUTORIAL_STEPS
+from core.tutorial_example import save_tutorial_excel
 
 # Импорты реальных вкладок
 from gui.tabs.project_tab import ProjectTab
@@ -83,6 +88,10 @@ class MainWindow(QMainWindow):
 
         # Модель проекта (единая для всех вкладок)
         self.project = Project()
+        self._onboarding = OnboardingState()
+        self._startup_offer_checked = False
+        self._tour_index = -1
+        self._tour_origin = 0
 
         self._apply_theme()
         self._build_ui()
@@ -160,7 +169,44 @@ class MainWindow(QMainWindow):
             self.tabs[key] = tab
 
         root_layout.addWidget(self.sidebar)
-        root_layout.addWidget(self.content_stack, 1)
+        content_panel = QWidget()
+        content_layout = QVBoxLayout(content_panel)
+        content_layout.setContentsMargins(0, 0, 0, 0)
+        content_layout.setSpacing(0)
+
+        # Non-modal guided tour: the real input tabs remain accessible.
+        self.tour_banner = QFrame()
+        self.tour_banner.setStyleSheet(
+            f"QFrame {{ background: {COLORS['bg_panel']}; "
+            f"border-bottom: 2px solid {COLORS['accent']}; }}"
+            f"QLabel {{ color: {COLORS['text_primary']}; border: none; }}"
+        )
+        tour_layout = QVBoxLayout(self.tour_banner)
+        tour_layout.setContentsMargins(14, 10, 14, 10)
+        self.tour_heading = QLabel()
+        self.tour_heading.setStyleSheet(
+            f"color: {COLORS['accent']}; font-weight: bold;")
+        self.tour_instruction = QLabel()
+        self.tour_instruction.setWordWrap(True)
+        tour_layout.addWidget(self.tour_heading)
+        tour_layout.addWidget(self.tour_instruction)
+        tour_controls = QHBoxLayout()
+        self.tour_back_button = QPushButton("← Назад")
+        self.tour_next_button = QPushButton("Далее →")
+        self.tour_close_button = QPushButton("Прервать обучение")
+        self.tour_back_button.clicked.connect(self._tour_back)
+        self.tour_next_button.clicked.connect(self._tour_next)
+        self.tour_close_button.clicked.connect(self._stop_tutorial)
+        tour_controls.addWidget(self.tour_back_button)
+        tour_controls.addWidget(self.tour_next_button)
+        tour_controls.addStretch()
+        tour_controls.addWidget(self.tour_close_button)
+        tour_layout.addLayout(tour_controls)
+        self.tour_banner.hide()
+
+        content_layout.addWidget(self.tour_banner)
+        content_layout.addWidget(self.content_stack, 1)
+        root_layout.addWidget(content_panel, 1)
 
     def _create_tab(self, key: str, title: str) -> QWidget:
         """Фабрика вкладок."""
@@ -278,6 +324,11 @@ class MainWindow(QMainWindow):
         if workers is not None:
             workers.set_dependencies_provider(self.department_summaries)
 
+        help_tab = self.tabs.get("help_tab")
+        if help_tab is not None:
+            help_tab.tutorial_requested.connect(self.start_tutorial)
+            help_tab.example_requested.connect(self._save_tutorial_example)
+
         project_tab = self.tabs.get("project_tab")
         if project_tab is not None:
             project_tab.help_requested.connect(
@@ -308,6 +359,116 @@ class MainWindow(QMainWindow):
             signal = getattr(tab, signal_name, None)
             if signal is not None:
                 signal.connect(lambda *_args: self._recalculate_dependents())
+
+    def showEvent(self, event) -> None:  # noqa: N802
+        """Show first-run offer only after the real application is visible."""
+        super().showEvent(event)
+        if not self._startup_offer_checked:
+            self._startup_offer_checked = True
+            QTimer.singleShot(0, self._offer_tutorial_once)
+
+    def _offer_tutorial_once(self) -> None:
+        if not self._onboarding.should_offer():
+            return
+        # Mark BEFORE showing: cancelling, closing or starting the tour
+        # must never trigger the automated invitation again.
+        try:
+            self._onboarding.mark_offered()
+        except OSError:
+            # Do not prevent the user from using the program if the profile is
+            # temporarily read-only. Suppression still holds in this session.
+            pass
+        prompt = QMessageBox(self)
+        prompt.setWindowTitle("Добро пожаловать в ЛитейныйЦех PRO")
+        prompt.setIcon(QMessageBox.Information)
+        prompt.setText("В программе есть пошаговое обучение для новых пользователей.")
+        prompt.setInformativeText(
+            "Экскурсия покажет, что вводить в каждой вкладке, "
+            "как открыть учебный Excel и где смотреть ошибки расчёта. "
+            "Она не изменяет ваш проект.\n\n"
+            "Это предложение показывается только при первом запуске. "
+            "Позже обучение можно открыть вручную в разделе «❓ Руководство».")
+        start_button = prompt.addButton("Начать обучение", QMessageBox.AcceptRole)
+        prompt.addButton("Не сейчас", QMessageBox.RejectRole)
+        prompt.setDefaultButton(start_button)
+        prompt.finished.connect(
+            lambda _result: self.start_tutorial()
+            if prompt.clickedButton() is start_button else None)
+        self._welcome_prompt = prompt
+        prompt.open()
+
+    def start_tutorial(self) -> None:
+        """Guided in-app navigation; it never edits the active Project."""
+        if self._tour_index >= 0:
+            self._tour_index = 0
+        else:
+            self._tour_origin = self.content_stack.currentIndex()
+            self._tour_index = 0
+        self.tour_banner.show()
+        self._show_tutorial_step()
+
+    def _show_tutorial_step(self) -> None:
+        if self._tour_index < 0:
+            return
+        step = TUTORIAL_STEPS[self._tour_index]
+        self.tour_heading.setText(
+            f"Шаг {self._tour_index + 1} из {len(TUTORIAL_STEPS)} — {step.title}")
+        self.tour_instruction.setText(step.instruction)
+        self.tour_back_button.setEnabled(self._tour_index > 0)
+        self.tour_next_button.setText(
+            "Завершить" if self._tour_index == len(TUTORIAL_STEPS) - 1
+            else "Далее →")
+        idx = next((i for i, (_, key) in enumerate(self.SECTIONS)
+                    if key == step.section), None)
+        if idx is not None:
+            self._select_section(idx)
+            tab = self.tabs[step.section]
+            widget = getattr(tab, step.focus_name, None) if step.focus_name else None
+            if isinstance(widget, QWidget):
+                for scroll in tab.findChildren(QScrollArea):
+                    body = scroll.widget()
+                    if body and (body is widget or body.isAncestorOf(widget)):
+                        scroll.ensureWidgetVisible(widget, 15, 15)
+                        break
+                widget.setFocus(Qt.OtherFocusReason)
+
+    def _tour_back(self) -> None:
+        if self._tour_index > 0:
+            self._tour_index -= 1
+            self._show_tutorial_step()
+
+    def _tour_next(self) -> None:
+        if self._tour_index < 0:
+            return
+        if self._tour_index == len(TUTORIAL_STEPS) - 1:
+            self._stop_tutorial()
+        else:
+            self._tour_index += 1
+            self._show_tutorial_step()
+
+    def _stop_tutorial(self) -> None:
+        if self._tour_index < 0:
+            return
+        self._tour_index = -1
+        self.tour_banner.hide()
+        self._select_section(self._tour_origin)
+
+    def _save_tutorial_example(self) -> None:
+        proposed = str(Path.home() / "ЛитейныйЦех_учебный_пример.xlsx")
+        filename, _ = QFileDialog.getSaveFileName(
+            self, "Сохранить учебный Excel", proposed, "Excel (*.xlsx)")
+        if not filename:
+            return
+        try:
+            saved = save_tutorial_excel(Path(filename))
+        except (OSError, ValueError) as exc:
+            QMessageBox.critical(self, "Ошибка сохранения примера", str(exc))
+            return
+        QMessageBox.information(
+            self, "Учебный Excel сохранён",
+            f"Файл создан:\n{saved}\n\nОн НЕ был загружен в текущий проект. "
+            "Чтобы изучить импорт, откройте «Исходные данные» → "
+            "«Импорт из Excel». Это заменит текущую номенклатуру.")
 
     def department_summaries(self) -> dict:
         """Собрать сводки (`get_summary`) всех реализованных отделений.
