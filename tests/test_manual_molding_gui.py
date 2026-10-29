@@ -58,3 +58,19 @@ def test_manual_line_spinbox_updates_plan_area_and_staff():
     assert project.molding_park_mode == "auto"
     assert tab._last_result.batch_plan.feasible
     tab.close()
+
+
+def test_manual_count_without_nomenclature_is_provisional():
+    app = QApplication.instance() or QApplication([])
+    p = Project(name="Qt-manual-lines-without-castings")
+    p.molding_park_mode = "manual"
+    p.molding_line_counts = {"IL-225": 2}
+    tab = MoldingTab(p)
+    summary = tab.get_summary()
+    assert summary["line_count"] == 2
+    assert not summary["batch_plan_feasible"]
+    areas = calc_areas(p, warehouse_area_m2=0)
+    assert sum(row.units for row in areas.rows if row.key == "molding_tab") == 2
+    assert not areas.complete
+    assert any("Номенклатура" in w for w in areas.warnings)
+    tab.close()
