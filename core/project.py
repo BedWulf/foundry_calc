@@ -1,7 +1,7 @@
 """Модель проекта литейного цеха."""
 import hashlib
 from dataclasses import dataclass, field
-from typing import List, Optional
+from typing import Dict, List, Optional
 from datetime import date
 from .casting_item import CastingItem
 
@@ -30,6 +30,10 @@ class Project:
     molding_batches_per_year: int = 1
     molding_setup_h: float = 0.0  # не задано; оптимистичная оценка
     molding_max_load_factor: float = 0.85
+    # "auto" — число и модели выбираются автоматически;
+    # "manual" — используется ровно заданный парк, даже если мощности не хватит.
+    molding_park_mode: str = "auto"
+    molding_line_counts: Dict[str, int] = field(default_factory=dict)
 
     # --- Брак и потери ---
     brak_pct: float = 5.0
