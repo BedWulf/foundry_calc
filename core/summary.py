@@ -202,12 +202,14 @@ def build_summary(summaries: Dict[str, Dict[str, Any]],
     if mold:
         if mold.get("batch_plan_feasible") is False and getattr(project, "castings", None):
             res.ready = False
+            shortage = _i(mold, "annual_molds_total") - _i(mold, "assigned_molds")
             res.warnings.append(
                 "НЕ ГОТОВО: формовочная программа не распределена полностью. "
-                + str(mold.get("batch_planning_error") or "Не найден совместимый парк"))
-        elif mold.get("park"):
+                + str(mold.get("batch_planning_error") or
+                      f"Не обеспечено {shortage:,} форм/год"))
+        if mold.get("park"):
             res.rows.extend(_park_rows(mold["park"], "Формовочное"))
-        else:
+        elif not getattr(project, "castings", None):
             one("Формовочное", mold.get("line_name", ""),
                 _i(mold, "line_count"), _f(mold, "load_factor"),
                 f"{_i(mold, 'annual_molds_total'):,} форм/год")
