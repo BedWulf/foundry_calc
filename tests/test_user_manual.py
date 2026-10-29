@@ -10,7 +10,7 @@ from gui.main_window import MainWindow
 def test_manual_is_packaged_source_and_available_without_internet():
     content = (DOCS_DIR / "USER_MANUAL.md").read_text(encoding="utf-8")
     for word in ("Исходные данные", "Годовой выпуск", "Отливок в год",
-                 "отливок/форму", "Сводка", "ДЕФИЦИТ", "Excel"):
+                 "шт/форму", "Сводка", "ДЕФИЦИТ", "Excel"):
         assert word.lower() in content.lower()
 
 
