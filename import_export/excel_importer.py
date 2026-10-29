@@ -251,7 +251,12 @@ class ExcelImporter:
         a = str(headers[0] or "").lower().strip() if headers else ""
         b = str(headers[1] or "").lower().strip() if len(headers) > 1 else ""
         # Diploma 1: № | Отливка | масса | размер | высота | ...
-        if a == "№" and ("отлив" in b or "наимен" in b):
+        # The ordinary A:P template also starts with №/Наименование:
+        # a diploma additionally has a source field "Форм/год (PDF)"
+        # in H and exactly 15 original physical columns.
+        annual_forms_header = str(headers[7] or "").lower() if len(headers) > 7 else ""
+        if (a == "№" and "отлив" in b and
+                ("форм/год" in annual_forms_header or "pdf" in annual_forms_header)):
             return "diploma1"
         # Diploma 2: Отливка | Масса | длина | ширина | высота | ...
         if "отлив" in a and "масс" in b:
