@@ -51,7 +51,7 @@ def test_manual_line_spinbox_updates_plan_area_and_staff():
     assert b["load_factor"] < a["load_factor"]
     assert sum(row.units for row in area_b.rows if row.key == "molding_tab") == 2
     assert area_b.production_total_m2 > area_a.production_total_m2
-    assert staff_b.total >= staff_a.total
+    assert staff_b.total > staff_a.total
     assert len(changes) >= 3
 
     tab._park_mode.setCurrentIndex(0)
