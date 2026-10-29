@@ -48,7 +48,7 @@ if errorlevel 1 (
   echo NOTE: tests failed. Build cancelled to avoid shipping unchecked calculations.
   goto :failure
 )
-".venv\Scripts\python.exe" -m PyInstaller --noconfirm --clean --onedir --windowed --name LiteynyiTsehPRO --icon "assets\icons\app_icon.ico" --add-data "data;data" --add-data "assets;assets" main.py
+".venv\Scripts\python.exe" -m PyInstaller --noconfirm --clean --onedir --windowed --name LiteynyiTsehPRO --icon "assets\icons\app_icon.ico" --add-data "data;data" --add-data "assets;assets" --add-data "docs;docs" main.py
 if errorlevel 1 goto :failure
 if not exist "dist\LiteynyiTsehPRO\LiteynyiTsehPRO.exe" goto :failure
 echo.
