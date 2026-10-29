@@ -278,10 +278,14 @@ class EquipmentPicker(QWidget):
                         break
             button = self.button_group.button(idx)
             if button is not None:
-                button.setChecked(True)
-                # setChecked на уже выбранной кнопке сигнал НЕ эмитит —
-                # эмиссию выполняем явно (idx может совпасть с прежним
-                # выбором после пересчёта).
+                # A programmatic check toggles the radio button and emits
+                # card.selected; suppress that intermediate event. We must
+                # notify the tab once, after options are fully installed.
+                self._setting_options = True
+                try:
+                    button.setChecked(True)
+                finally:
+                    self._setting_options = False
                 self._emit_selection(equipment_list[idx])
 
     def _emit_selection(self, equipment_data: dict) -> None:
@@ -303,7 +307,8 @@ class EquipmentPicker(QWidget):
             self._blocked = False
 
     def _on_equipment_selected(self, equipment_data: dict):
-        self._emit_selection(equipment_data)
+        if not getattr(self, "_setting_options", False):
+            self._emit_selection(equipment_data)
     def get_selected_equipment(self) -> dict:
         """Получить выбранное оборудование."""
         checked_id = self.button_group.checkedId()
