@@ -177,12 +177,12 @@ class ImportPreview:
 
     @property
     def total_forms_per_year(self) -> int:
-        return sum(c.forms_per_year for c in self.castings)
+        return sum(c.molds_per_year for c in self.castings)
 
     @property
     def total_metal_tons(self) -> float:
         """Общая масса заливаемого металла в год, тонн."""
-        return sum(c.metal_mass_year_tons for c in self.castings)
+        return sum(c.annual_metal_t for c in self.castings)
 
 
 # ---------------------------------------------------------------------------
