@@ -149,7 +149,7 @@ def _compatible(line: Mapping[str, Any], job: MoldingJob) -> bool:
     heights = spec.get("flask_heights_mm") or []
     # В спецификации вида 900x600x200/250 указаны ДВЕ высоты.
     # Проверять только первую опасно: вторую опоку линия может не принять.
-    height_fields = re.findall(r"\\d+(?:[.,]\\d+)?", str(job.flask_size_mm))[2:]
+    height_fields = re.findall(r"\d+(?:[.,]\d+)?", str(job.flask_size_mm))[2:]
     if heights and any(float(h.replace(",", ".")) not in heights
                        for h in height_fields):
         return False
@@ -199,9 +199,110 @@ def _allocate(group: Sequence[MoldingJob], machine: Mapping[str, Any], count: in
     return lines
 
 
+
+def _plan_manual(
+    jobs: Sequence[MoldingJob], equipment: Sequence[Mapping[str, Any]],
+    hours: float, factor: float, line_counts: Mapping[str, int],
+    max_lines: int,
+) -> BatchPlan:
+    """Проверить фактически заданный парк; ничего не добавлять автоматически.
+
+    Одна партия может делиться между совместимыми линиями. За каждую часть
+    начисляется переналадка, поэтому модель консервативна по этому ресурсу.
+    """
+    catalog: dict[str, Mapping[str, Any]] = {}
+    for card in equipment:
+        if "id" in card:
+            catalog[str(card["id"])] = card
+    if not isinstance(line_counts, Mapping):
+        raise ValueError("Ручной парк должен содержать словарь {id: число линий}")
+    count_sum = 0
+    for model_id, count in line_counts.items():
+        if str(model_id) not in catalog:
+            raise ValueError(f"Неизвестная модель формовочной линии: {model_id}")
+        if isinstance(count, bool) or not isinstance(count, int) or count < 0:
+            raise ValueError(f"Число линий {model_id} должно быть целым >= 0")
+        count_sum += count
+    if count_sum > max_lines:
+        raise ValueError(f"Ручной парк превышает лимит {max_lines} линий")
+    result = BatchPlan(total_molds=sum(j.annual_molds for j in jobs),
+                       max_load_factor=factor)
+    if any(j.setup_hours_per_batch == 0 for j in jobs):
+        result.warnings.append("Для части партий переналадка = 0 ч (оптимистичная оценка)")
+    for model_id, count in sorted(line_counts.items()):
+        if not count:
+            continue
+        machine = catalog[str(model_id)]
+        spec = machine.get("specs") or {}
+        speed = _number(spec.get("nominal_productivity_molds_h"), "Производительность линии")
+        power = spec.get("installed_power_kw")
+        installed_power = None if power is None else _number(power, "Мощность", zero=True)
+        for i in range(count):
+            result.lines.append(LineInstance(
+                str(model_id), str(machine.get("name") or model_id),
+                i + 1, speed, hours, hours * factor, installed_power))
+
+    compatibles = {
+        j.key: [ln for ln in result.lines if _compatible(catalog[ln.equipment_id], j)]
+        for j in jobs
+    }
+    # Сначала редкие совместимости: иначе универсальные линии могут
+    # заняться деталями, которые способны работать и на другой модели.
+    for job in sorted(jobs, key=lambda j: (
+        len(compatibles[j.key]),
+        -j.annual_molds / max((ln.nominal_molds_h for ln in compatibles[j.key]), default=1),
+        j.key,
+    )):
+        eligible = compatibles[job.key]
+        if not eligible:
+            result.unassigned.append(job.key)
+            result.warnings.append(f"{job.name}: в ручном парке нет совместимой линии")
+            continue
+        base, remainder = divmod(job.annual_molds, job.batches_per_year)
+        for index in range(job.batches_per_year):
+            forms = base + (1 if index < remainder else 0)
+            while forms:
+                possible = []
+                for ln in eligible:
+                    free_h = ln.allowed_hours - ln.used_hours - job.setup_hours_per_batch
+                    can_make = math.floor(free_h * ln.nominal_molds_h + 1e-7)
+                    if can_make > 0:
+                        possible.append((can_make, ln))
+                if not possible:
+                    if job.key not in result.unassigned:
+                        result.unassigned.append(job.key)
+                    result.warnings.append(
+                        f"{job.name}: не хватает {forms} форм (или больше) в заданном парке")
+                    # Other jobs may still fit; record shortfall and continue.
+                    break
+                fits = [(capacity, ln) for capacity, ln in possible if capacity >= forms]
+                if fits:
+                    _, selected = min(fits, key=lambda v: (
+                        (forms / v[1].nominal_molds_h) + job.setup_hours_per_batch,
+                        v[0] - forms, v[1].equipment_id, v[1].instance_no))
+                else:
+                    _, selected = max(possible, key=lambda v: (
+                        v[0], -v[1].instance_no))
+                qty = min(forms, max(cap for cap, ln in possible if ln is selected))
+                selected.campaigns.append(ScheduledCampaign(
+                    job.key, job.name, qty, qty / selected.nominal_molds_h,
+                    job.setup_hours_per_batch))
+                forms -= qty
+    result.assigned_molds = sum(c.molds for ln in result.lines for c in ln.campaigns)
+    if not result.feasible:
+        result.warnings.append(
+            f"Ручной парк НЕ выполняет программу: "
+            f"{result.assigned_molds:,} из {result.total_molds:,} форм распределено")
+    if any(not ln.campaigns for ln in result.lines):
+        result.warnings.append("В ручном парке есть простаивающие линии; они учтены в числе единиц")
+    result.warnings.append("Календарные смены и транспортные ограничения пока не моделируются")
+    return result
+
+
 def plan_molding_batches(
     jobs: Sequence[MoldingJob], equipment: Sequence[Mapping[str, Any]],
     fund_hours: float, *, max_load_factor: float = 0.85, max_lines_per_group: int = 100,
+    line_counts: Mapping[str, int] | None = None,
 ) -> BatchPlan:
     hours = _number(fund_hours, "Фонд оборудования")
     factor = _number(max_load_factor, "Максимальная загрузка")
@@ -209,6 +310,8 @@ def plan_molding_batches(
         raise ValueError("Некорректная загрузка или ограничение числа линий")
     if len({j.key for j in jobs}) != len(jobs):
         raise ValueError("Повторяющиеся идентификаторы отливок")
+    if line_counts is not None:
+        return _plan_manual(jobs, equipment, hours, factor, line_counts, max_lines_per_group)
     plan = BatchPlan(total_molds=sum(j.annual_molds for j in jobs), max_load_factor=factor)
     if not jobs:
         plan.warnings.append("Нет номенклатуры для распределения")
