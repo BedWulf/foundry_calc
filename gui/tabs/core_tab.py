@@ -37,6 +37,7 @@ from config import COLORS
 from core.project import Project
 from core.core_making import (
     CoreCalculator, DEFAULT_CORES_PER_MOLD, calc_annual_cores,
+    machine_hourly_output,
 )
 from core.molding import calc_avg_cores_per_mold, calc_molding
 from core.user_choices import UserChoices
@@ -415,8 +416,7 @@ class CoreTab(QWidget):
             "machine_count": int(self._selected.get("_num_required", 0)),
             "load_factor": float(self._selected.get("_load_factor", 0.0)),
             "capacity_cores_year": (
-                __import__("core.core_making", fromlist=["machine_hourly_output"])
-                .machine_hourly_output(self._selected)
+                machine_hourly_output(self._selected)
                 * int(self._selected.get("_num_required", 0))
                 * float(getattr(self.project, "F_equipment_h", 0) or 0)
                 if self._selected.get("id") else None),
