@@ -21,13 +21,19 @@ def main() -> int:
     if APP_ICON.exists():
         app.setWindowIcon(QIcon(str(APP_ICON)))
 
-    window = MainWindow()
     import os
     if os.environ.get("FOUNDRY_SMOKE_TEST") == "1":
-        # Headless CI validates bundled imports and full widget construction.
-        # Showing a top-level Qt window without an interactive Windows desktop
-        # can block indefinitely; real visual launch needs a desktop smoke test.
+        # The Windows CI runner has no interactive desktop: assert the
+        # executable can load Qt, application imports, catalogues and manual.
+        # GUI construction is separately checked from Python in the workflow.
+        from config import DATA_DIR, DOCS_DIR
+        if not (DATA_DIR / "equipment" / "molding_lines.json").is_file():
+            return 21
+        if not (DOCS_DIR / "USER_MANUAL.md").is_file():
+            return 22
         return 0
+
+    window = MainWindow()
     window.show()
     return app.exec()
 
