@@ -410,22 +410,27 @@ class SandTab(QWidget):
             count = (int(selected_card.get("count", selected_card.get("_units", 0)))
                      if selected_card else int(op.get("units") or 0))
             unit = str(raw.get("unit", "")) if raw else ""
+            # Original sand-preparation equations use tonnes for lumps and
+            # cubic metres for every other operation. Machine catalogues
+            # are not allowed to silently change those physical dimensions.
+            expected_unit = "t_h" if op["operation"] == "lumps" else "m3_h"
             quantity = op.get("quantity")
             working_hours = summary.get("working_hours")
             throughput = machine_productivity(raw) if raw else 0
             capacity = (throughput * count * float(working_hours)
                         if raw and throughput > 0 and count > 0
-                        and working_hours and unit in ("m3_h", "t_h") else None)
+                        and working_hours and unit == expected_unit else None)
             capacity_operations.append({
                 "operation": op["operation"],
                 "title": op["title"],
                 "quantity": quantity,
                 "capacity_year": capacity,
-                "unit": ("м³/год" if unit == "m3_h" else
-                         "т/год" if unit == "t_h" else "неизвестно"),
-                "note": "Без проверки пиковых сменных нагрузок"
-                        if capacity is not None else
-                        "Нет выбранного оборудования или паспортного расхода",
+                "unit": ("т/год" if expected_unit == "t_h" else "м³/год"),
+                "note": ("Без проверки пиковых сменных нагрузок"
+                         if capacity is not None else
+                         "Единицы каталога не совпадают с потребностью"
+                         if raw and unit != expected_unit else
+                         "Нет выбранного оборудования или паспортной мощности"),
             })
         return {
             "total_park_units": summary.get("total_park_units", 0),
