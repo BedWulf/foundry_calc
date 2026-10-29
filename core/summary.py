@@ -13,6 +13,8 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
+from core.plant_capacity import calculate_plant_capacity
+
 # ----------------------------------------------------------------------
 # Константы оформления экспорта (палитра приложения; для Excel — hex)
 # ----------------------------------------------------------------------
@@ -77,6 +79,9 @@ class SummaryResult:
     missing_sections: List[str] = field(default_factory=list)
     warnings: List[str] = field(default_factory=list)
     ready: bool = True
+    capacity_rows: List[Dict[str, Any]] = field(default_factory=list)
+    capacity_has_deficit: bool = False
+    capacity_unverified: bool = False
 
     def as_dict(self) -> Dict[str, Any]:
         """Представить сводку словарём (для UI и экспорта)."""
@@ -94,6 +99,9 @@ class SummaryResult:
             "missing_sections": list(self.missing_sections),
             "warnings": list(self.warnings),
             "ready": self.ready,
+            "capacity_rows": list(self.capacity_rows),
+            "capacity_has_deficit": self.capacity_has_deficit,
+            "capacity_unverified": self.capacity_unverified,
         }
 
 
@@ -247,6 +255,23 @@ def build_summary(summaries: Dict[str, Dict[str, Any]],
             res.missing_sections.append(title)
     if res.missing_sections:
         res.ready = False
+
+    balance = calculate_plant_capacity(summaries, project)
+    res.capacity_rows = [row.as_dict() for row in balance.rows]
+    res.capacity_has_deficit = balance.has_deficit
+    res.capacity_unverified = balance.unverified
+    if balance.has_deficit:
+        res.ready = False
+        for row in balance.rows:
+            if row.status == "deficit":
+                shortage = (row.demand or 0) - (row.capacity or 0)
+                res.warnings.append(
+                    f"НЕДОСТАТОК МОЩНОСТИ: {row.department} — {row.stream}; "
+                    f"дефицит {shortage:,.1f} {row.unit}")
+    if balance.unverified:
+        res.warnings.append(
+            "Часть производственных потоков не проверена: "
+            "отсутствуют паспортные данные или внутрисменный график")
     return res
 
 
@@ -384,6 +409,37 @@ def export_to_excel(result: SummaryResult, path: Path | str) -> Path:
                 value="⚠ Разделы без данных: "
                       + ", ".join(result.missing_sections)).font = f_note
         row_idx += 1
+
+    if result.warnings:
+        for warning in result.warnings:
+            ws.cell(row=row_idx, column=1, value="⚠ " + warning).font = f_note
+            row_idx += 1
+
+    # На отдельном листе единицы потока не смешиваются, а статус unknown
+    # отличается от реального дефицита мощности.
+    balance_ws = wb.create_sheet("Баланс мощностей")
+    headers_balance = ["Отделение", "Поток", "Потребность", "Мощность",
+                       "Ед./статус", "Примечание"]
+    for col, title in enumerate(headers_balance, 1):
+        cell = balance_ws.cell(row=1, column=col, value=title)
+        cell.font = f_head
+        cell.fill = fill_panel
+    for idx, row in enumerate(result.capacity_rows, 2):
+        values = [
+            row["department"], row["stream"],
+            row["demand"], row["capacity"],
+            str(row["unit"]) + " / " + str(row["status"]),
+            row["note"],
+        ]
+        for col, val in enumerate(values, 1):
+            cell = balance_ws.cell(row=idx, column=col, value=val)
+            cell.font = f_norm
+            cell.fill = fill_bg
+            cell.border = border
+    for col, width in enumerate((25, 40, 20, 20, 28, 72), 1):
+        balance_ws.column_dimensions[get_column_letter(col)].width = width
+    balance_ws.freeze_panes = "C2"
+    balance_ws.auto_filter.ref = f"A1:F{max(1, len(result.capacity_rows) + 1)}"
 
     widths = [26, 34, 12, 16, 34]
     for c, w in enumerate(widths, start=1):
