@@ -19,11 +19,11 @@ jobs:
       - name: Install Qt runtime libraries for offscreen tests
         run: sudo apt-get update -qq && sudo apt-get install -y libegl1 libgl1 libxkbcommon-x11-0
       - name: Install test dependencies
-        run: python -m pip install --upgrade pytest && python -m pip install -r requirements.txt
+        run: python -m pip install --upgrade pytest pytest-timeout && python -m pip install -r requirements.txt
       - name: Verify syntax
         run: python -m compileall -q core gui data import_export tests
       - name: Run tests
         env:
           PYTHONPATH: .
           QT_QPA_PLATFORM: offscreen
-        run: python -m pytest -q
+        run: python -m pytest -q --timeout=25
