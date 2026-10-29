@@ -296,7 +296,7 @@ class ExcelImporter:
                 f"Строка {row_num} ({name}): металл по исходному диплому "
                 f"{original_metal_t:.3f} т, по L×ceil(F/G) "
                 f"{casting_metal_t:.3f} т. Проверьте данные и округление.")
-        dims = re.findall(r"\\d+(?:[.,]\\d+)?", str(flask or ""))
+        dims = re.findall(r"\d+(?:[.,]\d+)?", str(flask or ""))
         if len(dims) < 2:
             self._warnings.append(
                 f"Строка {row_num} ({name}): не распознана опока {flask!r}")
