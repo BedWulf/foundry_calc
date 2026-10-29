@@ -14,6 +14,7 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
 from core.plant_capacity import calculate_plant_capacity
+from core.shift_capacity import calculate_shift_stress
 
 # ----------------------------------------------------------------------
 # Константы оформления экспорта (палитра приложения; для Excel — hex)
@@ -82,6 +83,10 @@ class SummaryResult:
     capacity_rows: List[Dict[str, Any]] = field(default_factory=list)
     capacity_has_deficit: bool = False
     capacity_unverified: bool = False
+    shift_rows: List[Dict[str, Any]] = field(default_factory=list)
+    shift_has_deficit: bool = False
+    shift_lines_running: int = 0
+    shift_hours: float = 0.0
 
     def as_dict(self) -> Dict[str, Any]:
         """Представить сводку словарём (для UI и экспорта)."""
@@ -102,6 +107,10 @@ class SummaryResult:
             "capacity_rows": list(self.capacity_rows),
             "capacity_has_deficit": self.capacity_has_deficit,
             "capacity_unverified": self.capacity_unverified,
+            "shift_rows": list(self.shift_rows),
+            "shift_has_deficit": self.shift_has_deficit,
+            "shift_lines_running": self.shift_lines_running,
+            "shift_hours": self.shift_hours,
         }
 
 
@@ -272,6 +281,29 @@ def build_summary(summaries: Dict[str, Dict[str, Any]],
         res.warnings.append(
             "Часть производственных потоков не проверена: "
             "отсутствуют паспортные данные или внутрисменный график")
+
+    if project is not None:
+        try:
+            scenario = calculate_shift_stress(
+                summaries,
+                shift_hours=float(getattr(project, "shift_duration_h", 0)),
+                concurrent_lines=int(mold.get("concurrent_line_limit", 0) or 0),
+                ugar_pct=getattr(project, "ugar_pct", None),
+            )
+        except (ValueError, TypeError):
+            res.warnings.append("Сменный сценарий не рассчитан: неверные параметры смены")
+        else:
+            res.shift_rows = [row.as_dict() for row in scenario.rows]
+            res.shift_lines_running = scenario.lines_running
+            res.shift_hours = scenario.shift_hours
+            res.shift_has_deficit = scenario.has_deficit
+            if scenario.has_deficit:
+                res.ready = False
+                for row in scenario.rows:
+                    if row.status == "deficit":
+                        res.warnings.append(
+                            "СМЕННЫЙ ПИК: " + row.stream
+                            + " — потребность выше теоретической подачи")
     return res
 
 
@@ -440,6 +472,29 @@ def export_to_excel(result: SummaryResult, path: Path | str) -> Path:
         balance_ws.column_dimensions[get_column_letter(col)].width = width
     balance_ws.freeze_panes = "C2"
     balance_ws.auto_filter.ref = f"A1:F{max(1, len(result.capacity_rows) + 1)}"
+
+    if result.shift_rows:
+        shift_ws = wb.create_sheet("Сменный сценарий")
+        shift_ws.append([
+            "Проверка пика, не календарь", "Потребность", "Подача",
+            "Единицы", "Статус", "Ограничение",
+        ])
+        for col in range(1, 7):
+            shift_ws.cell(row=1, column=col).font = f_head
+            shift_ws.cell(row=1, column=col).fill = fill_panel
+        for entry in result.shift_rows:
+            shift_ws.append([
+                entry["stream"], entry["demand"], entry["available"],
+                entry["unit"], entry["status"], entry["note"],
+            ])
+            for col in range(1, 7):
+                cell = shift_ws.cell(row=shift_ws.max_row, column=col)
+                cell.font = f_norm
+                cell.fill = fill_bg
+                cell.border = border
+        for col, width in enumerate((40, 20, 20, 20, 18, 80), 1):
+            shift_ws.column_dimensions[get_column_letter(col)].width = width
+        shift_ws.freeze_panes = "B2"
 
     widths = [26, 34, 12, 16, 34]
     for c, w in enumerate(widths, start=1):
