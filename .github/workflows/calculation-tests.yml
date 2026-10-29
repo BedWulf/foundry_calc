@@ -4,6 +4,10 @@ on:
     branches:
       - engineering-audit-batch-planning-20261028
   pull_request:
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   tests:
     runs-on: ubuntu-latest
