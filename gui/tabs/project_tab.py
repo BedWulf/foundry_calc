@@ -78,6 +78,7 @@ class ProjectTab(QWidget):
     """Вкладка исходных данных проекта."""
 
     project_changed = Signal()
+    help_requested = Signal()
 
     def __init__(self, project: Project, parent=None):
         super().__init__(parent)
@@ -100,6 +101,14 @@ class ProjectTab(QWidget):
         title.setFont(QFont("Segoe UI", 18, QFont.Bold))
         title.setStyleSheet(f"color: {COLORS['accent']}; padding: 4px 0 8px 0;")
         root.addWidget(title)
+        hint_row = QHBoxLayout()
+        hint = QLabel("Впервые работаете с программой? Начните с инструкции.")
+        hint.setWordWrap(True)
+        help_button = QPushButton("❓ Что и куда вводить")
+        help_button.clicked.connect(self.help_requested.emit)
+        hint_row.addWidget(hint, 1)
+        hint_row.addWidget(help_button)
+        root.addLayout(hint_row)
 
         scroll = QScrollArea()
         scroll.setWidgetResizable(True)
