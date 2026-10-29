@@ -14,7 +14,7 @@ def save_tutorial_excel(filename: Path) -> Path:
     Числа учебные, а не нормативное обоснование оборудования.
     """
     target = Path(filename)
-    if target.suffix.lower() not in (".xlsx", ".xlsm"):
+    if target.suffix.lower() != ".xlsx":
         raise ValueError("Файл учебной номенклатуры должен иметь расширение .xlsx")
     target.parent.mkdir(parents=True, exist_ok=True)
     wb = Workbook()
