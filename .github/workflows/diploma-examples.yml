@@ -1,0 +1,77 @@
+name: Verify and commit diploma Excel examples
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - engineering-audit-batch-planning-20261028
+    paths:
+      - scripts/generate_diploma_excel.py
+      - .github/workflows/diploma-examples.yml
+      - 'Sample Diploma.pdf'
+      - 'Sample Diploma 2.pdf'
+
+permissions:
+  contents: write
+
+jobs:
+  create-diploma-ledgers:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install extraction and application-import dependencies
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y poppler-utils
+          python -m pip install openpyxl
+      - name: Extract the original PDF ledgers and generate two XLSX
+        run: python scripts/generate_diploma_excel.py
+      - name: Re-import both source-format XLSX with the actual application parser
+        env:
+          PYTHONPATH: .
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          from import_export.excel_importer import ExcelImporter
+          from openpyxl import load_workbook
+          fixtures = [
+              ("examples/Диплом_1_ведомость_формовки.xlsx", 5271000, 1368325, 0),
+              ("examples/Диплом_2_ведомость_формовки.xlsx", 9001281, 768159, 6),
+          ]
+          for filename, expected_pieces, expected_molds, expected_form_errors in fixtures:
+              path = Path(filename)
+              assert path.is_file(), filename
+              wb = load_workbook(path, data_only=True, read_only=True)
+              assert wb.sheetnames == ["Ведомость формовки", "Импорт A-P", "Сверка"], wb.sheetnames
+              assert wb.worksheets[0].max_row >= 24
+              assert wb.worksheets[0]["F24"].value == expected_pieces
+              wb.close()
+              importer = ExcelImporter()
+              preview = importer.load_preview(path)
+              assert len(preview.castings) == 20, (filename, len(preview.castings))
+              assert sum(c.annual_qty_with_brak for c in preview.castings) == expected_pieces
+              assert sum(c.molds_per_year for c in preview.castings) == expected_molds
+              warnings = [w for w in preview.warnings if "в дипломе" in w and "ceil(" in w]
+              assert len(warnings) == expected_form_errors, (filename, warnings)
+              print(path.name, "imported 20 castings:", expected_pieces,
+                    "pieces;", expected_molds, "computed molds;",
+                    len(preview.warnings), "source warnings")
+          PY
+      - name: Commit the TWO verified Excel files to this working branch
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -- "examples/Диплом_1_ведомость_формовки.xlsx" "examples/Диплом_2_ведомость_формовки.xlsx"
+          if git diff --cached --quiet; then
+            echo "Diploma spreadsheets already up to date"
+          else
+            git commit -m "testdata: add two diploma ledgers extracted from original PDF"
+            git push origin "HEAD:engineering-audit-batch-planning-20261028"
+          fi
