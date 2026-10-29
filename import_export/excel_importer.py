@@ -405,7 +405,7 @@ class ExcelImporter:
         metal_year_tons = effective_pour_mass * molds / 1000.0
         # K допускает одну высоту или две полуформы вида 200/250.
         raw_h = str(row[self.COL_FLASK_H] or "").replace(",", ".")
-        height_parts = re.findall(r"\\d+(?:\\.\\d+)?", raw_h)
+        height_parts = re.findall(r"\d+(?:\.\d+)?", raw_h)
         if len(height_parts) >= 2:
             upper, lower = float(height_parts[0]), float(height_parts[1])
         else:
