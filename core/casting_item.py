@@ -48,6 +48,15 @@ class CastingItem:
         """Полная масса металла по позиции за год (т)."""
         return self.annual_metal_t
 
+    @property
+    def annual_mass_t(self) -> float:
+        """Масса металла по заливке за год для импортированной позиции.
+
+        Не путать с годной массой отливок: для последней необходимы
+        масса без ЛПС и процент фактического брака.
+        """
+        return self.annual_metal_t
+
     def validate(self) -> bool:
         """Базовая валидация полей."""
         return (
