@@ -225,9 +225,15 @@ def calc_molding(
                 batches_per_year=int(getattr(project, "molding_batches_per_year", 1)),
                 setup_hours_per_batch=float(getattr(project, "molding_setup_h", 0.0)),
             )
+            park_mode = getattr(project, "molding_park_mode", "auto")
+            if park_mode not in ("auto", "manual"):
+                raise ValueError("Неизвестный режим выбора формовочных линий")
+            fixed_counts = (dict(getattr(project, "molding_line_counts", {}) or {})
+                            if park_mode == "manual" else None)
             batch_plan = plan_molding_batches(
                 jobs, calc._all_lines(), fund,
                 max_load_factor=float(getattr(project, "molding_max_load_factor", 0.85)),
+                line_counts=fixed_counts,
             )
         except (ValueError, TypeError, KeyError) as exc:
             planning_error = str(exc)
