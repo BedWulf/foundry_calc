@@ -154,6 +154,24 @@ class SummaryTab(QWidget):
         park_layout.addWidget(self.table)
         layout.addWidget(park_box)
 
+        # Годовой баланс потоков между отделениями (без подмены единиц).
+        capacity_box = QGroupBox("Баланс мощностей и узкие места")
+        capacity_box.setStyleSheet(GROUP_STYLE)
+        capacity_layout = QVBoxLayout(capacity_box)
+        self.capacity_table = QTableWidget(0, 6)
+        self.capacity_table.setHorizontalHeaderLabels([
+            "Отделение", "Поток", "Потребность", "Мощность",
+            "Оценка", "Основание"])
+        self.capacity_table.setStyleSheet(TABLE_STYLE)
+        self.capacity_table.setEditTriggers(QAbstractItemView.NoEditTriggers)
+        self.capacity_table.verticalHeader().setVisible(False)
+        self.capacity_table.horizontalHeader().setSectionResizeMode(
+            1, QHeaderView.Stretch)
+        self.capacity_table.horizontalHeader().setSectionResizeMode(
+            5, QHeaderView.Stretch)
+        capacity_layout.addWidget(self.capacity_table)
+        layout.addWidget(capacity_box)
+
         # ── Предупреждения ─────────────────────────────────────────────
         self.warn_label = QLabel("")
         self.warn_label.setWordWrap(True)
@@ -251,6 +269,25 @@ class SummaryTab(QWidget):
                 self.table.setItem(i, j, it)
 
         messages = list(r.warnings)
+        self.capacity_table.setRowCount(len(r.capacity_rows))
+        status_labels = {"ok": "По году достаточно",
+                         "deficit": "ДЕФИЦИТ", "unknown": "Не проверено"}
+        for i, cap in enumerate(r.capacity_rows):
+            demand = cap.get("demand")
+            supply = cap.get("capacity")
+            unit = str(cap.get("unit", ""))
+            values = [
+                str(cap.get("department", "")),
+                str(cap.get("stream", "")),
+                f"{demand:,.1f} {unit}" if demand is not None else "—",
+                f"{supply:,.1f} {unit}" if supply is not None else "—",
+                status_labels.get(cap.get("status", ""), "Не проверено"),
+                str(cap.get("note", "")),
+            ]
+            for column, value in enumerate(values):
+                self.capacity_table.setItem(i, column, QTableWidgetItem(value))
+        self.capacity_table.resizeRowsToContents()
+
         if r.missing_sections:
             messages.append("Разделы без данных: " + ", ".join(r.missing_sections))
         if not r.ready:
