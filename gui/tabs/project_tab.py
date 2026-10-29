@@ -624,21 +624,30 @@ class ProjectTab(QWidget):
             return
 
         try:
-            importer = ExcelImporter(Path(path))
-            items = importer.parse()
+            preview = ExcelImporter().load_preview(Path(path))
+            items = preview.castings
             if not items:
-                QMessageBox.warning(self, "Импорт", "Не удалось распознать данные в файле.")
+                QMessageBox.warning(self, "Импорт",
+                                    "Не удалось распознать данные в файле.")
                 return
             self.project.clear_castings()
             for item in items:
                 self.project.add_casting(item)
             self._refresh_table()
             self.project_changed.emit()
-            QMessageBox.information(
-                self, "Импорт завершён",
+            message = (
                 f"Загружено позиций: {len(items)}\n"
-                f"Суммарная масса: {self.project.total_castings_mass_t():.2f} т"
-            )
+                f"Заливка по программе: {self.project.total_castings_mass_t():.2f} т/год")
+            if preview.warnings:
+                notes = "\n".join(preview.warnings[:12])
+                remaining = len(preview.warnings) - 12
+                if remaining > 0:
+                    notes += f"\n... ещё предупреждений: {remaining}"
+                QMessageBox.warning(
+                    self, "Импорт завершён с замечаниями",
+                    message + "\n\nПРОВЕРЬТЕ ИСХОДНЫЕ ДАННЫЕ:\n" + notes)
+            else:
+                QMessageBox.information(self, "Импорт завершён", message)
         except Exception as e:
             QMessageBox.critical(self, "Ошибка импорта", f"{type(e).__name__}: {e}")
 
