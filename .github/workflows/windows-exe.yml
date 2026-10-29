@@ -8,6 +8,7 @@ on:
       - 'requirements.txt'
       - 'data/**'
       - 'assets/**'
+      - 'docs/**'
       - '.github/workflows/windows-exe.yml'
       - 'build_windows.bat'
 
@@ -18,54 +19,36 @@ concurrency:
 jobs:
   windows-exe:
     runs-on: windows-latest
-    timeout-minutes: 40
+    timeout-minutes: 45
+    env:
+      FOUNDRY_BUILD_HOME: ${{ runner.temp }}\FPRO
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
           architecture: 'x64'
-          cache: 'pip'
-      - name: Install dependencies
-        shell: pwsh
-        run: |
-          python -m pip install --upgrade pip
-          python -m pip install -r requirements.txt "pyinstaller>=6.12,<7" pytest pytest-timeout
-      - name: Compile Python modules
-        run: python -m compileall -q core gui data import_export tests
-      - name: Run calculation tests
-        env:
-          PYTHONPATH: .
-        run: python -m pytest -q --timeout=25
-      - name: Smoke test GUI construction (no user interaction)
-        shell: pwsh
-        env:
-          QT_QPA_PLATFORM: offscreen
-          PYTHONPATH: .
-        run: |
-          python -c "from PySide6.QtWidgets import QApplication; from gui.main_window import MainWindow; app=QApplication([]); w=MainWindow(); print('GUI initialization OK')"
-      - name: Bundle EXE
-        shell: pwsh
-        run: |
-          python -m PyInstaller --noconfirm --clean --onedir --windowed --name LiteynyiTsehPRO --icon "assets/icons/app_icon.ico" --add-data "data;data" --add-data "assets;assets" --add-data "docs;docs" main.py
-          if (!(Test-Path "dist/LiteynyiTsehPRO/LiteynyiTsehPRO.exe")) { throw "EXE not produced" }
-      - name: Smoke test packaged Qt imports and resources
+      - name: Build and test using the SAME bat file as on a new Windows PC
+        shell: cmd
+        run: call build_windows.bat
+      - name: Verify packaged EXE and bundled resources
         shell: pwsh
         env:
           QT_QPA_PLATFORM: offscreen
           FOUNDRY_SMOKE_TEST: '1'
         run: |
-          $exe = (Resolve-Path "dist/LiteynyiTsehPRO/LiteynyiTsehPRO.exe").Path
+          $exe = Join-Path $env:FOUNDRY_BUILD_HOME "dist\LiteynyiTsehPRO\LiteynyiTsehPRO.exe"
+          if (!(Test-Path $exe)) { throw "EXE not produced by batch builder" }
           $p = Start-Process -FilePath $exe -PassThru
-          if (-not $p.WaitForExit(120000)) {
+          if (-not $p.WaitForExit(45000)) {
             $p.Kill()
-            throw "Packaged GUI did not exit after smoke-test timer"
+            throw "Bundled EXE did not exit in smoke mode"
           }
-          if ($p.ExitCode -ne 0) { throw "Packaged GUI exited with code $($p.ExitCode)" }
+          if ($p.ExitCode -ne 0) { throw "Bundled EXE failed with exit code $($p.ExitCode)" }
       - name: Upload portable Windows folder
         uses: actions/upload-artifact@v4
         with:
           name: LiteynyiTsehPRO-Windows-x64
-          path: dist/LiteynyiTsehPRO/
+          path: ${{ runner.temp }}\FPRO\dist\LiteynyiTsehPRO\
           retention-days: 30
           if-no-files-found: error
