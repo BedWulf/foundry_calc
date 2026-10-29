@@ -32,6 +32,13 @@ if not errorlevel 1 (
   if not errorlevel 1 set "PYTHON_CMD=py -3.12"
 )
 if not defined PYTHON_CMD (
+  where python >nul 2>nul
+  if not errorlevel 1 (
+    python -c "import sys; assert sys.version_info[:2] == (3,12) and sys.maxsize > 2**32" >nul 2>nul
+    if not errorlevel 1 set "PYTHON_CMD=python"
+  )
+)
+if not defined PYTHON_CMD (
   if exist "%LOCALAPPDATA%\Programs\Python\Python312\python.exe" (
     set PYTHON_CMD="%LOCALAPPDATA%\Programs\Python\Python312\python.exe"
   )
