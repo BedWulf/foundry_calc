@@ -231,8 +231,16 @@ class ExcelImporter:
         "Объём смеси, м³", "—", "Тип машины",
     ]
 
-    def __init__(self):
+    def __init__(self, file_path: Optional[Path] = None):
         self._warnings: List[str] = []
+        self.file_path = Path(file_path) if file_path else None
+
+    def parse(self, file_path: Optional[Path] = None) -> List[CastingItem]:
+        """Direct GUI API; do not change the project on an import error."""
+        source = Path(file_path) if file_path else self.file_path
+        if source is None:
+            raise ValueError("Укажите путь к Excel-файлу")
+        return self.load_preview(source).castings
 
     # ------------------------------------------------------------------
     # Публичные методы
@@ -314,7 +322,8 @@ class ExcelImporter:
         project.source_file = str(preview.file_path)
 
         # Пересчитываем суммарные поля проекта
-        project.recalc_totals()
+        if hasattr(project, "recalc_totals"):
+            project.recalc_totals()
 
         # Сигналим GUI о необходимости обновления всех вкладок
         if hasattr(project, "params_changed"):
@@ -371,54 +380,68 @@ class ExcelImporter:
                 f"Строка {row_num} ({name}): не распознаны размеры опоки"
             )
 
-        # --- Вычисляемые поля ---
-        # Масса заливаемого металла в год, тонн
-        # = (заливочная масса × годовая программа) / 1000
-        # Если заливочная масса не указана — берём массу с ЛПС
-        effective_pour_mass = pour_mass if pour_mass > 0 else mass_lps
-        metal_year_tons = (effective_pour_mass * forms_per_year) / 1000.0
-
-        # Количество отливок в год (шт. готовых, без ЛПС)
-        castings_per_year = forms_per_year // in_form if in_form > 0 else 0
-
-        # Масса одной отливки (без ЛПС), кг
-        casting_mass = mass_lps / in_form if in_form > 0 else mass_lps
-
-        # Формируем объект CastingItem
-        try:
-            casting = CastingItem(
-                num=num,
-                name=name,
-                casting_mass_kg=casting_mass,
-                mass_with_lps_kg=mass_lps,
-                dimension1_mm=dim1,
-                dimension2_mm=dim2,
-                height_mm=height,
-                forms_per_year=forms_per_year,
-                castings_in_form=in_form,
-                castings_per_year=castings_per_year,
-                flask_l_mm=flask_l,
-                flask_w_mm=flask_w,
-                flask_h_mm=flask_h,
-                pour_mass_kg=pour_mass,
-                metal_mass_year_tons=metal_year_tons,
-                mix_volume_m3=mix_volume,
-                machine_type=machine,
-            )
-        except Exception as e:
+        # Столбец F — количество ОТЛИВОК в год с учётом брака.
+        # Столбец G — сколько отливок размещено в одной форме.
+        # Число форм = ceil(F/G). Это не F и не F*G!
+        if mass_lps <= 0 or forms_per_year <= 0 or in_form <= 0:
             self._warnings.append(
-                f"Строка {row_num} ({name}): ошибка создания объекта — {e}"
-            )
-            return (None, None)
-
+                f"Строка {row_num} ({name}): нужны положительные C, F и G")
+            return None, None
+        if flask_l <= 0 or flask_w <= 0 or flask_h <= 0:
+            self._warnings.append(
+                f"Строка {row_num} ({name}): нужны размеры опоки I, J, K")
+            return None, None
+        molds = (forms_per_year + in_form - 1) // in_form
+        # L — масса металла, заливаемого в ОДНУ форму, включая все
+        # отливки, литниковую систему и прибыли.
+        effective_pour_mass = pour_mass
+        if effective_pour_mass <= 0:
+            effective_pour_mass = mass_lps * in_form
+            self._warnings.append(
+                f"Строка {row_num} ({name}): L не заполнено; "
+                "заливочная масса оценена как C×G. Проверьте ЛПС.")
+        # C — масса одной отливки С ЛПС. Чистая масса без ЛПС неизвестна,
+        # не выдаём её за рассчитанный показатель.
+        metal_year_tons = effective_pour_mass * molds / 1000.0
+        # K допускает одну высоту или две полуформы вида 200/250.
+        raw_h = str(row[self.COL_FLASK_H] or "").replace(",", ".")
+        height_parts = re.findall(r"\\d+(?:\\.\\d+)?", raw_h)
+        if len(height_parts) >= 2:
+            upper, lower = float(height_parts[0]), float(height_parts[1])
+        else:
+            upper = lower = flask_h
+            self._warnings.append(
+                f"Строка {row_num} ({name}): в K указана одна высота; "
+                "приняты одинаковые высоты верхней и нижней полуформ.")
+        def _dim(n: float) -> str:
+            return str(int(n)) if float(n).is_integer() else str(n)
+        casting = CastingItem(
+            index=num or row_num - self.DATA_START_ROW + 1,
+            name=name,
+            mass_with_LPS_kg=mass_lps,
+            mass_casting_kg=0.0,
+            dimensions_mm=str(row[self.COL_DIM] or ""),
+            height_mm=height,
+            length_mm=dim1,
+            width_mm=dim2 or 0.0,
+            annual_qty_pcs=forms_per_year,  # F уже учитывает брак
+            annual_qty_with_brak=forms_per_year,
+            brak_pct=0.0,                 # исключить двойное начисление брака
+            molds_per_year=molds,
+            flask_size_mm=f"{_dim(flask_l)}x{_dim(flask_w)}x{_dim(upper)}/{_dim(lower)}",
+            pouring_mass_kg=effective_pour_mass,
+            annual_metal_t=metal_year_tons,
+            mix_volume_m3=mix_volume,
+            molding_machine=machine,
+        )
         # Строка для предпросмотра
         preview_row = [
             num, name, f"{mass_lps:.2f}",
             f"Ø{dim1:.0f}" if dim2 is None else f"{dim1:.0f}×{dim2:.0f}",
             f"{height:.0f}", forms_per_year, in_form,
             f"{metal_year_tons:.2f}",
-            f"{flask_l:.0f}", f"{flask_w:.0f}", f"{flask_h:.0f}",
-            f"{pour_mass:.2f}", f"{metal_year_tons:.2f}",
+            f"{flask_l:.0f}", f"{flask_w:.0f}", f"{upper:.0f}/{lower:.0f}",
+            f"{effective_pour_mass:.2f}", f"{metal_year_tons:.2f}",
             f"{mix_volume:.3f}", "—", machine,
         ]
 
