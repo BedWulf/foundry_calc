@@ -311,6 +311,70 @@ class ExcelImporter:
             dims[0], dims[1], halfheights, pour, None, mix_one, None, machine,
         )
 
+    @staticmethod
+    def _is_teacher_molding_sheet(ws) -> bool:
+        """Identify official course workbook's Table 8 by CONTENT, not filename.
+
+        Таблица 1 and Таблица 2 have different engineering units. Never
+        attempt to import them as A:P castings.
+        """
+        a = str(ws.cell(1, 1).value or "").strip().lower()
+        b = str(ws.cell(1, 2).value or "").strip().lower()
+        g = str(ws.cell(1, 7).value or "").strip().lower()
+        h = str(ws.cell(1, 8).value or "").strip().lower()
+        return (a.startswith("номер") and "наименован" in b
+                and "с учетом брака" in g and "в форме" in h)
+
+    def _convert_teacher_row(self, row: tuple, row_num: int,
+                             machine: str) -> tuple[tuple, str]:
+        """Official teacher sheet Table 8, A:P, data begin at row 7.
+
+        Source A-P:
+          A no, B name, C casting mass, D/E/F size, G pcs/year,
+          H pcs/mold, I fractional source molds, J flask width/length,
+          K two half-heights, L metal per mold, M source metal/year kg,
+          N/O mixture, P machine (often merged down from first row).
+        """
+        if len(row) < 16:
+            row = tuple(row) + (None,) * (16 - len(row))
+        (num, name, mass, length, width, height, annual_pieces,
+         per_mold, source_molds, flask, halfheights, pour_mass,
+         source_metal, mix_one, source_mix, equipment) = row[:16]
+        if not isinstance(num, (int, float)) or isinstance(num, bool):
+            raise ValueError("Таблица 8: ожидается числовой № отливки")
+        if not str(name or "").strip():
+            raise ValueError("Таблица 8: отсутствует наименование")
+        dims = re.findall(r"\d+(?:[.,]\d+)?", str(flask or ""))
+        if len(dims) != 2:
+            raise ValueError(f"Таблица 8: некорректные размеры опоки: {flask!r}")
+        qty = _safe_int(annual_pieces)
+        each = _safe_int(per_mold)
+        if qty <= 0 or each <= 0:
+            raise ValueError("Таблица 8: неверная программа G или количество H")
+        forms = (qty + each - 1) // each
+        source_forms = _safe_float(source_molds)
+        if source_forms and abs(forms - source_forms) > 1e-6:
+            self._warnings.append(
+                f"Строка {row_num} ({name}): в таблице 8 {source_forms:g} "
+                f"форм, для физической программы ceil({qty}/{each}) = {forms}.")
+        reported_metal = _safe_float(source_metal)
+        calculated_metal = forms * _safe_float(pour_mass)
+        if reported_metal and abs(reported_metal - calculated_metal) > max(
+                0.1, reported_metal * 1e-6):
+            self._warnings.append(
+                f"Строка {row_num} ({name}): металл в исходной таблице "
+                f"{reported_metal:g} кг, при целом количестве форм "
+                f"{calculated_metal:g} кг. Исходное значение не исправлено.")
+        if equipment:
+            machine = str(equipment)
+        converted = (
+            int(num), str(name).strip(), mass,
+            f"{length}x{width}", height, qty, each, None,
+            dims[0], dims[1], halfheights, pour_mass, None,
+            mix_one, None, machine,
+        )
+        return converted, machine
+
     def load_preview(self, file_path: Path) -> ImportPreview:
         """
         Загружает файл и формирует предпросмотр.
@@ -328,18 +392,27 @@ class ExcelImporter:
 
         self._warnings = []
         wb = openpyxl.load_workbook(file_path, data_only=True, read_only=True)
-        ws = wb.active
-
         try:
+            teacher_sheet = next(
+                (sheet for sheet in wb.worksheets
+                 if self._is_teacher_molding_sheet(sheet)), None)
+            ws = teacher_sheet or wb.active
             header = next(ws.iter_rows(
                 min_row=3, max_row=3, values_only=True), ())
-            diploma_kind = self._diploma_format(tuple(header))
+            diploma_kind = (None if teacher_sheet
+                            else self._diploma_format(tuple(header)))
+            first_row = 7 if teacher_sheet is not None else self.DATA_START_ROW
             rows_data = list(ws.iter_rows(
-                min_row=self.DATA_START_ROW,
-                values_only=True,
+                min_row=first_row, values_only=True,
             ))
         finally:
             wb.close()
+        if teacher_sheet is not None:
+            self._warnings.append(
+                "Обнаружена ведомость преподавателя «Таблица 8». "
+                "Импортируются только позиции из неё; «Таблицы 1–2» "
+                "служат для сверки программы и брака. "
+                "Дробное число форм округляется вверх по каждой позиции.")
 
         if not rows_data:
             raise EmptyDataError(
@@ -350,11 +423,24 @@ class ExcelImporter:
         castings: List[CastingItem] = []
         preview_rows: List[List] = []
 
-        for row_num, row in enumerate(rows_data, start=self.DATA_START_ROW):
+        last_teacher_machine = ""
+        for row_num, row in enumerate(rows_data, start=first_row):
             # Пропускаем полностью пустые строки
             if all(cell is None or str(cell).strip() == "" for cell in row):
                 continue
 
+            if teacher_sheet is not None:
+                # Final subtotal row has «Итого» in B and no number in A.
+                if (not isinstance(row[0], (int, float))
+                        or isinstance(row[0], bool)):
+                    continue
+                try:
+                    row, last_teacher_machine = self._convert_teacher_row(
+                        tuple(row), row_num, last_teacher_machine)
+                except (TypeError, ValueError, IndexError) as exc:
+                    self._warnings.append(
+                        f"Строка {row_num}: пропущена, {exc}")
+                    continue
             # Source diploma has its own A:O layout. The importer converts
             # to A:P automatically by sheet headers, not by filename.
             if diploma_kind:
