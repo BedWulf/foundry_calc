@@ -34,6 +34,8 @@ class Project:
     # "manual" — используется ровно заданный парк, даже если мощности не хватит.
     molding_park_mode: str = "auto"
     molding_line_counts: Dict[str, int] = field(default_factory=dict)
+    # 0 = все реально производящие линии; >0 = ограниченный пик одновременности.
+    molding_peak_concurrent_lines: int = 0
 
     # --- Брак и потери ---
     brak_pct: float = 5.0
