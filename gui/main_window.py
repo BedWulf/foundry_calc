@@ -21,6 +21,7 @@ from gui.tabs.workforce_tab import WorkforceTab
 from gui.tabs.areas_tab import AreasTab
 from gui.tabs.transport_tab import TransportTab
 from gui.tabs.summary_tab import SummaryTab
+from gui.tabs.help_tab import HelpTab
 
 
 class SideBarButton(QPushButton):
@@ -71,6 +72,7 @@ class MainWindow(QMainWindow):
         ("📐 Площади",            "areas_tab"),
         ("🚛 Транспорт",          "transport_tab"),
         ("📊 Сводка",             "summary_tab"),
+        ("❓ Руководство",        "help_tab"),
     ]
 
     def __init__(self):
@@ -184,6 +186,8 @@ class MainWindow(QMainWindow):
             return AreasTab(self.project)
         elif key == "transport_tab":
             return TransportTab(self.project)
+        elif key == "help_tab":
+            return HelpTab()
         elif key == "summary_tab":
             tab = SummaryTab(self.project)
             # Поставщик сводок всех отделений (см. department_summaries)
@@ -276,6 +280,10 @@ class MainWindow(QMainWindow):
 
         project_tab = self.tabs.get("project_tab")
         if project_tab is not None:
+            project_tab.help_requested.connect(
+                lambda: self._select_section(
+                    next(i for i, (_, key) in enumerate(self.SECTIONS)
+                         if key == "help_tab")))
             project_tab.project_changed.connect(
                 lambda *_args: self._recalculate_dependents(with_time_funds=True))
 
