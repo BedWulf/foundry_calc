@@ -49,7 +49,7 @@ jobs:
               assert path.is_file(), filename
               wb = load_workbook(path, data_only=True, read_only=True)
               assert wb.sheetnames == ["Ведомость формовки", "Импорт A-P", "Сверка"], wb.sheetnames
-              assert wb.worksheets[0].max_row >= 24
+              assert wb.worksheets[0]["A24"].value == "ИТОГО (PDF)"
               assert wb.worksheets[0]["F24"].value == expected_pieces
               wb.close()
               importer = ExcelImporter()
