@@ -32,7 +32,7 @@ from PySide6.QtGui import QFont
 from PySide6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QGroupBox, QLabel, QPushButton,
     QGridLayout, QScrollArea, QMessageBox, QDialog,
-    QSpinBox, QDoubleSpinBox, QTextEdit, QFormLayout,
+    QSpinBox, QDoubleSpinBox, QTextEdit, QFormLayout, QComboBox,
 )
 
 from config import COLORS
@@ -96,6 +96,14 @@ class MoldingTab(QWidget):
         self.project = project
         self.calculator = MoldingCalculator()
         self.choices = UserChoices()
+        self._fleet_spins: Dict[str, QSpinBox] = {}
+        self._fleet_ids: tuple[str, ...] = ()
+        saved_park = self.choices.get_choice(self.project.project_id, "molding_park") or {}
+        if saved_park.get("mode") in ("auto", "manual"):
+            self.project.molding_park_mode = saved_park["mode"]
+            counts = saved_park.get("counts", {})
+            if isinstance(counts, dict):
+                self.project.molding_line_counts = dict(counts)
         self._current_options: List[Dict[str, Any]] = []
         self._selected: Dict[str, Any] = {}
         self._last_result: Optional[MoldingCalculation] = None
@@ -241,6 +249,20 @@ class MoldingTab(QWidget):
         self._max_load.setValue(self.project.molding_max_load_factor)
         form.addRow("Максимальная годовая загрузка:", self._max_load)
         plan_lay.addLayout(form)
+        self._park_mode = QComboBox()
+        self._park_mode.addItem("Автоматический подбор", "auto")
+        self._park_mode.addItem("Вручную: указать количество каждой модели", "manual")
+        self._park_mode.setCurrentIndex(
+            1 if self.project.molding_park_mode == "manual" else 0)
+        plan_lay.addWidget(QLabel("Режим формирования парка:"))
+        plan_lay.addWidget(self._park_mode)
+        self._fleet_hint = QLabel(
+            "В ручном режиме задайте количество по моделям; "
+            "0 — не использовать модель. Нехватка мощности будет показана.")
+        self._fleet_hint.setWordWrap(True)
+        plan_lay.addWidget(self._fleet_hint)
+        self._fleet_layout = QFormLayout()
+        plan_lay.addLayout(self._fleet_layout)
         self._batch_report = QTextEdit()
         self._batch_report.setReadOnly(True)
         self._batch_report.setMinimumHeight(210)
@@ -249,6 +271,7 @@ class MoldingTab(QWidget):
         self._batch_count.valueChanged.connect(self._on_batch_options_changed)
         self._setup_h.valueChanged.connect(self._on_batch_options_changed)
         self._max_load.valueChanged.connect(self._on_batch_options_changed)
+        self._park_mode.currentIndexChanged.connect(self._on_park_mode_changed)
         self._layout.addStretch()
 
     # ─────────────────────── данные/расчёт ───────────────────────
@@ -272,6 +295,7 @@ class MoldingTab(QWidget):
             selected_line_id=saved_id,
         )
         self._last_result = result
+        self._update_fleet_controls(result)
         self._render_batch_plan(result)
 
         cat_title = CATEGORY_TITLES.get(result.material_category,
@@ -296,6 +320,8 @@ class MoldingTab(QWidget):
         self._current_options = result.line_options
         self.picker.set_equipment_options(
             result.line_options, selected_id=result.selected_line_id)
+        # Итоги ручного парка важнее карточки единственной рекомендованной линии.
+        self._render_batch_plan(result)
 
         # k_ст — мост в стержневое и очистное отделения (тоннаж стержней на
         # выбивке зависит именно от него); показываем здесь, чтобы пользователь
@@ -307,6 +333,77 @@ class MoldingTab(QWidget):
             "— (номенклатура не загружена)")
 
     # ─────────────────────── обработчики ───────────────────────
+    def _update_fleet_controls(self, result: MoldingCalculation) -> None:
+        """Перестроить счётчики только при смене справочника/категории."""
+        cards = [
+            card for card in self.calculator._all_lines()
+            if result.material_category in
+            ((card.get("applicable_for") or {}).get("materials") or [])
+        ]
+        cards.sort(key=lambda c: (str(c.get("name", "")), str(c.get("id", ""))))
+        ids = tuple(str(card["id"]) for card in cards)
+        auto_counts: Dict[str, int] = {}
+        if result.batch_plan and self.project.molding_park_mode == "auto":
+            for ln in result.batch_plan.lines:
+                auto_counts[ln.equipment_id] = auto_counts.get(ln.equipment_id, 0) + 1
+        if ids != self._fleet_ids:
+            while self._fleet_layout.count():
+                item = self._fleet_layout.takeAt(0)
+                if item.widget():
+                    item.widget().deleteLater()
+            self._fleet_spins.clear()
+            self._fleet_ids = ids
+            for card in cards:
+                model_id = str(card["id"])
+                spin = QSpinBox()
+                spin.setRange(0, 100)
+                spin.setToolTip("Число реально установленных линий данной модели")
+                spin.valueChanged.connect(
+                    lambda count, key=model_id: self._on_fleet_count_changed(key, count))
+                self._fleet_spins[model_id] = spin
+                self._fleet_layout.addRow(
+                    str(card.get("name") or model_id) + " (" + model_id + ")", spin)
+        manual = self.project.molding_park_mode == "manual"
+        self._fleet_hint.setVisible(manual)
+        for model_id, spin in self._fleet_spins.items():
+            spin.setEnabled(manual)
+            target = (self.project.molding_line_counts.get(model_id, 0)
+                      if manual else auto_counts.get(model_id, 0))
+            spin.blockSignals(True)
+            spin.setValue(int(target))
+            spin.blockSignals(False)
+
+    def _save_park_selection(self) -> None:
+        self.choices.set_choice(
+            self.project.project_id, "molding_park",
+            {"mode": self.project.molding_park_mode,
+             "counts": dict(self.project.molding_line_counts)})
+
+    def _broadcast_park_change(self) -> None:
+        self.refresh()
+        # В MainWindow этот сигнал подключён к рабочим, складам, площадям
+        # и сводке: все получают новое количество и состав линий.
+        self.line_choice_changed.emit(dict(self._selected))
+
+    def _on_park_mode_changed(self, _index: int) -> None:
+        mode = self._park_mode.currentData()
+        if mode == "manual" and not self.project.molding_line_counts:
+            counts: Dict[str, int] = {}
+            if self._last_result and self._last_result.batch_plan:
+                for ln in self._last_result.batch_plan.lines:
+                    counts[ln.equipment_id] = counts.get(ln.equipment_id, 0) + 1
+            self.project.molding_line_counts = counts
+        self.project.molding_park_mode = str(mode)
+        self._save_park_selection()
+        self._broadcast_park_change()
+
+    def _on_fleet_count_changed(self, model_id: str, count: int) -> None:
+        if self.project.molding_park_mode != "manual":
+            return
+        self.project.molding_line_counts[model_id] = count
+        self._save_park_selection()
+        self._broadcast_park_change()
+
     def _on_batch_options_changed(self, *_args: Any) -> None:
         self.project.molding_batches_per_year = self._batch_count.value()
         self.project.molding_setup_h = self._setup_h.value()
@@ -320,6 +417,8 @@ class MoldingTab(QWidget):
         if plan is None:
             self._batch_report.setPlainText(
                 "План не построен: " + (result.planning_error or "загрузите номенклатуру"))
+            if self.project.molding_park_mode == "manual":
+                self._result_labels["num_adopt"].setText("— (ошибка плана)")
             return
         out = [f"Распределено {plan.assigned_molds:,} / {plan.total_molds:,} форм; "
                + ("выполнимо по годовому фонду" if plan.feasible else "НЕ ВЫПОЛНЕНО")]
@@ -334,6 +433,17 @@ class MoldingTab(QWidget):
             out.append("Не распределены: " + ", ".join(plan.unassigned))
         out.extend("⚠ " + w for w in plan.warnings)
         self._batch_report.setPlainText("\n".join(out))
+        if getattr(self.project, "castings", None):
+            self._result_labels["num_adopt"].setText(str(len(plan.lines)) +
+                (" — мощность недостаточна" if not plan.feasible else ""))
+            names = sorted({ln.equipment_name for ln in plan.lines})
+            self._result_labels["line"].setText(", ".join(names) if names else "нет линий")
+            installed_hours = sum(ln.annual_fund_hours for ln in plan.lines)
+            used_hours = sum(ln.used_hours for ln in plan.lines)
+            self._result_labels["load_factor"].setText(
+                f"{used_hours / installed_hours:.3f}" if installed_hours else "—")
+            self._result_labels["num_adopt"].setStyleSheet(
+                f"color: {COLORS['success'] if plan.feasible else COLORS['warning']};")
 
     def _on_line_selected(self, equipment: Dict[str, Any]) -> None:
         """Обработать выбор линии: пересчёт итогов и сохранение выбора."""
