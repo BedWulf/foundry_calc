@@ -329,4 +329,10 @@ class MeltingTab(QWidget):
             "furnace_count": int(self._selected.get("_num_required", 0)),
             "load_factor": float(self._selected.get("_load_factor", 0.0)),
             "material_category": self._material_category(),
+            "capacity_charge_t_year": (
+                float(self._selected.get("specs", {}).get("productivity_t_h", 0) or 0)
+                * int(self._selected.get("_num_required", 0))
+                * self._working_hours()
+                if self._selected.get("id") else None),
+            "effective_fund_h": self._working_hours(),
         }
