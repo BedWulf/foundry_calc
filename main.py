@@ -15,23 +15,22 @@ from gui.main_window import MainWindow
 
 
 def main() -> int:
-    app = QApplication(sys.argv)
-    app.setApplicationName(APP_NAME)
-
-    if APP_ICON.exists():
-        app.setWindowIcon(QIcon(str(APP_ICON)))
-
     import os
     if os.environ.get("FOUNDRY_SMOKE_TEST") == "1":
-        # The Windows CI runner has no interactive desktop: assert the
-        # executable can load Qt, application imports, catalogues and manual.
-        # GUI construction is separately checked from Python in the workflow.
+        # Real packaged EXE import/resources probe. Never construct QApplication
+        # on a Windows CI session without an interactive desktop: this can
+        # hang under certain Qt platform-plugin configurations.
         from config import DATA_DIR, DOCS_DIR
         if not (DATA_DIR / "equipment" / "molding_lines.json").is_file():
             return 21
         if not (DOCS_DIR / "USER_MANUAL.md").is_file():
             return 22
         return 0
+
+    app = QApplication(sys.argv)
+    app.setApplicationName(APP_NAME)
+    if APP_ICON.exists():
+        app.setWindowIcon(QIcon(str(APP_ICON)))
 
     window = MainWindow()
     window.show()
