@@ -245,6 +245,67 @@ class ExcelImporter:
     # ------------------------------------------------------------------
     # Публичные методы
     # ------------------------------------------------------------------
+    @staticmethod
+    def _diploma_format(headers: tuple) -> str | None:
+        """Recognize the two original 15-column diploma molding ledgers."""
+        a = str(headers[0] or "").lower().strip() if headers else ""
+        b = str(headers[1] or "").lower().strip() if len(headers) > 1 else ""
+        # Diploma 1: № | Отливка | масса | размер | высота | ...
+        if a == "№" and ("отлив" in b or "наимен" in b):
+            return "diploma1"
+        # Diploma 2: Отливка | Масса | длина | ширина | высота | ...
+        if "отлив" in a and "масс" in b:
+            return "diploma2"
+        return None
+
+    def _convert_diploma_row(
+        self, row: tuple, row_num: int, kind: str,
+    ) -> tuple:
+        """Convert legacy diploma A:O ledger to importer A:P.
+
+        Preserve the original annual forms/metals in the source sheet.
+        Explicitly warn when source data disagree with the required
+        ceil(F/G) and per-mold poured mass. No silently revised source.
+        """
+        if len(row) < 15:
+            raise ValueError("Для ведомости диплома нужны колонки A:O")
+        if kind == "diploma1":
+            num, name, mass, dim, height, qty, per, source_forms, flask,                 halfheights, pour, source_metal, mix_one, source_mix, machine = row[:15]
+            metal_unit = "т"
+        else:
+            name, mass, length, width, height, qty, per, source_forms, flask,                 halfheights, pour, source_metal, mix_one, source_mix, machine = row[:15]
+            num = row_num - self.DATA_START_ROW + 1
+            dim = f"{length}x{width}"
+            metal_unit = "кг"
+        n = _safe_int(qty)
+        g = _safe_int(per)
+        expected_forms = (n + g - 1) // g if n > 0 and g > 0 else 0
+        actual_forms = _safe_int(source_forms)
+        if expected_forms and actual_forms != expected_forms:
+            self._warnings.append(
+                f"Строка {row_num} ({name}): в дипломе {actual_forms} форм, "
+                f"ceil({n}/{g}) = {expected_forms}. Для планирования "
+                "используется округление вверх; исходное число остаётся в Excel.")
+        casting_metal_t = (expected_forms * _safe_float(pour) / 1000
+                           if expected_forms else 0)
+        original_metal_t = (_safe_float(source_metal)
+                            if metal_unit == "т" else _safe_float(source_metal) / 1000)
+        if original_metal_t and abs(casting_metal_t - original_metal_t) > max(
+                0.1, original_metal_t * 0.00001):
+            self._warnings.append(
+                f"Строка {row_num} ({name}): металл по исходному диплому "
+                f"{original_metal_t:.3f} т, по L×ceil(F/G) "
+                f"{casting_metal_t:.3f} т. Проверьте данные и округление.")
+        dims = re.findall(r"\\d+(?:[.,]\\d+)?", str(flask or ""))
+        if len(dims) < 2:
+            self._warnings.append(
+                f"Строка {row_num} ({name}): не распознана опока {flask!r}")
+            dims = [None, None]
+        return (
+            num, name, mass, dim, height, qty, per, None,
+            dims[0], dims[1], halfheights, pour, None, mix_one, None, machine,
+        )
+
     def load_preview(self, file_path: Path) -> ImportPreview:
         """
         Загружает файл и формирует предпросмотр.
@@ -265,6 +326,9 @@ class ExcelImporter:
         ws = wb.active
 
         try:
+            header = next(ws.iter_rows(
+                min_row=3, max_row=3, values_only=True), ())
+            diploma_kind = self._diploma_format(tuple(header))
             rows_data = list(ws.iter_rows(
                 min_row=self.DATA_START_ROW,
                 values_only=True,
@@ -286,6 +350,20 @@ class ExcelImporter:
             if all(cell is None or str(cell).strip() == "" for cell in row):
                 continue
 
+            # Source diploma has its own A:O layout. The importer converts
+            # to A:P automatically by sheet headers, not by filename.
+            if diploma_kind:
+                # Source totals / notes on lower rows are not castings.
+                if (_safe_float(row[2]) <= 0 if diploma_kind == "diploma1"
+                    else _safe_float(row[1]) <= 0):
+                    continue
+                try:
+                    row = self._convert_diploma_row(
+                        tuple(row), row_num, diploma_kind)
+                except (ValueError, IndexError, TypeError) as exc:
+                    self._warnings.append(
+                        f"Строка {row_num}: не распознана ведомость ({exc})")
+                    continue
             # Проверка минимального количества колонок
             if len(row) < self.MIN_COLS:
                 self._warnings.append(
