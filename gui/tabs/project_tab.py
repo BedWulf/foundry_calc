@@ -618,7 +618,7 @@ class ProjectTab(QWidget):
     def _on_import_excel(self) -> None:
         path, _ = QFileDialog.getOpenFileName(
             self, "Импорт номенклатуры отливок",
-            str(Path.home()), "Excel файлы (*.xlsx *.xls);;Все файлы (*)",
+            str(Path.home()), "Excel файлы (*.xlsx *.xlsm);;Все файлы (*)",
         )
         if not path:
             return
