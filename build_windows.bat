@@ -39,7 +39,7 @@ if not exist ".venv\Scripts\python.exe" (
 )
 ".venv\Scripts\python.exe" -m pip install --upgrade pip
 if errorlevel 1 goto :failure
-".venv\Scripts\python.exe" -m pip install -r requirements.txt "pyinstaller>=6.12,<7"
+".venv\Scripts\python.exe" -m pip install -r requirements.txt "pyinstaller>=6.12,<7" pytest pytest-timeout
 if errorlevel 1 goto :failure
 ".venv\Scripts\python.exe" -m compileall -q core gui data import_export tests
 if errorlevel 1 goto :failure
