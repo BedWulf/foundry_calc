@@ -1,6 +1,7 @@
 """Встроенное пошаговое руководство для первого запуска программы."""
 from pathlib import Path
 
+from PySide6.QtCore import Signal
 from PySide6.QtGui import QTextCursor
 from PySide6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QLabel,
@@ -13,6 +14,9 @@ from config import DOCS_DIR, COLORS
 class HelpTab(QWidget):
     """Руководство живёт внутри приложения и доступно без интернета."""
 
+    tutorial_requested = Signal()
+    example_requested = Signal()
+
     def __init__(self, parent=None):
         super().__init__(parent)
         root = QVBoxLayout(self)
@@ -24,6 +28,18 @@ class HelpTab(QWidget):
             "Пошаговое заполнение программы, Excel, формовочные линии и проверка результатов")
         subtitle.setWordWrap(True)
         root.addWidget(subtitle)
+        tutorial_tools = QHBoxLayout()
+        self.start_tutorial_button = QPushButton("▶ Начать обучение по программе")
+        self.start_tutorial_button.setToolTip(
+            "Экскурсия проходит по настоящим вкладкам и не изменяет проект")
+        self.start_tutorial_button.clicked.connect(self.tutorial_requested.emit)
+        self.save_example_button = QPushButton("Сохранить учебный Excel")
+        self.save_example_button.setToolTip(
+            "Создать пример из двух отливок, не импортируя его в рабочий проект")
+        self.save_example_button.clicked.connect(self.example_requested.emit)
+        tutorial_tools.addWidget(self.start_tutorial_button)
+        tutorial_tools.addWidget(self.save_example_button)
+        root.addLayout(tutorial_tools)
 
         tools = QHBoxLayout()
         self.search_edit = QLineEdit()
