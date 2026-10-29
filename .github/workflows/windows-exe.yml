@@ -20,8 +20,6 @@ jobs:
   windows-exe:
     runs-on: windows-latest
     timeout-minutes: 45
-    env:
-      FOUNDRY_BUILD_HOME: ${{ runner.temp }}\FPRO
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -30,10 +28,13 @@ jobs:
           architecture: 'x64'
       - name: Build and test using the SAME bat file as on a new Windows PC
         shell: cmd
+        env:
+          FOUNDRY_BUILD_HOME: ${{ runner.temp }}\FPRO
         run: call build_windows.bat
       - name: Verify packaged EXE and bundled resources
         shell: pwsh
         env:
+          FOUNDRY_BUILD_HOME: ${{ runner.temp }}\FPRO
           QT_QPA_PLATFORM: offscreen
           FOUNDRY_SMOKE_TEST: '1'
         run: |
