@@ -145,6 +145,7 @@ def sheet_xml(rows: list[list], widths: list[float], merge_title: bool = True) -
               if merge_title else "")
     xml = ('<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
            '<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">'
+           f'<dimension ref="A1:{col_name(len(widths))}{len(rows)}"/>'
            '<sheetViews><sheetView workbookViewId="0"><pane ySplit="3" topLeftCell="A4" '
            'activePane="bottomLeft" state="frozen"/></sheetView></sheetViews>'
            f'<cols>{cols}</cols><sheetData>{"".join(body)}</sheetData>'
