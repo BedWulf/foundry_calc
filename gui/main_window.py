@@ -194,12 +194,15 @@ class MainWindow(QMainWindow):
         self.tour_back_button = QPushButton("← Назад")
         self.tour_next_button = QPushButton("Далее →")
         self.tour_close_button = QPushButton("Прервать обучение")
+        self.tour_example_button = QPushButton("Создать учебный Excel")
+        self.tour_example_button.clicked.connect(self._save_tutorial_example)
         self.tour_back_button.clicked.connect(self._tour_back)
         self.tour_next_button.clicked.connect(self._tour_next)
         self.tour_close_button.clicked.connect(self._stop_tutorial)
         tour_controls.addWidget(self.tour_back_button)
         tour_controls.addWidget(self.tour_next_button)
         tour_controls.addStretch()
+        tour_controls.addWidget(self.tour_example_button)
         tour_controls.addWidget(self.tour_close_button)
         tour_layout.addLayout(tour_controls)
         self.tour_banner.hide()
@@ -415,6 +418,7 @@ class MainWindow(QMainWindow):
             f"Шаг {self._tour_index + 1} из {len(TUTORIAL_STEPS)} — {step.title}")
         self.tour_instruction.setText(step.instruction)
         self.tour_back_button.setEnabled(self._tour_index > 0)
+        self.tour_example_button.setVisible(step.title == "Номенклатура отливок")
         self.tour_next_button.setText(
             "Завершить" if self._tour_index == len(TUTORIAL_STEPS) - 1
             else "Далее →")
