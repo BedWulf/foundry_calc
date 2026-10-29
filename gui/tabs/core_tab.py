@@ -414,4 +414,10 @@ class CoreTab(QWidget):
             "machine_name": self._selected.get("name", ""),
             "machine_count": int(self._selected.get("_num_required", 0)),
             "load_factor": float(self._selected.get("_load_factor", 0.0)),
+            "capacity_cores_year": (
+                __import__("core.core_making", fromlist=["machine_hourly_output"])
+                .machine_hourly_output(self._selected)
+                * int(self._selected.get("_num_required", 0))
+                * float(getattr(self.project, "F_equipment_h", 0) or 0)
+                if self._selected.get("id") else None),
         }
