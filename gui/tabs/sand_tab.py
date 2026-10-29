@@ -398,11 +398,41 @@ class SandTab(QWidget):
                 "units": data.get("units", 0),
                 "load_factor": data.get("load_factor", 0.0),
             }
+        from core.sand_prep import machine_productivity
+        capacity_operations = []
+        for op in ops:
+            selected_card = self._selected.get(op["operation"]) or {}
+            selected_id = str(selected_card.get("id") or op.get("selected_id") or "")
+            raw = next((card for card in op.get("options", [])
+                        if str(card.get("id")) == selected_id), None)
+            # Manual UI selection may return a picker representation rather
+            # than a source equipment card. Resolve back to raw option only.
+            count = (int(selected_card.get("count", selected_card.get("_units", 0)))
+                     if selected_card else int(op.get("units") or 0))
+            unit = str(raw.get("unit", "")) if raw else ""
+            quantity = op.get("quantity")
+            working_hours = summary.get("working_hours")
+            throughput = machine_productivity(raw) if raw else 0
+            capacity = (throughput * count * float(working_hours)
+                        if raw and throughput > 0 and count > 0
+                        and working_hours and unit in ("m3_h", "t_h") else None)
+            capacity_operations.append({
+                "operation": op["operation"],
+                "title": op["title"],
+                "quantity": quantity,
+                "capacity_year": capacity,
+                "unit": ("м³/год" if unit == "m3_h" else
+                         "т/год" if unit == "t_h" else "неизвестно"),
+                "note": "Без проверки пиковых сменных нагрузок"
+                        if capacity is not None else
+                        "Нет выбранного оборудования или паспортного расхода",
+            })
         return {
             "total_park_units": summary.get("total_park_units", 0),
             "avg_load_factor": summary.get("avg_load_factor", 0.0),
             "volumes": self._last_result.get("volumes", {}),
             "park": park,
+            "capacity_operations": capacity_operations,
         }
 
 
