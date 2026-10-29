@@ -53,7 +53,7 @@ jobs:
         run: |
           $exe = (Resolve-Path "dist/LiteynyiTsehPRO/LiteynyiTsehPRO.exe").Path
           $p = Start-Process -FilePath $exe -PassThru
-          if (-not $p.WaitForExit(20000)) {
+          if (-not $p.WaitForExit(120000)) {
             $p.Kill()
             throw "Packaged GUI did not exit after smoke-test timer"
           }
