@@ -11,6 +11,7 @@ APP_AUTHOR = "Foundry Engineering Team"
 BASE_DIR = Path(__file__).resolve().parent
 DATA_DIR = BASE_DIR / "data"
 ASSETS_DIR = BASE_DIR / "assets"
+DOCS_DIR = BASE_DIR / "docs"
 STYLES_DIR = ASSETS_DIR / "styles"
 ICONS_DIR = ASSETS_DIR / "icons"
 
