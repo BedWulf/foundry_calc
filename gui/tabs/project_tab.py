@@ -630,6 +630,15 @@ class ProjectTab(QWidget):
                 QMessageBox.warning(self, "Импорт",
                                     "Не удалось распознать данные в файле.")
                 return
+            if self.project.castings:
+                answer = QMessageBox.question(
+                    self, "Заменить номенклатуру?",
+                    "Новая таблица Excel ЗАМЕНИТ все отливки текущего проекта. "
+                    "Прежняя номенклатура не будет сохранена. Продолжить?",
+                    QMessageBox.Yes | QMessageBox.No, QMessageBox.No,
+                )
+                if answer != QMessageBox.Yes:
+                    return
             self.project.clear_castings()
             for item in items:
                 self.project.add_casting(item)
