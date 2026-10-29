@@ -104,6 +104,9 @@ class MoldingTab(QWidget):
             counts = saved_park.get("counts", {})
             if isinstance(counts, dict):
                 self.project.molding_line_counts = dict(counts)
+        limit = saved_park.get("peak_lines")
+        if isinstance(limit, int) and not isinstance(limit, bool) and 0 <= limit <= 100:
+            self.project.molding_peak_concurrent_lines = limit
         self._current_options: List[Dict[str, Any]] = []
         self._selected: Dict[str, Any] = {}
         self._last_result: Optional[MoldingCalculation] = None
@@ -248,6 +251,14 @@ class MoldingTab(QWidget):
         self._max_load.setSingleStep(0.05)
         self._max_load.setValue(self.project.molding_max_load_factor)
         form.addRow("Максимальная годовая загрузка:", self._max_load)
+        self._peak_concurrent = QSpinBox()
+        self._peak_concurrent.setRange(0, 100)
+        self._peak_concurrent.setSpecialValueText("Все производящие линии")
+        self._peak_concurrent.setValue(self.project.molding_peak_concurrent_lines)
+        self._peak_concurrent.setToolTip(
+            "Сценарная проверка одновременной работы; 0 = все линии. "
+            "Это не календарный производственный график.")
+        form.addRow("Линий одновременно в смену:", self._peak_concurrent)
         plan_lay.addLayout(form)
         self._park_mode = QComboBox()
         self._park_mode.addItem("Автоматический подбор", "auto")
@@ -276,6 +287,7 @@ class MoldingTab(QWidget):
         self._batch_count.valueChanged.connect(self._on_batch_options_changed)
         self._setup_h.valueChanged.connect(self._on_batch_options_changed)
         self._max_load.valueChanged.connect(self._on_batch_options_changed)
+        self._peak_concurrent.valueChanged.connect(self._on_batch_options_changed)
         self._park_mode.currentIndexChanged.connect(self._on_park_mode_changed)
         self._layout.addStretch()
 
@@ -383,7 +395,8 @@ class MoldingTab(QWidget):
         self.choices.set_choice(
             self.project.project_id, "molding_park",
             {"mode": self.project.molding_park_mode,
-             "counts": dict(self.project.molding_line_counts)})
+             "counts": dict(self.project.molding_line_counts),
+             "peak_lines": self.project.molding_peak_concurrent_lines})
 
     def _broadcast_park_change(self) -> None:
         was_blocked = self.blockSignals(True)
@@ -433,6 +446,8 @@ class MoldingTab(QWidget):
         self.project.molding_batches_per_year = self._batch_count.value()
         self.project.molding_setup_h = self._setup_h.value()
         self.project.molding_max_load_factor = self._max_load.value()
+        self.project.molding_peak_concurrent_lines = self._peak_concurrent.value()
+        self._save_park_selection()
         self._broadcast_park_change()
 
     def _render_batch_plan(self, result: MoldingCalculation) -> None:
@@ -571,6 +586,33 @@ class MoldingTab(QWidget):
         count = sum(row["units"] for row in park)
         hours_used = sum(line.used_hours for line in plan.lines) if has_fleet else 0.0
         hours_fund = sum(line.annual_fund_hours for line in plan.lines) if has_fleet else 0.0
+        # The per-shift stress test deliberately uses the maximum metal/core
+        # consumption among *scheduled jobs on each productive line*.
+        # It does not invent a time-sequenced production calendar.
+        shift_lines: list[dict] = []
+        castings = list(getattr(self.project, "castings", []) or [])
+        if plan:
+            for line in plan.lines:
+                if not line.campaigns:
+                    continue
+                items = []
+                for campaign in line.campaigns:
+                    try:
+                        index = int(campaign.job_key.removeprefix("casting-")) - 1
+                        items.append(castings[index])
+                    except (ValueError, IndexError):
+                        items.append(None)
+                masses = [float(getattr(item, "pouring_mass_kg", 0) or 0)
+                          for item in items]
+                cores = [getattr(item, "cores_count", None) for item in items]
+                shift_lines.append({
+                    "line_id": f"{line.equipment_id} #{line.instance_no}",
+                    "metal_t_h": (max(masses) * line.nominal_molds_h / 1000
+                                  if masses and all(m > 0 for m in masses) else None),
+                    "cores_h": (max(float(x) for x in cores) * line.nominal_molds_h
+                                if cores and all(isinstance(x, int) and x >= 0
+                                                 for x in cores) else None),
+                })
         loading = hours_used / hours_fund if hours_fund else (
             float(self._selected.get("_load_factor", 0)) if not has_positions else 0.0)
         return {
@@ -584,6 +626,8 @@ class MoldingTab(QWidget):
             "assigned_molds": plan.assigned_molds if plan else 0,
             "unassigned": list(plan.unassigned) if plan else [],
             "molding_park_mode": self.project.molding_park_mode,
+            "shift_peak_lines": shift_lines,
+            "concurrent_line_limit": self.project.molding_peak_concurrent_lines,
             "batch_planning_error": calc.planning_error if calc else "",
             "batch_plan_warnings": list(plan.warnings) if plan else [],
             "material_category": calc.material_category if calc else "",
