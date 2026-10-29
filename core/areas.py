@@ -340,6 +340,18 @@ def collect_departments(
                     raise ValueError(f"Нет габаритов принятой линии {equipment_id}")
                 add("molding_tab", "Формовочное: " + str(card.get("name", equipment_id)),
                     card, count=count)
+    elif getattr(project, "molding_park_mode", "auto") == "manual":
+        # Размеры из паспортов, количественный парк установлен пользователем.
+        from core.molding.afl_calc import MoldingCalculator
+        catalog = MoldingCalculator()
+        for equipment_id, count in sorted(project.molding_line_counts.items()):
+            if count <= 0:
+                continue
+            card = catalog.get_line_by_id(equipment_id)
+            if not card:
+                raise ValueError(f"Ручной парк: не найдена линия {equipment_id}")
+            add("molding_tab", "Формовочное: " + str(card.get("name", equipment_id)),
+                card, count=count)
     else:
         add("molding_tab", "Формовочное отделение", molding.selected_line,
             count=molding.line_count)
