@@ -47,7 +47,7 @@ jobs:
       - name: Bundle EXE
         shell: pwsh
         run: |
-          python -m PyInstaller --noconfirm --clean --onedir --windowed --name LiteynyiTsehPRO --icon "assets/icons/app_icon.ico" --add-data "data;data" --add-data "assets;assets" main.py
+          python -m PyInstaller --noconfirm --clean --onedir --windowed --name LiteynyiTsehPRO --icon "assets/icons/app_icon.ico" --add-data "data;data" --add-data "assets;assets" --add-data "docs;docs" main.py
           if (!(Test-Path "dist/LiteynyiTsehPRO/LiteynyiTsehPRO.exe")) { throw "EXE not produced" }
       - name: Smoke test packaged Windows EXE
         shell: pwsh
