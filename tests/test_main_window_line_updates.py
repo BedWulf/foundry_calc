@@ -11,6 +11,8 @@ from gui.main_window import MainWindow
 def test_line_quantity_propagates_to_live_window():
     app = QApplication.instance() or QApplication([])
     win = MainWindow()
+    win.show()
+    app.processEvents()
     win.project.castings = [
         CastingItem(
             name="Тестовая отливка", annual_qty_pcs=1200,
