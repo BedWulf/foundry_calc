@@ -335,4 +335,10 @@ class MeltingTab(QWidget):
                 * self._working_hours()
                 if self._selected.get("id") else None),
             "effective_fund_h": self._working_hours(),
+            "capacity_charge_t_h": (
+                float(self._selected.get("specs", {}).get("productivity_t_h", 0) or 0)
+                * int(self._selected.get("_num_required", 0))
+                if self._selected.get("id") and
+                float(self._selected.get("specs", {}).get("productivity_t_h", 0) or 0) > 0
+                else None),
         }
