@@ -328,7 +328,8 @@ def collect_departments(
     # модель. Невыполнимый план нельзя заменить старым оптимистичным подбором.
     if getattr(project, "castings", None):
         plan = molding.batch_plan
-        if plan is not None and plan.feasible:
+        if plan is not None and (
+                plan.feasible or getattr(project, "molding_park_mode", "auto") == "manual"):
             from collections import Counter
             from core.molding.afl_calc import MoldingCalculator
             catalog = MoldingCalculator()
