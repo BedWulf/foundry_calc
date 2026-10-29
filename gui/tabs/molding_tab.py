@@ -499,10 +499,11 @@ class MoldingTab(QWidget):
         """Сводка фактически принятого ПАРКА, а не одной карточки линии."""
         calc = self._last_result
         plan = calc.batch_plan if calc else None
+        has_fleet = bool(plan and plan.lines)
         planned = bool(plan and plan.feasible and plan.lines)
         has_positions = bool(getattr(self.project, "castings", None))
         park: list[dict] = []
-        if planned:
+        if has_fleet:
             by_model: Dict[str, list] = {}
             for line in plan.lines:
                 by_model.setdefault(line.equipment_id, []).append(line)
@@ -528,8 +529,8 @@ class MoldingTab(QWidget):
                 "note": "Предварительная оценка без номенклатуры",
             }]
         count = sum(row["units"] for row in park)
-        hours_used = sum(line.used_hours for line in plan.lines) if planned else 0.0
-        hours_fund = sum(line.annual_fund_hours for line in plan.lines) if planned else 0.0
+        hours_used = sum(line.used_hours for line in plan.lines) if has_fleet else 0.0
+        hours_fund = sum(line.annual_fund_hours for line in plan.lines) if has_fleet else 0.0
         loading = hours_used / hours_fund if hours_fund else (
             float(self._selected.get("_load_factor", 0)) if not has_positions else 0.0)
         return {
@@ -540,6 +541,9 @@ class MoldingTab(QWidget):
             "load_factor": loading,
             "park": park,
             "batch_plan_feasible": planned,
+            "assigned_molds": plan.assigned_molds if plan else 0,
+            "unassigned": list(plan.unassigned) if plan else [],
+            "molding_park_mode": self.project.molding_park_mode,
             "batch_planning_error": calc.planning_error if calc else "",
             "batch_plan_warnings": list(plan.warnings) if plan else [],
             "material_category": calc.material_category if calc else "",
