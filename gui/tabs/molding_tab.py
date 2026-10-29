@@ -263,6 +263,11 @@ class MoldingTab(QWidget):
         plan_lay.addWidget(self._fleet_hint)
         self._fleet_layout = QFormLayout()
         plan_lay.addLayout(self._fleet_layout)
+        self._reset_park = QPushButton("Заполнить ручной парк по автоподбору")
+        self._reset_park.setToolTip(
+            "Заменить заданные количества автоматически подобранным парком")
+        self._reset_park.clicked.connect(self._copy_auto_park)
+        plan_lay.addWidget(self._reset_park)
         self._batch_report = QTextEdit()
         self._batch_report.setReadOnly(True)
         self._batch_report.setMinimumHeight(210)
@@ -365,6 +370,7 @@ class MoldingTab(QWidget):
                     str(card.get("name") or model_id) + " (" + model_id + ")", spin)
         manual = self.project.molding_park_mode == "manual"
         self._fleet_hint.setVisible(manual)
+        self._reset_park.setVisible(manual)
         for model_id, spin in self._fleet_spins.items():
             spin.setEnabled(manual)
             target = (self.project.molding_line_counts.get(model_id, 0)
@@ -397,6 +403,22 @@ class MoldingTab(QWidget):
         self._save_park_selection()
         self._broadcast_park_change()
 
+    def _copy_auto_park(self) -> None:
+        old_mode = self.project.molding_park_mode
+        self.project.molding_park_mode = "auto"
+        proposed = calc_molding(self.project, calculator=self.calculator).batch_plan
+        self.project.molding_park_mode = old_mode
+        if proposed is None:
+            QMessageBox.warning(self, "Нет программы",
+                                "Для автоподбора загрузите номенклатуру отливок.")
+            return
+        counts: Dict[str, int] = {}
+        for ln in proposed.lines:
+            counts[ln.equipment_id] = counts.get(ln.equipment_id, 0) + 1
+        self.project.molding_line_counts = counts
+        self._save_park_selection()
+        self._broadcast_park_change()
+
     def _on_fleet_count_changed(self, model_id: str, count: int) -> None:
         if self.project.molding_park_mode != "manual":
             return
@@ -416,9 +438,13 @@ class MoldingTab(QWidget):
         plan = result.batch_plan
         if plan is None:
             self._batch_report.setPlainText(
-                "План не построен: " + (result.planning_error or "загрузите номенклатуру"))
+                "План не построен: " + (result.planning_error or
+                "загрузите номенклатуру для проверки фактической загрузки"))
             if self.project.molding_park_mode == "manual":
-                self._result_labels["num_adopt"].setText("— (ошибка плана)")
+                count = sum(self.project.molding_line_counts.values())
+                self._result_labels["num_adopt"].setText(
+                    f"{count} (загрузка не проверена)")
+                self._result_labels["line"].setText("Ручной парк без программы")
             return
         out = [f"Распределено {plan.assigned_molds:,} / {plan.total_molds:,} форм; "
                + ("выполнимо по годовому фонду" if plan.feasible else "НЕ ВЫПОЛНЕНО")]
@@ -518,6 +544,19 @@ class MoldingTab(QWidget):
                     "load_factor": hours / fund if fund else 0,
                     "has_shakeout": bool(card.get("has_shakeout", False)),
                     "note": f"{sum(c.molds for line in instances for c in line.campaigns):,} форм/год",
+                })
+        elif not has_positions and self.project.molding_park_mode == "manual":
+            for model_id, count in sorted(self.project.molding_line_counts.items()):
+                if not count:
+                    continue
+                card = self.calculator.get_line_by_id(model_id) or {}
+                park.append({
+                    "id": model_id,
+                    "name": card.get("name") or model_id,
+                    "units": int(count),
+                    "load_factor": 0.0,
+                    "has_shakeout": bool(card.get("has_shakeout", False)),
+                    "note": "Предварительный парк без номенклатуры",
                 })
         elif not has_positions and self._selected:
             park = [{
