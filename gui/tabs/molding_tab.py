@@ -386,9 +386,12 @@ class MoldingTab(QWidget):
              "counts": dict(self.project.molding_line_counts)})
 
     def _broadcast_park_change(self) -> None:
-        self.refresh()
-        # В MainWindow этот сигнал подключён к рабочим, складам, площадям
-        # и сводке: все получают новое количество и состав линий.
+        was_blocked = self.blockSignals(True)
+        try:
+            self.refresh()
+        finally:
+            self.blockSignals(was_blocked)
+        # MainWindow performs one ordered refresh of all dependent sections.
         self.line_choice_changed.emit(dict(self._selected))
 
     def _on_park_mode_changed(self, _index: int) -> None:
@@ -430,9 +433,7 @@ class MoldingTab(QWidget):
         self.project.molding_batches_per_year = self._batch_count.value()
         self.project.molding_setup_h = self._setup_h.value()
         self.project.molding_max_load_factor = self._max_load.value()
-        self.refresh()
-        # Give dependent tabs a chance to update.
-        self.line_choice_changed.emit(self._selected)
+        self._broadcast_park_change()
 
     def _render_batch_plan(self, result: MoldingCalculation) -> None:
         plan = result.batch_plan
