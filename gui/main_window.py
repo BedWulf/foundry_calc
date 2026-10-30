@@ -792,6 +792,31 @@ class MainWindow(QMainWindow):
         if self._confirm_discard_project():
             self._restore_version_entry(entry)
 
+    def _restore_version_entry(self, entry: VersionEntry) -> bool:
+        """Open history as an unsaved copy, without overwriting its source."""
+        try:
+            loaded = self._version_history.load_version(entry)
+            project = loaded.project
+            if not project.project_uid:
+                project.project_uid = uuid4().hex
+            pending = plan_custom_catalog_restore(
+                USER_DATA_DIR, loaded.custom_catalogs)
+            restore_custom_catalogs(pending)
+            UserChoices().replace_project_choices(
+                project.project_id, loaded.choices)
+        except (OSError, ValueError, TypeError) as exc:
+            QMessageBox.critical(
+                self, "Не удалось открыть версию",
+                "Открытый проект не заменён. " + str(exc))
+            return False
+        self._activate_project(project, None)
+        # Ctrl+S asks for a new filename, never silently overwrites the
+        # newer original. The recovered copy is marked as unsaved work.
+        self._saved_signature = ""
+        self._update_project_title()
+        self._schedule_autosave()
+        return True
+
     def _first_show_recovery_or_tutorial(self) -> None:
         # The recovery prompt has higher priority than the first-use tour.
         if not self._show_recovery_dialog(startup=True):
