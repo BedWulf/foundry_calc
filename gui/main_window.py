@@ -463,7 +463,8 @@ class MainWindow(QMainWindow):
     def _save_tutorial_example(self) -> None:
         proposed = str(Path.home() / "ЛитейныйЦех_учебный_пример.xlsx")
         filename, _ = QFileDialog.getSaveFileName(
-            self, "Сохранить учебный Excel", proposed, "Excel (*.xlsx)")
+            self, "Сохранить учебный Excel", proposed, "Excel (*.xlsx)",
+            options=QFileDialog.DontUseNativeDialog)
         if not filename:
             return
         try:
@@ -489,7 +490,8 @@ class MainWindow(QMainWindow):
             return
         target, _ = QFileDialog.getSaveFileName(
             self, "Сохранить исходную дипломную ведомость",
-            str(Path.home() / source.name), "Excel (*.xlsx)")
+            str(Path.home() / source.name), "Excel (*.xlsx)",
+            options=QFileDialog.DontUseNativeDialog)
         if not target:
             return
         destination = Path(target)
