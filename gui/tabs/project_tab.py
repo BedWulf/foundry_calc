@@ -10,6 +10,7 @@ from PySide6.QtWidgets import (
 )
 from config import COLORS
 from core.project import Project
+from core.casting_audit import audit_castings
 from core.casting_item import CastingItem
 from import_export.excel_importer import ExcelImporter
 from data.loader import DataLoader
@@ -457,10 +458,10 @@ class ProjectTab(QWidget):
         self.table.setVerticalScrollMode(QAbstractItemView.ScrollPerPixel)
         self.table.setWordWrap(False)
         self.table.verticalHeader().setDefaultSectionSize(31)
-        self.table.setColumnCount(8)
+        self.table.setColumnCount(9)
         self.table.setHorizontalHeaderLabels([
             "№", "Наименование", "Масса с ЛПС, кг", "Габариты, мм",
-            "Форм/год", "Опоки, мм", "Залив. масса, кг", "Металл в год, т"
+            "Форм/год", "Отливок/форму", "Опоки, мм", "Залив. масса, кг", "Металл в год, т"
         ])
         self.table.setAlternatingRowColors(True)
         self.table.setSelectionBehavior(QAbstractItemView.SelectRows)
@@ -712,7 +713,9 @@ class ProjectTab(QWidget):
             cols = [
                 str(item.index), item.name,
                 f"{item.mass_with_LPS_kg:.1f}", item.dimensions_mm,
-                str(item.molds_per_year), item.flask_size_mm,
+                str(item.molds_per_year),
+                str(item.castings_per_mold) if item.castings_per_mold else "неизв.",
+                item.flask_size_mm,
                 f"{item.pouring_mass_kg:.1f}", f"{item.annual_metal_t:.3f}",
             ]
             for col, val in enumerate(cols):
@@ -727,4 +730,9 @@ class ProjectTab(QWidget):
             if i != 1:
                 header.setSectionResizeMode(i, QHeaderView.ResizeToContents)
 
-        self.lbl_summary.setText(f"Позиций: {len(items)} | Суммарная масса: {total_mass:.2f} т")
+        issues = audit_castings(items)
+        self.lbl_summary.setText(
+            f"Позиций: {len(items)} | Суммарная масса: {total_mass:.2f} т"
+            + (f" | ⚠ Замечаний: {len(issues)}" if issues else " | Данные согласованы"))
+        self.lbl_summary.setToolTip("\n".join(i.describe() for i in issues[:40])
+                                    or "Арифметические связи номенклатуры проверены")
