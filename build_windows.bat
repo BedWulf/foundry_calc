@@ -84,7 +84,7 @@ if errorlevel 1 (
 
 echo.
 echo === Bundling Windows executable to SHORT path ===
-"%VENV_PY%" -m PyInstaller --noconfirm --clean --onedir --windowed --name LiteynyiTsehPRO --workpath "%WORK_DIR%" --distpath "%DIST_DIR%" --icon "assets\icons\app_icon.ico" --add-data "data;data" --add-data "assets;assets" --add-data "docs;docs" main.py
+"%VENV_PY%" -m PyInstaller --noconfirm --clean --onedir --windowed --name LiteynyiTsehPRO --workpath "%WORK_DIR%" --distpath "%DIST_DIR%" --icon "assets\icons\app_icon.ico" --add-data "data;data" --add-data "assets;assets" --add-data "docs;docs" --add-data "examples;examples" main.py
 if errorlevel 1 goto :failure
 if not exist "%DIST_DIR%\LiteynyiTsehPRO\LiteynyiTsehPRO.exe" goto :failure
 
