@@ -298,6 +298,16 @@ class MainWindow(QMainWindow):
         }, ensure_ascii=False, sort_keys=True, allow_nan=False)
 
     def _is_project_dirty(self) -> bool:
+        tab = self.tabs.get("project_tab") if hasattr(self, "tabs") else None
+        if tab is not None:
+            for widget, field in (
+                (tab.edit_name, "name"),
+                (tab.edit_customer, "customer"),
+                (tab.edit_alloy, "alloy"),
+            ):
+                if widget.isModified() and widget.text().strip() != str(
+                        getattr(self.project, field)):
+                    return True
         return self._project_signature() != self._saved_signature
 
     def _update_project_title(self) -> None:
@@ -574,6 +584,12 @@ class MainWindow(QMainWindow):
 
         project_tab = self.tabs.get("project_tab")
         if project_tab is not None:
+            for widget in (
+                project_tab.edit_name, project_tab.edit_customer,
+                project_tab.edit_alloy,
+            ):
+                widget.textEdited.connect(
+                    lambda *_args: self._update_project_title())
             project_tab.help_requested.connect(
                 lambda: self._select_section(
                     next(i for i, (_, key) in enumerate(self.SECTIONS)
