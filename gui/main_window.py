@@ -1092,6 +1092,14 @@ class MainWindow(QMainWindow):
         app = QApplication.instance()
         if app is None:
             return
+        # Repolishing every existing widget on each MainWindow construction
+        # is expensive, particularly during repeated headless GUI tests.
+        # The Qt application owns the palette and stylesheet globally.
+        style_text = (THEME_QSS.read_text(encoding="utf-8")
+                      if THEME_QSS.is_file() else "")
+        if (app.property("_fpro_dark_theme_applied")
+                and app.styleSheet() == style_text):
+            return
         app.setStyle("Fusion")
         palette = QPalette()
         for role, name in (
@@ -1110,5 +1118,5 @@ class MainWindow(QMainWindow):
         ):
             palette.setColor(role, QColor(COLORS[name]))
         app.setPalette(palette)
-        if THEME_QSS.is_file():
-            app.setStyleSheet(THEME_QSS.read_text(encoding="utf-8"))
+        app.setStyleSheet(style_text)
+        app.setProperty("_fpro_dark_theme_applied", True)
