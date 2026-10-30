@@ -109,10 +109,16 @@ def calculate_plant_capacity(
         "Сравнение по завалке, не по массе годного литья"))
 
     cores = summaries.get("cores") or {}
+    # Unknown core counts must NEVER appear as a verified zero demand.
+    core_demand = (None if cores.get("core_data_complete") is False
+                   else cores.get("annual_cores"))
     out.rows.append(_row(
-        "Стержневое", "Изготовление стержней", cores.get("annual_cores"),
+        "Стержневое", "Изготовление стержней", core_demand,
         cores.get("capacity_cores_year"), "стержней/год",
-        "Мощность по паспортным стержням/час, без календарного расписания"))
+        ("Нулевые значения числа стержней не подтверждены; "
+         "проверьте исходную номенклатуру"
+         if cores.get("core_data_complete") is False
+         else "Мощность по паспортным стержням/час, без календарного расписания")))
 
     sand = summaries.get("sand_prep") or {}
     operations = sand.get("capacity_operations")

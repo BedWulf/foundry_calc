@@ -30,14 +30,14 @@ from PySide6.QtCore import Qt, Signal
 from PySide6.QtGui import QFont
 from PySide6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QGroupBox, QLabel, QPushButton,
-    QGridLayout, QScrollArea, QMessageBox, QDialog, QDoubleSpinBox,
+    QGridLayout, QScrollArea, QMessageBox, QDialog, QDoubleSpinBox, QCheckBox,
 )
 
 from config import COLORS
 from core.project import Project
 from core.core_making import (
     CoreCalculator, DEFAULT_CORES_PER_MOLD, calc_annual_cores,
-    machine_hourly_output,
+    machine_hourly_output, core_counts_complete,
 )
 from core.molding import calc_avg_cores_per_mold, calc_molding
 from core.user_choices import UserChoices
@@ -168,6 +168,13 @@ class CoreTab(QWidget):
                            "annual_cores")
         self._add_grid_row(grid, 4, "Действительный фонд работы машин, Фд",
                            "fund_hours")
+        self.confirm_zero_cores = QCheckBox(
+            "Подтверждаю: нули в числе стержней означают формы без стержней")
+        self.confirm_zero_cores.setToolTip(
+            "По умолчанию нули в импортированной номенклатуре неизвестны. "
+            "Подтвердите только после проверки исходной технологии.")
+        self.confirm_zero_cores.toggled.connect(self._on_zero_cores_confirmed)
+        grid.addWidget(self.confirm_zero_cores, 5, 0, 1, 2)
         self._layout.addWidget(prog_box)
 
         # ── Блок «Выбор оборудования» ──
@@ -285,11 +292,23 @@ class CoreTab(QWidget):
         molding = self._molding_program()
         castings = list(getattr(self.project, "castings", []) or [])
         auto_kst = calc_avg_cores_per_mold(castings)
+        has_ambiguous_zeros = any(
+            int(getattr(c, "molds_per_year", 0) or 0) > 0
+            and int(getattr(c, "cores_count", 0) or 0) == 0
+            for c in castings)
+        self.confirm_zero_cores.blockSignals(True)
+        self.confirm_zero_cores.setChecked(bool(self.project.cores_zero_confirmed))
+        self.confirm_zero_cores.setVisible(has_ambiguous_zeros)
+        self.confirm_zero_cores.blockSignals(False)
+        self._core_data_complete = core_counts_complete(
+            castings, zeros_confirmed=self.project.cores_zero_confirmed)
 
         # k_ст: ручное значение пользователя или расчёт по номенклатуре
         if self._cores_per_mold_override is None:
             self._set_spin_value(auto_kst)
-            self.lbl_kst_source.setText("(по номенклатуре)")
+            self.lbl_kst_source.setText(
+                "(по номенклатуре)" if self._core_data_complete
+                else "(предварительно — нули не подтверждены)")
             k_st = auto_kst
         else:
             self.lbl_kst_source.setText("(вручную)")
@@ -321,7 +340,9 @@ class CoreTab(QWidget):
         self._prog_labels["annual_molds"].setText(
             f"{_fmt_int(molding['annual_molds'])} шт")
         self._prog_labels["annual_cores"].setText(
-            f"{_fmt_int(result['annual_cores'])} шт")
+            f"{_fmt_int(result['annual_cores'])} шт"
+            if self._core_data_complete
+            else f"не подтверждено (оценка ≥ {_fmt_int(result['annual_cores'])})")
         self._prog_labels["fund_hours"].setText(
             f"{_fmt_int(molding['fund_hours'])} ч")
 
@@ -346,6 +367,11 @@ class CoreTab(QWidget):
             f"Нет подходящих машин для «{cat_title}» — добавьте свою")
 
     # ─────────────────────── обработчики ───────────────────────
+    def _on_zero_cores_confirmed(self, checked: bool) -> None:
+        self.project.cores_zero_confirmed = bool(checked)
+        self.refresh()
+        self.machine_choice_changed.emit(dict(self._selected))
+
     def _on_cores_per_mold_changed(self, value: float) -> None:
         """Пользователь задал k_ст вручную — пересчитать подбор."""
         self._cores_per_mold_override = float(value)
@@ -410,7 +436,10 @@ class CoreTab(QWidget):
         """
         res = self._last_result
         return {
-            "annual_cores": res.get("annual_cores", 0),
+            "annual_cores": (res.get("annual_cores", 0)
+                             if self._core_data_complete else None),
+            "core_data_complete": self._core_data_complete,
+            "annual_cores_lower_bound": res.get("annual_cores", 0),
             "cores_per_mold": res.get("cores_per_mold", 0.0),
             "machine_name": self._selected.get("name", ""),
             "machine_count": int(self._selected.get("_num_required", 0)),

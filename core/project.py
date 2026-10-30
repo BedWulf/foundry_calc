@@ -45,6 +45,9 @@ class Project:
 
     # --- Номенклатура отливок ---
     castings: List[CastingItem] = field(default_factory=list)
+    # Explicit declaration: zero core counts in current nomenclature are
+    # known zero, not blank/missing cells from an imported workbook.
+    cores_zero_confirmed: bool = False
 
     # --- Производные ---
     F_calendar_h: float = 8760.0

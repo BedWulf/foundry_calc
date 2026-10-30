@@ -35,6 +35,21 @@ LOAD_OPTIMAL_MAX: float = 0.85
 DEFAULT_CORES_PER_MOLD: float = 1.5
 
 
+def core_counts_complete(castings, *, zeros_confirmed: bool = False) -> bool:
+    """True when every productive casting's core count can be trusted.
+
+    A positive number is explicit. The legacy field default (zero) is
+    ambiguous until the user confirms that all zero rows really are
+    coreless. Empty/invalid molding programs are not confirmed.
+    """
+    productive = [c for c in castings
+                  if int(getattr(c, "molds_per_year", 0) or 0) > 0]
+    if not productive:
+        return False
+    return all(int(getattr(c, "cores_count", 0) or 0) > 0
+               or zeros_confirmed for c in productive)
+
+
 def calc_annual_cores(annual_molds: int, cores_per_mold: float) -> int:
     """Годовое количество стержней по программе формовки.
 

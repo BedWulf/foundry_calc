@@ -230,6 +230,12 @@ def build_summary(summaries: Dict[str, Dict[str, Any]],
             one("Формовочное", mold.get("line_name", ""),
                 _i(mold, "line_count"), _f(mold, "load_factor"),
                 f"{_i(mold, 'annual_molds_total'):,} форм/год")
+    if cores and cores.get("core_data_complete") is False and getattr(project, "castings", None):
+        res.ready = False
+        res.warnings.append(
+            "НЕ ПОДТВЕРЖДЕНО: число стержней в позициях с нулём может "
+            "означать отсутствующие исходные данные. Проверьте номенклатуру "
+            "и подтвердите нули на вкладке «Стержневое отделение».")
     if cores:
         one("Стержневое", cores.get("machine_name", ""),
             _i(cores, "machine_count"), _f(cores, "load_factor"),
