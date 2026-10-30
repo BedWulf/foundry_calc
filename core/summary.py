@@ -14,6 +14,7 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
 from core.plant_capacity import calculate_plant_capacity
+from core.casting_audit import audit_castings
 from core.shift_capacity import calculate_shift_stress
 
 # ----------------------------------------------------------------------
@@ -185,6 +186,17 @@ def build_summary(summaries: Dict[str, Dict[str, Any]],
     if project is not None:
         res.project_name = getattr(project, "name", "") or ""
         res.annual_output_t = float(getattr(project, "annual_output_t", 0.0) or 0.0)
+        issues = audit_castings(getattr(project, "castings", []) or [])
+        if issues:
+            res.ready = False
+            res.warnings.append(
+                f"НЕ ПОДТВЕРЖДЕНА НОМЕНКЛАТУРА: {len(issues)} замечаний "
+                "по количеству форм, кратности и массе металла.")
+            res.warnings.extend(i.describe() for i in issues[:16])
+            if len(issues) > 16:
+                res.warnings.append(
+                    f"Ещё {len(issues)-16} замечаний в исходных данных. "
+                    "Полный перечень откройте на вкладке «Исходные данные».")
         # The schedule may be an optimistic maximum until actual planned
         # downtime and per-worker absence assumptions are checked.
         if (getattr(project, "time_funds_calendar_applied", False)
