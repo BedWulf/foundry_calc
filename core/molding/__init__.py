@@ -42,31 +42,27 @@ DEFAULT_CORES_PER_MOLD: float = 1.5
 
 
 def calc_avg_cores_per_mold(castings: List[CastingItem]) -> float:
-    """Средневзвешенное число стержней на форму по номенклатуре.
+    """Физическое среднее число стержней на форму по ВСЕЙ программе.
 
-    Взвешивание — по годовому числу форм каждой позиции
-    (``cores_count * molds_per_year / Σ molds_per_year``), как в дипломе.
+    Нулевые значения обязательно участвуют в знаменателе: исключение
+    бесстержневых позиций искусственно завышает расход и парк машин.
 
-    Args:
-        castings: позиции номенклатуры
-
-    Returns:
-        Среднее число стержней на форму; ``DEFAULT_CORES_PER_MOLD``,
-        если данные неполные
+    В старых проектах ноль может означать и незаполненный столбец.
+    Отдельная проверка core_counts_complete() должна блокировать вывод
+    о подтверждённой мощности до явного подтверждения нулей.
     """
     total_molds = 0
     total_cores = 0
-    for c in castings:
-        molds = int(getattr(c, "molds_per_year", 0) or 0)
-        cores = int(getattr(c, "cores_count", 0) or 0)
-        if molds <= 0 or cores <= 0:
+    for casting in castings:
+        molds = int(getattr(casting, "molds_per_year", 0) or 0)
+        cores = int(getattr(casting, "cores_count", 0) or 0)
+        if molds <= 0:
             continue
         total_molds += molds
         total_cores += molds * cores
     if total_molds <= 0:
-        return DEFAULT_CORES_PER_MOLD
+        return DEFAULT_CORES_PER_MOLD  # Только при отсутствии программы
     return round(total_cores / total_molds, 2)
-
 
 @dataclass
 class MoldingCalculation:
