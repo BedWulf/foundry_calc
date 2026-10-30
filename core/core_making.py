@@ -46,8 +46,13 @@ def core_counts_complete(castings, *, zeros_confirmed: bool = False) -> bool:
                   if int(getattr(c, "molds_per_year", 0) or 0) > 0]
     if not productive:
         return False
-    return all(int(getattr(c, "cores_count", 0) or 0) > 0
-               or zeros_confirmed for c in productive)
+    return all(
+        int(getattr(c, "cores_count", 0) or 0) > 0
+        or (bool(getattr(c, "cores_count_verified", False))
+            and bool(str(getattr(c, "cores_count_source", "")).strip()))
+        or zeros_confirmed
+        for c in productive
+    )
 
 
 def calc_annual_cores(annual_molds: int, cores_per_mold: float) -> int:
