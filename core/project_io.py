@@ -75,6 +75,34 @@ def project_inputs(project: Project) -> dict[str, Any]:
     return data
 
 
+def _require_model_field_types(
+    payload: dict[str, Any], example: Any, *, location: str
+) -> None:
+    """Reject ill-typed JSON *before* Qt widgets receive these values."""
+    for field in fields(type(example)):
+        if field.name not in payload or field.name in ("created_at", "castings"):
+            continue
+        value = payload[field.name]
+        expected = getattr(example, field.name)
+        if isinstance(expected, bool):
+            valid = type(value) is bool
+        elif isinstance(expected, int):
+            valid = type(value) is int
+        elif isinstance(expected, float):
+            valid = type(value) in (float, int)
+        elif isinstance(expected, str):
+            valid = isinstance(value, str)
+        elif isinstance(expected, dict):
+            valid = isinstance(value, dict)
+        elif isinstance(expected, list):
+            valid = isinstance(value, list)
+        else:
+            valid = type(value) is type(expected)
+        if not valid:
+            raise ProjectFileError(
+                f"{location}.{field.name}: неверный тип данных")
+
+
 def _validate_project(data: Any) -> Project:
     if not isinstance(data, dict):
         raise ProjectFileError("Блок project должен быть объектом")
@@ -92,8 +120,19 @@ def _validate_project(data: Any) -> Project:
         payload["created_at"] = date.fromisoformat(payload["created_at"])
     except ValueError as exc:
         raise ProjectFileError("Некорректная дата создания") from exc
-    if not isinstance(payload.get("name"), str):
-        raise ProjectFileError("Название проекта должно быть строкой")
+    _require_model_field_types(payload, Project(), location="project")
+    if not (1 <= payload.get("shifts_per_day", 2) <= 4):
+        raise ProjectFileError("Число смен должно быть от 1 до 4")
+    if not (1 <= payload.get("working_days_per_year", 249) <= 366):
+        raise ProjectFileError("Число рабочих дней должно быть от 1 до 366")
+    if not (0 < payload.get("shift_duration_h", 8) <= 24):
+        raise ProjectFileError("Продолжительность смены должна быть от 0 до 24 ч")
+    if not (1 <= payload.get("molding_batches_per_year", 1) <= 10000):
+        raise ProjectFileError("Число партий должно быть от 1 до 10000")
+    if not (0 < payload.get("molding_max_load_factor", .85) <= 1):
+        raise ProjectFileError("Коэффициент загрузки должен быть от 0 до 1")
+    if not (0 <= payload.get("molding_peak_concurrent_lines", 0) <= 100):
+        raise ProjectFileError("Неверное число одновременно работающих линий")
     for key in ("annual_output_t", "shift_duration_h", "molding_setup_h"):
         val = payload.get(key)
         if val is not None and (type(val) not in (int, float) or val < 0):
@@ -114,6 +153,8 @@ def _validate_project(data: Any) -> Project:
     for index, raw in enumerate(castings, 1):
         if not isinstance(raw, dict) or raw.keys() - allowed_casting:
             raise ProjectFileError(f"Строка отливки №{index}: неизвестные поля")
+        _require_model_field_types(
+            raw, CastingItem(), location=f"castings[{index}]")
         try:
             item = CastingItem(**raw)
         except (TypeError, ValueError) as exc:
