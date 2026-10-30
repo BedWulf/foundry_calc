@@ -14,6 +14,7 @@ from core.casting_item import CastingItem
 from import_export.excel_importer import ExcelImporter
 from data.loader import DataLoader
 from gui.dialogs.material_dialog import AddMaterialDialog
+from gui.dialogs.castings_browser import CastingsBrowserDialog
 
 
 # ─── Стили ────────────────────────────────────────────────────────────
@@ -46,7 +47,7 @@ QGroupBox QLineEdit,
 QGroupBox QSpinBox,
 QGroupBox QDoubleSpinBox,
 QGroupBox QComboBox {{
-    background-color: #3A1010;
+    background-color: #111A25;
     color: {COLORS['text_primary']};
     border: 1px solid {COLORS['separator']};
     border-radius: 4px;
@@ -188,7 +189,7 @@ class ProjectTab(QWidget):
                 font-size: 13px;
                 min-height: 36px;
             }}
-            QPushButton:hover {{ background-color: #FF8555; }}
+            QPushButton:hover {{ background-color: #F3B989; }}
         """)
         self.btn_add_material.clicked.connect(self._on_add_material)
         top_row.addWidget(self.btn_add_material)
@@ -218,7 +219,7 @@ class ProjectTab(QWidget):
     def _combo_style(self) -> str:
         return f"""
             QComboBox {{
-                background-color: #3A1010;
+                background-color: #111A25;
                 color: {COLORS['text_primary']};
                 border: 1px solid {COLORS['separator']};
                 border-radius: 4px;
@@ -407,8 +408,8 @@ class ProjectTab(QWidget):
                 font-weight: bold;
                 font-size: 13px;
             }}
-            QPushButton:hover {{ background-color: #FF8555; }}
-            QPushButton:pressed {{ background-color: #D95520; }}
+            QPushButton:hover {{ background-color: #F3B989; }}
+            QPushButton:pressed {{ background-color: #C88858; }}
         """)
         self.btn_import.clicked.connect(self._on_import_excel)
         toolbar.addWidget(self.btn_import)
@@ -416,17 +417,22 @@ class ProjectTab(QWidget):
         self.btn_clear = QPushButton(" Очистить")
         self.btn_clear.setStyleSheet(f"""
             QPushButton {{
-                background-color: #6B2525;
+                background-color: #344255;
                 color: {COLORS['text_primary']};
                 border: 1px solid {COLORS['separator']};
                 border-radius: 4px;
                 padding: 8px 16px;
                 font-size: 13px;
             }}
-            QPushButton:hover {{ background-color: #8B3535; }}
+            QPushButton:hover {{ background-color: #405268; }}
         """)
         self.btn_clear.clicked.connect(self._on_clear_castings)
         toolbar.addWidget(self.btn_clear)
+        self.btn_expand_castings = QPushButton("↗ Развернуть таблицу")
+        self.btn_expand_castings.setToolTip(
+            "Полноразмерный просмотр всей номенклатуры с поиском и сортировкой")
+        self.btn_expand_castings.clicked.connect(self._show_castings_browser)
+        toolbar.addWidget(self.btn_expand_castings)
 
         toolbar.addStretch()
 
@@ -446,6 +452,11 @@ class ProjectTab(QWidget):
         layout.addLayout(toolbar)
 
         self.table = QTableWidget()
+        self.table.setMinimumHeight(440)
+        self.table.setHorizontalScrollMode(QAbstractItemView.ScrollPerPixel)
+        self.table.setVerticalScrollMode(QAbstractItemView.ScrollPerPixel)
+        self.table.setWordWrap(False)
+        self.table.verticalHeader().setDefaultSectionSize(31)
         self.table.setColumnCount(8)
         self.table.setHorizontalHeaderLabels([
             "№", "Наименование", "Масса с ЛПС, кг", "Габариты, мм",
@@ -457,8 +468,8 @@ class ProjectTab(QWidget):
         self.table.verticalHeader().setVisible(False)
         self.table.setStyleSheet(f"""
             QTableWidget {{
-                background-color: #3A1010;
-                alternate-background-color: #4A1515;
+                background-color: #111A25;
+                alternate-background-color: #202A38;
                 color: {COLORS['text_primary']};
                 gridline-color: {COLORS['separator']};
                 border: 1px solid {COLORS['separator']};
@@ -669,6 +680,16 @@ class ProjectTab(QWidget):
             self.project.clear_castings()
             self._refresh_table()
             self.project_changed.emit()
+
+    def _show_castings_browser(self) -> None:
+        """Большое окно для просмотра любой по объёму номенклатуры."""
+        browser = getattr(self, "_castings_browser", None)
+        if browser is not None and browser.isVisible():
+            browser.raise_()
+            browser.activateWindow()
+            return
+        self._castings_browser = CastingsBrowserDialog(self.project.castings, self)
+        self._castings_browser.show()
 
     def _refresh_table(self) -> None:
         items = self.project.castings
