@@ -682,6 +682,7 @@ class ProjectTab(QWidget):
         )
         if reply == QMessageBox.Yes:
             self.project.clear_castings()
+            self.project.cores_zero_confirmed = False
             self._refresh_table()
             self.project_changed.emit()
 
