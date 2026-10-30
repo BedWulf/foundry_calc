@@ -12,6 +12,7 @@ BASE_DIR = Path(__file__).resolve().parent
 DATA_DIR = BASE_DIR / "data"
 ASSETS_DIR = BASE_DIR / "assets"
 DOCS_DIR = BASE_DIR / "docs"
+EXAMPLES_DIR = BASE_DIR / "examples"
 STYLES_DIR = ASSETS_DIR / "styles"
 ICONS_DIR = ASSETS_DIR / "icons"
 
