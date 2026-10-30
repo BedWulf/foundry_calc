@@ -1,194 +1,82 @@
-/* ============================================================
-   ЛитейныйЦех PRO — тёмная тема (бордо + золото)
-   ============================================================ */
-
-QMainWindow {
-    background-color: #2D0A0A;
+/* ЛитейныйЦех PRO: единая контрастная тёмная тема.
+   Светлые фоны текстовых полей и всплывающих окон недопустимы. */
+QMainWindow, QDialog, QMessageBox, QInputDialog, QFileDialog {
+    background-color: #151C26; color: #E8EEF6;
 }
-
-QWidget {
-    color: #F4D03F;
-    font-family: "Segoe UI", "Arial", sans-serif;
-}
-
-QLabel {
-    color: #F4D03F;
-}
-
-QLabel[secondary="true"] {
-    color: #C9A84C;
-}
-
-/* --- Поля ввода --- */
-QLineEdit, QSpinBox, QDoubleSpinBox, QComboBox {
-    background-color: #3A1010;
-    color: #F4D03F;
-    border: 1px solid #B87333;
-    border-radius: 4px;
-    padding: 6px 10px;
-    selection-background-color: #FF6B35;
-}
-QLineEdit:focus, QSpinBox:focus, QDoubleSpinBox:focus, QComboBox:focus {
-    border: 1px solid #FF6B35;
-}
-
-/* --- Таблицы --- */
-QTableWidget, QTableView {
-    background-color: #3A1010;
-    alternate-background-color: #4A1515;
-    color: #F4D03F;
-    gridline-color: #B87333;
-    border: 1px solid #B87333;
-    selection-background-color: #FF6B35;
-}
-QHeaderView::section {
-    background-color: #4A1515;
-    color: #F4D03F;
-    padding: 6px;
-    border: 1px solid #B87333;
-    font-weight: bold;
-}
-
-/* --- Кнопки --- */
-QPushButton {
-    background-color: #FF6B35;
-    color: #2D0A0A;
-    border: none;
-    border-radius: 4px;
-    padding: 8px 16px;
-    font-weight: bold;
-}
-QPushButton:hover {
-    background-color: #FF8555;
-}
-QPushButton:pressed {
-    background-color: #D95520;
-}
-QPushButton:disabled {
-    background-color: #6B2525;
-    color: #C9A84C;
-}
-
-/* --- Вкладки --- */
-QTabWidget::pane {
-    border: 1px solid #B87333;
-    background-color: #2D0A0A;
-}
-QTabBar::tab {
-    background-color: #4A1515;
-    color: #C9A84C;
-    padding: 8px 16px;
-    border: 1px solid #B87333;
-    border-bottom: none;
-    border-top-left-radius: 4px;
-    border-top-right-radius: 4px;
-}
-QTabBar::tab:selected {
-    background-color: #FF6B35;
-    color: #2D0A0A;
-    font-weight: bold;
-}
-
-/* --- Диалоги и всплывающие окна (белый фон запрещён) --- */
-QDialog, QMessageBox, QInputDialog, QFileDialog {
-    background-color: #2D0A0A;
-    color: #F4D03F;
-}
-QMessageBox QLabel, QInputDialog QLabel, QFileDialog QLabel {
-    background-color: transparent;
-    color: #F4D03F;
-}
-QDialogButtonBox QPushButton {
-    background-color: #FF6B35;
-    color: #2D0A0A;
-    border: none;
-    border-radius: 4px;
-    padding: 8px 16px;
-    font-weight: bold;
-}
-QMenu {
-    background-color: #4A1515;
-    color: #F4D03F;
-    border: 1px solid #B87333;
-}
-QMenu::item:selected {
-    background-color: #FF6B35;
-    color: #2D0A0A;
-}
-QToolTip {
-    background-color: #4A1515;
-    color: #F4D03F;
-    border: 1px solid #B87333;
-}
-QListView, QTreeView {
-    background-color: #3A1010;
-    alternate-background-color: #4A1515;
-    color: #F4D03F;
-    border: 1px solid #B87333;
-    selection-background-color: #FF6B35;
-    selection-color: #2D0A0A;
-}
-QAbstractItemView {
-    background-color: #3A1010;
-    color: #F4D03F;
-}
-QComboBox QAbstractItemView {
-    background-color: #3A1010;
-    color: #F4D03F;
-    selection-background-color: #FF6B35;
-    selection-color: #2D0A0A;
-    border: 1px solid #B87333;
-}
-
-/* --- Чекбоксы и радио --- */
-QCheckBox, QRadioButton {
-    background-color: transparent;
-    color: #F4D03F;
-}
-
-/* --- Подложка для виджетов без собственного фона --- */
-QScrollArea, QScrollArea > QWidget > QWidget {
-    background-color: #2D0A0A;
-}
-
-/* --- Полосы прокрутки --- */
-QScrollBar:vertical {
-    background-color: #2D0A0A;
-    width: 12px;
-}
-QScrollBar::handle:vertical {
-    background-color: #B87333;
-    border-radius: 6px;
-    min-height: 20px;
-}
-QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
-    height: 0px;
-}
-
-/* --- Группы --- */
+QWidget { color: #E8EEF6; font-family: "Segoe UI", Arial, sans-serif; font-size: 13px; }
+QLabel { color: #E8EEF6; background-color: transparent; }
+QLabel[secondary="true"] { color: #B8C5D4; }
 QGroupBox {
-    border: 1px solid #B87333;
-    border-radius: 6px;
-    margin-top: 12px;
-    padding-top: 16px;
-    font-weight: bold;
-    color: #FF6B35;
+    color: #E8EEF6; background: #202A38;
+    border: 1px solid #45566B; border-radius: 7px;
+    margin-top: 19px; padding-top: 14px; font-weight: bold;
 }
-QGroupBox::title {
-    subcontrol-origin: margin;
-    left: 12px;
-    padding: 0 6px;
+QGroupBox::title { subcontrol-origin: margin; subcontrol-position: top left;
+    left: 12px; padding: 0 6px; color: #E8A66F; }
+QLineEdit, QSpinBox, QDoubleSpinBox, QComboBox, QTextEdit,
+QPlainTextEdit, QTextBrowser, QDateEdit, QTimeEdit {
+    background-color: #111A25; color: #E8EEF6;
+    border: 1px solid #45566B; border-radius: 5px;
+    padding: 6px 9px; selection-background-color: #375D77;
+    selection-color: #FFFFFF;
 }
-
-/* --- Разделители --- */
-QFrame[frameShape="4"], QFrame[frameShape="5"] {
-    color: #B87333;
-    max-height: 2px;
+QTextEdit, QPlainTextEdit, QTextBrowser { padding: 9px; }
+QLineEdit:focus, QSpinBox:focus, QDoubleSpinBox:focus, QComboBox:focus,
+QTextEdit:focus, QTextBrowser:focus {
+    border: 2px solid #E8A66F;
 }
-
-/* --- Статус-бар --- */
-QStatusBar {
-    background-color: #4A1515;
-    color: #C9A84C;
-    border-top: 1px solid #B87333;
+QLineEdit:disabled, QSpinBox:disabled, QComboBox:disabled,
+QDoubleSpinBox:disabled { background: #263242; color: #94A5B7; }
+QComboBox::drop-down { border: none; width: 28px; }
+QComboBox QAbstractItemView, QCompleter QAbstractItemView {
+    background-color: #111A25; color: #E8EEF6;
+    border: 1px solid #45566B; alternate-background-color: #202A38;
+    selection-background-color: #375D77; selection-color: #FFFFFF;
 }
+QTableWidget, QTableView, QListWidget, QListView, QTreeView {
+    background-color: #111A25; alternate-background-color: #202A38;
+    color: #E8EEF6; border: 1px solid #45566B;
+    gridline-color: #344255; selection-background-color: #375D77;
+    selection-color: #FFFFFF; outline: 0;
+}
+QTableWidget::item, QTableView::item { padding: 4px 7px; }
+QTableWidget::item:selected, QTableView::item:selected,
+QListView::item:selected, QTreeView::item:selected {
+    background-color: #375D77; color: #FFFFFF;
+}
+QHeaderView, QTableCornerButton::section { background: #202A38; }
+QHeaderView::section {
+    background-color: #293649; color: #E8EEF6;
+    border: 1px solid #45566B; padding: 7px; font-weight: bold;
+}
+QPushButton, QDialogButtonBox QPushButton {
+    background-color: #344255; color: #E8EEF6;
+    border: 1px solid #52667D; border-radius: 5px;
+    padding: 8px 14px; min-height: 22px; font-weight: 600;
+}
+QPushButton:hover { background-color: #41546B; border-color: #E8A66F; }
+QPushButton:pressed { background-color: #293649; }
+QPushButton:checked { background: #3C5668; border-color: #E8A66F; }
+QPushButton:disabled { background: #283343; color: #8494A7; border-color: #39485B; }
+QCheckBox, QRadioButton { background: transparent; color: #E8EEF6; spacing: 8px; }
+QMenu { background-color: #202A38; color: #E8EEF6; border: 1px solid #45566B; }
+QMenu::item:selected { background: #375D77; color: #FFFFFF; }
+QToolTip { background: #273548; color: #E8EEF6; border: 1px solid #45566B; padding: 6px; }
+QTabWidget::pane { border: 1px solid #45566B; background: #151C26; }
+QTabBar::tab { background: #202A38; color: #B8C5D4;
+    border: 1px solid #45566B; padding: 9px 16px; }
+QTabBar::tab:selected { background: #34495E; color: #E8EEF6; }
+QScrollArea, QScrollArea QWidget#qt_scrollarea_viewport {
+    background-color: #151C26; border: none;
+}
+QScrollBar:vertical { background: #151C26; width: 13px; margin: 0; }
+QScrollBar:horizontal { background: #151C26; height: 13px; margin: 0; }
+QScrollBar::handle:vertical, QScrollBar::handle:horizontal {
+    background: #52657A; border-radius: 5px; min-height: 28px; min-width: 28px;
+}
+QScrollBar::handle:vertical:hover, QScrollBar::handle:horizontal:hover {
+    background: #71879E;
+}
+QScrollBar::add-line, QScrollBar::sub-line { width: 0; height: 0; border: none; }
+QSplitter::handle { background: #45566B; }
+QStatusBar { background: #202A38; color: #B8C5D4; border-top: 1px solid #45566B; }
