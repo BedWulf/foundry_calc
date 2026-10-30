@@ -76,7 +76,10 @@ echo === Checking calculations before packaging ===
 "%VENV_PY%" -m compileall -q core gui data import_export tests
 if errorlevel 1 goto :failure
 set "QT_QPA_PLATFORM=offscreen"
-"%VENV_PY%" -m pytest -q --timeout=25
+rem Windows offscreen Qt startup can be slower than Linux CI, especially
+rem when PySide6 initializes many department tabs for each GUI regression.
+rem Keep ALL tests enabled; allow a bounded 90 seconds per individual test.
+"%VENV_PY%" -m pytest -q --timeout=90
 if errorlevel 1 (
   echo Tests failed. Build cancelled: do not distribute unchecked calculations.
   goto :failure
