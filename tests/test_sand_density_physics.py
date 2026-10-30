@@ -27,15 +27,19 @@ def test_project_alloy_density_controls_molding_sand_volume():
         name="Geometry check", molds_per_year=100,
         mass_with_LPS_kg=270,
         flask_size_mm="1000x1000x500/500",
-        cores_count=0,
+        # Explicit core count and mass avoid the current ambiguity
+        # between unspecified and actual zero-core castings.
+        cores_count=1, core_mass_kg=15.5,
     )]
     project.selected_alloy_id = "aluminum_AK12"
     project.alloy_density_kg_m3 = 2700
     first = calc_sand_prep(project)
-    assert first["volumes"]["sand_volume_tamped_m3"] == 90.0
+    # Per mold: 1 m³ flask - 0.1 m³ Al - 0.01 m³ core = 0.89 m³ sand.
+    assert first["volumes"]["sand_volume_tamped_m3"] == 89.0
     project.alloy_density_kg_m3 = 7800
     second = calc_sand_prep(project)
-    assert second["volumes"]["sand_volume_tamped_m3"] == pytest.approx(96.5, abs=.05)
+    # Steel: 270/7800 ≈ 0.034615 m³ per mold.
+    assert second["volumes"]["sand_volume_tamped_m3"] == pytest.approx(95.5, abs=.05)
     # The same geometry with different density affects sand-preparation
     # demand and must not silently retain the steel-only result.
     assert first["volumes"]["sand_volume_loose_m3"] < second["volumes"]["sand_volume_loose_m3"]
