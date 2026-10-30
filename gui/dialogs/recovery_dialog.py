@@ -1,8 +1,7 @@
 """Явный выбор аварийной копии без автоматической порчи текущего проекта."""
 from __future__ import annotations
 
-from datetime import timezone
-from PySide6.QtCore import Qt
+from PySide6.QtCore import Qt, QSize
 from PySide6.QtWidgets import (
     QDialog, QVBoxLayout, QHBoxLayout, QListWidget, QListWidgetItem,
     QLabel, QPushButton, QMessageBox,
@@ -43,8 +42,7 @@ class RecoveryDialog(QDialog):
                 f"{entry.project_name}  |  {local}\n"
                 f"{entry.castings_count} отливок  |  {source}")
             item.setData(Qt.UserRole, entry)
-            item.setSizeHint(item.sizeHint().expandedTo(
-                item.sizeHint().__class__(0, 53)))
+            item.setSizeHint(QSize(0, 58))
             self.list.addItem(item)
         if entries:
             self.list.setCurrentRow(0)
