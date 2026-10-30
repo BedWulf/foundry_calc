@@ -137,7 +137,7 @@ def _validate_project(data: Any) -> Project:
     for key, upper in (("equipment_downtime_h_per_year", nominal),
                        ("worker_absence_h_per_year", individual)):
         value = payload.get(key, 0.0)
-        if type(value) not in (int, float) or not math.isfinite(value) or not 0 <= value <= upper:
+        if type(value) not in (int, float) or not math.isfinite(value) or not 0 <= value < upper:
             raise ProjectFileError(f"Некорректные годовые часы {key}")
     if not (1 <= payload.get("molding_batches_per_year", 1) <= 10000):
         raise ProjectFileError("Число партий должно быть от 1 до 10000")
