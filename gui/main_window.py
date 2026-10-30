@@ -1,5 +1,6 @@
 """Главное окно приложения с боковой навигацией."""
 from pathlib import Path
+from shutil import copyfile
 
 from PySide6.QtCore import Qt, QTimer
 from PySide6.QtWidgets import (
@@ -8,7 +9,7 @@ from PySide6.QtWidgets import (
     QMessageBox, QFileDialog,
 )
 
-from config import APP_NAME, APP_VERSION, COLORS, THEME_QSS
+from config import APP_NAME, APP_VERSION, COLORS, THEME_QSS, EXAMPLES_DIR
 from core.project import Project
 from core.onboarding import OnboardingState, TUTORIAL_STEPS
 from core.tutorial_example import save_tutorial_excel
@@ -331,6 +332,7 @@ class MainWindow(QMainWindow):
         if help_tab is not None:
             help_tab.tutorial_requested.connect(self.start_tutorial)
             help_tab.example_requested.connect(self._save_tutorial_example)
+            help_tab.diploma_example_requested.connect(self._save_diploma_example)
 
         project_tab = self.tabs.get("project_tab")
         if project_tab is not None:
@@ -473,6 +475,45 @@ class MainWindow(QMainWindow):
             f"Файл создан:\n{saved}\n\nОн НЕ был загружен в текущий проект. "
             "Чтобы изучить импорт, откройте «Исходные данные» → "
             "«Импорт из Excel». Это заменит текущую номенклатуру.")
+
+    def _save_diploma_example(self, number: int) -> None:
+        """Save an unmodified verified diploma workbook, never import it."""
+        if number not in (1, 2):
+            return
+        source = EXAMPLES_DIR / f"Диплом_{number}_ведомость_формовки.xlsx"
+        if not source.is_file():
+            QMessageBox.critical(
+                self, "Файл примера отсутствует",
+                f"Контрольная ведомость не включена в комплект:\n{source}")
+            return
+        target, _ = QFileDialog.getSaveFileName(
+            self, "Сохранить исходную дипломную ведомость",
+            str(Path.home() / source.name), "Excel (*.xlsx)")
+        if not target:
+            return
+        destination = Path(target)
+        if destination.suffix.lower() != ".xlsx":
+            destination = destination.with_suffix(".xlsx")
+        if destination.exists():
+            answer = QMessageBox.question(
+                self, "Файл существует",
+                f"Заменить файл {destination.name}?",
+                QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
+            if answer != QMessageBox.Yes:
+                return
+        try:
+            if destination.resolve() != source.resolve():
+                copyfile(source, destination)
+        except OSError as exc:
+            QMessageBox.critical(
+                self, "Не удалось сохранить дипломный Excel", str(exc))
+            return
+        QMessageBox.information(
+            self, "Дипломный Excel сохранён",
+            f"Сохранён файл:\n{destination}\n\nВнутри — исходные строки "
+            "диплома, таблица импорта A–P и лист сверки. "
+            "Текущий проект НЕ изменён. Для проверки воспользуйтесь "
+            "кнопкой «Импорт из Excel» в исходных данных.")
 
     def department_summaries(self) -> dict:
         """Собрать сводки (`get_summary`) всех реализованных отделений.
