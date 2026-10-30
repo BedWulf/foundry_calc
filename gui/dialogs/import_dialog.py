@@ -249,6 +249,7 @@ class ImportDialog(QDialog):
             "Выберите файл номенклатуры",
             "",
             "Excel файлы (*.xlsx *.xlsm);;Все файлы (*.*)",
+            options=QFileDialog.DontUseNativeDialog,
         )
         if not file_path:
             return
