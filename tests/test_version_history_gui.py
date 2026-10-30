@@ -87,12 +87,12 @@ def test_historical_copy_cannot_change_source_equipment_choices(tmp_path, monkey
     window.project.project_uid = original_uid
     manager = UserChoices()
     manager.replace_project_choices(
-        original_uid, {"molding_line": {"equipment_id": "OLD"}})
+        original_uid, {"molding_line": {"equipment_id": "IL-225"}})
     filename = tmp_path / "study.fpro.json"
     assert window._write_project_to(filename)
 
     manager.replace_project_choices(
-        original_uid, {"molding_line": {"equipment_id": "NEW"}})
+        original_uid, {"molding_line": {"equipment_id": "KV301"}})
     window.project.castings = [CastingItem(name="Updated", molds_per_year=55)]
     assert window._save_project()
     history = window._version_history.list_versions(filename)
@@ -103,7 +103,7 @@ def test_historical_copy_cannot_change_source_equipment_choices(tmp_path, monkey
     assert window.project.project_uid != original_uid
     original = UserChoices().get_project_choices(original_uid)
     copy = UserChoices().get_project_choices(window.project.project_id)
-    assert original["molding_line"]["equipment_id"] == "NEW"
-    assert copy["molding_line"]["equipment_id"] == "OLD"
+    assert original["molding_line"]["equipment_id"] == "KV301"
+    assert copy["molding_line"]["equipment_id"] == "IL-225"
     assert filename.read_bytes() == latest_bytes
     window.close()
