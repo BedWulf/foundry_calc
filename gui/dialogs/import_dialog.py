@@ -61,28 +61,28 @@ class ImportDialog(QDialog):
     # Цвета в стиле «Раскалённый горн»
     STYLE = """
         QDialog {
-            background-color: #2D0A0A;
-            color: #F4D03F;
+            background-color: #151C26;
+            color: #E8EEF6;
         }
         QLabel {
-            color: #F4D03F;
+            color: #E8EEF6;
             font-size: 13px;
         }
         QLabel#title {
             font-size: 18px;
             font-weight: bold;
-            color: #FFD700;
+            color: #E8A66F;
         }
         QLabel#summary {
-            color: #C9A84C;
+            color: #B8C5D4;
             font-size: 12px;
         }
         QGroupBox {
-            border: 1px solid #B87333;
+            border: 1px solid #45566B;
             border-radius: 6px;
             margin-top: 12px;
             padding-top: 16px;
-            color: #F4D03F;
+            color: #E8EEF6;
             font-weight: bold;
         }
         QGroupBox::title {
@@ -91,11 +91,11 @@ class ImportDialog(QDialog):
             padding: 0 6px;
         }
         QTableWidget {
-            background-color: #4A1515;
-            alternate-background-color: #3A0F0F;
-            color: #F4D03F;
-            gridline-color: #B87333;
-            border: 1px solid #B87333;
+            background-color: #202A38;
+            alternate-background-color: #111A25;
+            color: #E8EEF6;
+            gridline-color: #45566B;
+            border: 1px solid #45566B;
             border-radius: 4px;
             font-size: 12px;
         }
@@ -103,22 +103,22 @@ class ImportDialog(QDialog):
             padding: 4px;
         }
         QHeaderView::section {
-            background-color: #5C1A1A;
-            color: #FFD700;
+            background-color: #293649;
+            color: #E8A66F;
             padding: 6px;
-            border: 1px solid #B87333;
+            border: 1px solid #45566B;
             font-weight: bold;
         }
         QTextEdit {
-            background-color: #3A0F0F;
-            color: #FFB347;
-            border: 1px solid #B87333;
+            background-color: #111A25;
+            color: #E8A66F;
+            border: 1px solid #45566B;
             border-radius: 4px;
             font-size: 11px;
         }
         QPushButton {
-            background-color: #FF6B35;
-            color: #FFFFFF;
+            background-color: #E8A66F;
+            color: #17202D;
             border: none;
             border-radius: 4px;
             padding: 8px 20px;
@@ -127,22 +127,22 @@ class ImportDialog(QDialog):
             min-width: 120px;
         }
         QPushButton:hover {
-            background-color: #FF8555;
+            background-color: #F3B989;
         }
         QPushButton:pressed {
-            background-color: #E55A25;
+            background-color: #C88858;
         }
         QPushButton:disabled {
-            background-color: #6B3020;
-            color: #A08060;
+            background-color: #344255;
+            color: #91A0B3;
         }
         QPushButton#secondary {
-            background-color: #4A1515;
-            border: 1px solid #B87333;
-            color: #F4D03F;
+            background-color: #202A38;
+            border: 1px solid #45566B;
+            color: #E8EEF6;
         }
         QPushButton#secondary:hover {
-            background-color: #5C1A1A;
+            background-color: #293649;
         }
     """
 
@@ -150,8 +150,10 @@ class ImportDialog(QDialog):
         super().__init__(parent)
         self.setStyleSheet(self.STYLE)
         self.setWindowTitle("📥 Импорт номенклатуры отливок")
-        self.setMinimumSize(1100, 700)
-        self.resize(1200, 750)
+        self.setMinimumSize(780, 520)
+        self.resize(1480, 860)
+        self.setWindowFlag(Qt.WindowMaximizeButtonHint, True)
+        self.setSizeGripEnabled(True)
 
         self._importer = ExcelImporter()
         self._preview: Optional[ImportPreview] = None
@@ -301,7 +303,7 @@ class ImportDialog(QDialog):
 
                 # Подсветка числовых колонок
                 if c in (2, 4, 7, 8, 9, 10, 11, 12, 13):
-                    item.setForeground(QColor("#FFD700"))
+                    item.setForeground(QColor("#E8A66F"))
 
                 self._table.setItem(r, c, item)
 
