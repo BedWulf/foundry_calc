@@ -797,8 +797,10 @@ class MainWindow(QMainWindow):
         try:
             loaded = self._version_history.load_version(entry)
             project = loaded.project
-            if not project.project_uid:
-                project.project_uid = uuid4().hex
+            # Opening a historical revision as an independent copy must
+            # never replace equipment preferences of the current saved
+            # project. A fresh UID keeps the fork's choices isolated.
+            project.project_uid = uuid4().hex
             pending = plan_custom_catalog_restore(
                 USER_DATA_DIR, loaded.custom_catalogs)
             restore_custom_catalogs(pending)
