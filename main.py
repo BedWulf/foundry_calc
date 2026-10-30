@@ -12,21 +12,54 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 
+
+def _smoke_test_frozen() -> int:
+    """Check ACTUAL packaged Qt imports and window creation, without showing UI.
+
+    Unlike checking files on disk, this triggers importing all tabs, including
+    the melting package. It therefore catches missing frozen Python modules.
+    """
+    import traceback
+
+    try:
+        from config import DATA_DIR, DOCS_DIR, EXAMPLES_DIR, APP_NAME
+        for resource, code in (
+            (DATA_DIR / "equipment" / "molding_lines.json", 21),
+            (DOCS_DIR / "USER_MANUAL.md", 22),
+            (EXAMPLES_DIR / "Диплом_1_ведомость_формовки.xlsx", 23),
+            (EXAMPLES_DIR / "Диплом_2_ведомость_формовки.xlsx", 24),
+        ):
+            if not resource.is_file():
+                raise FileNotFoundError(f"Missing resource ({code}): {resource}")
+
+        # Imports must occur inside the packaged executable. A test against
+        # development Python would not catch frozen-module path assumptions.
+        from PySide6.QtWidgets import QApplication
+        from gui.main_window import MainWindow
+        from core.melting import calc_metal_charge
+
+        assert calc_metal_charge(37000, 7.2, 44.1, 5.0) > 58000
+        app = QApplication.instance() or QApplication(sys.argv)
+        app.setApplicationName(APP_NAME)
+        window = MainWindow()
+        assert "melting_tab" in window.tabs
+        assert "molding_tab" in window.tabs
+        assert "help_tab" in window.tabs
+        window.close()
+        return 0
+    except BaseException:
+        report = os.environ.get("FOUNDRY_SMOKE_REPORT")
+        if report:
+            try:
+                Path(report).write_text(traceback.format_exc(), encoding="utf-8")
+            except OSError:
+                pass
+        return 91
+
+
 def main() -> int:
     if os.environ.get("FOUNDRY_SMOKE_TEST") == "1":
-        # Standard-library-only resource test, before importing PySide6.
-        # Frozen builds store data next to the executable in _internal.
-        from config import DATA_DIR, DOCS_DIR, EXAMPLES_DIR
-        if not (DATA_DIR / "equipment" / "molding_lines.json").is_file():
-            return 21
-        if not (DOCS_DIR / "USER_MANUAL.md").is_file():
-            return 22
-        if any(
-            not (EXAMPLES_DIR / f"Диплом_{n}_ведомость_формовки.xlsx").is_file()
-            for n in (1, 2)
-        ):
-            return 23
-        return 0
+        return _smoke_test_frozen()
 
     from PySide6.QtGui import QIcon
     from PySide6.QtWidgets import QApplication
@@ -41,7 +74,6 @@ def main() -> int:
     window = MainWindow()
     window.show()
     return app.exec()
-
 
 if __name__ == "__main__":
     raise SystemExit(main())
