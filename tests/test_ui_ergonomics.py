@@ -110,3 +110,16 @@ def test_all_selection_dialogs_allow_resizing():
         assert dialog.isSizeGripEnabled()
         assert bool(dialog.windowFlags() & Qt.WindowMaximizeButtonHint)
         dialog.close()
+
+
+def test_global_theme_can_be_reused_across_main_windows():
+    """Global stylesheet should be applied once, not re-polished repeatedly."""
+    app = _app()
+    first = MainWindow()
+    applied_style = app.styleSheet()
+    assert app.property("_fpro_dark_theme_applied") is True
+    first.close()
+    second = MainWindow()
+    assert app.styleSheet() == applied_style
+    assert app.palette().color(QPalette.Base).name() == COLORS["bg_input"].lower()
+    second.close()
