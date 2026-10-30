@@ -281,7 +281,13 @@ class MoldingTab(QWidget):
         plan_lay.addWidget(self._reset_park)
         self._batch_report = QTextEdit()
         self._batch_report.setReadOnly(True)
-        self._batch_report.setMinimumHeight(210)
+        self._batch_report.setMinimumHeight(340)
+        self._batch_report.setStyleSheet(
+            "QTextEdit { background-color: " + COLORS["bg_input"]
+            + "; color: " + COLORS["text_primary"]
+            + "; border: 1px solid " + COLORS["separator"]
+            + "; padding: 10px; selection-background-color: #375D77; }")
+
         plan_lay.addWidget(self._batch_report)
         self._layout.addWidget(plan_box)
         self._batch_count.valueChanged.connect(self._on_batch_options_changed)
