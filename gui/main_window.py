@@ -14,6 +14,8 @@ from PySide6.QtWidgets import (
 
 from config import APP_NAME, APP_VERSION, COLORS, THEME_QSS, EXAMPLES_DIR
 from core.project import Project
+from core.recovery import RecoveryStore, RecoveryEntry
+from gui.dialogs.recovery_dialog import RecoveryDialog
 from core.user_choices import UserChoices
 from core.project_io import (
     FILE_EXTENSION, ProjectFileError, project_inputs, read_project,
@@ -106,6 +108,16 @@ class MainWindow(QMainWindow):
         self._project_path: Path | None = None
         self._choice_origin_project_id = self.project.project_id
         self._saved_signature: str = ""
+        self._recovery_store = RecoveryStore()
+        self._recovery_id = RecoveryStore.new_session_id()
+        self._autosave_last_signature: str | None = None
+        self._autosave_periodic = QTimer(self)
+        self._autosave_periodic.setInterval(60_000)
+        self._autosave_periodic.timeout.connect(self._autosave_snapshot)
+        self._autosave_debounce = QTimer(self)
+        self._autosave_debounce.setSingleShot(True)
+        self._autosave_debounce.setInterval(12_000)
+        self._autosave_debounce.timeout.connect(self._autosave_snapshot)
 
         self._apply_theme()
         self._build_file_menu()
@@ -114,6 +126,7 @@ class MainWindow(QMainWindow):
         self._select_section(0)
         self._saved_signature = self._project_signature()
         self._update_project_title()
+        self._autosave_periodic.start()
 
     def _build_ui(self) -> None:
         central = QWidget()
@@ -252,9 +265,11 @@ class MainWindow(QMainWindow):
             ("Открыть проект…", "Ctrl+O", self._open_project),
             ("Сохранить проект", "Ctrl+S", self._save_project),
             ("Сохранить проект как…", "Ctrl+Shift+S", self._save_project_as),
+            ("Восстановить несохранённую работу…", "", self._show_recovery_dialog),
         ):
             action = QAction(text, self)
-            action.setShortcut(QKeySequence(shortcut))
+            if shortcut:
+                action.setShortcut(QKeySequence(shortcut))
             action.triggered.connect(slot)
             menu.addAction(action)
 
@@ -413,6 +428,7 @@ class MainWindow(QMainWindow):
         self._choice_origin_project_id = self.project.project_id
         self._saved_signature = self._project_signature()
         self._update_project_title()
+        self._remove_active_recovery()
         return True
 
     def _open_project(self, _checked=False) -> None:
@@ -446,8 +462,14 @@ class MainWindow(QMainWindow):
         return True
 
     def _activate_project(self, project: Project,
-                          path: Path | None) -> None:
+                          path: Path | None,
+                          *, recovery_id: str | None = None) -> None:
         """Rebuild ALL tabs; do not leave stale widgets pointing at old Project."""
+        # Called only after normal save/discard consent or explicit recovery.
+        self._remove_active_recovery()
+        self._recovery_id = recovery_id or RecoveryStore.new_session_id()
+        self._autosave_last_signature = None
+        self._autosave_debounce.stop()
         self.project = project
         self._project_path = path
         self._choice_origin_project_id = project.project_id
@@ -477,6 +499,10 @@ class MainWindow(QMainWindow):
             event.accept()
         else:
             event.ignore()
+        if event.isAccepted():
+            self._autosave_periodic.stop()
+            self._autosave_debounce.stop()
+            self._remove_active_recovery()
 
     def _create_tab(self, key: str, title: str) -> QWidget:
         """Фабрика вкладок."""
@@ -589,6 +615,7 @@ class MainWindow(QMainWindow):
             self._recalculate_active = False
             if getattr(self, "_saved_signature", ""):
                 self._update_project_title()
+                self._schedule_autosave()
 
     def _connect_signals(self) -> None:
         """One-way updates rather than cyclic pairwise Qt connections."""
@@ -609,7 +636,9 @@ class MainWindow(QMainWindow):
                 project_tab.edit_alloy,
             ):
                 widget.textEdited.connect(
-                    lambda *_args: self._update_project_title())
+                    lambda *_args: (
+                        self._update_project_title(),
+                        self._schedule_autosave()))
             project_tab.help_requested.connect(
                 lambda: self._select_section(
                     next(i for i, (_, key) in enumerate(self.SECTIONS)
@@ -644,7 +673,144 @@ class MainWindow(QMainWindow):
         super().showEvent(event)
         if not self._startup_offer_checked:
             self._startup_offer_checked = True
-            QTimer.singleShot(0, self._offer_tutorial_once)
+            QTimer.singleShot(0, self._first_show_recovery_or_tutorial)
+
+    def _schedule_autosave(self) -> None:
+        """Debounce edits; periodic 60s timer catches changes without signals."""
+        if not self._autosave_periodic.isActive():
+            return
+        self._autosave_debounce.start()
+
+    def _capture_all_equipment_choices(self) -> dict:
+        choices = UserChoices()
+        old = choices.get_project_choices(self._choice_origin_project_id)
+        current = choices.get_project_choices(self.project.project_id)
+        merged = dict(old)
+        for key, value in current.items():
+            if isinstance(merged.get(key), dict) and isinstance(value, dict):
+                merged[key] = {**merged[key], **value}
+            else:
+                merged[key] = value
+        return merged
+
+    def _autosave_snapshot(self) -> None:
+        """Never touch the original project file. Failures are non-modal."""
+        self._autosave_debounce.stop()
+        if not self._saved_signature:
+            return
+        try:
+            self._flush_pending_text_inputs()
+            signature = self._project_signature()
+            if signature == self._saved_signature:
+                return
+            if (self._autosave_last_signature == signature
+                    and self._recovery_store.path_for(self._recovery_id).exists()):
+                return
+            # A corrupt optional catalogue must not prevent the actual
+            # castings/project from being rescued.
+            try:
+                catalogs = read_custom_catalogs(USER_DATA_DIR)
+            except (OSError, ValueError):
+                catalogs = {}
+            self._recovery_store.save_snapshot(
+                self._recovery_id,
+                self.project,
+                self._capture_all_equipment_choices(),
+                catalogs,
+                self._project_path,
+            )
+            self._autosave_last_signature = signature
+            self.statusBar().showMessage(
+                "Резервная копия несохранённой работы обновлена", 5000)
+        except (OSError, ValueError, TypeError) as exc:
+            self.statusBar().showMessage(
+                f"Резервное автосохранение не выполнено: {exc}", 10000)
+
+    def _remove_active_recovery(self) -> None:
+        """Only called after user saves, discards or explicitly closes."""
+        try:
+            self._recovery_store.delete_snapshot(self._recovery_id)
+        except OSError:
+            pass
+        self._autosave_last_signature = None
+
+    def _first_show_recovery_or_tutorial(self) -> None:
+        # The recovery prompt has higher priority than the first-use tour.
+        if not self._show_recovery_dialog(startup=True):
+            self._offer_tutorial_once()
+
+    def _show_recovery_dialog(
+        self, _checked=False, *, startup: bool = False
+    ) -> bool:
+        app = QApplication.instance()
+        if startup and app is not None and app.platformName() == "offscreen":
+            return False
+        entries = self._recovery_store.list_snapshots()
+        if not entries:
+            if not startup:
+                QMessageBox.information(
+                    self, "Восстановление",
+                    "Несохранённых аварийных копий не найдено.")
+            return False
+        existing = getattr(self, "_recovery_dialog", None)
+        if existing is not None and existing.isVisible():
+            existing.raise_()
+            return True
+        dialog = RecoveryDialog(entries, self)
+        self._recovery_dialog = dialog
+        dialog.finished.connect(
+            lambda _result, dlg=dialog, initial=startup:
+                self._recovery_dialog_finished(dlg, initial))
+        dialog.open()
+        return True
+
+    def _recovery_dialog_finished(
+        self, dialog: RecoveryDialog, startup: bool
+    ) -> None:
+        entry = dialog.selected_entry
+        deletion = dialog.delete_entry
+        if deletion is not None:
+            try:
+                self._recovery_store.delete_snapshot(deletion.snapshot_id)
+            except OSError as exc:
+                QMessageBox.warning(self, "Резервная копия", str(exc))
+        elif entry is not None and self._confirm_discard_project():
+            self._restore_recovery_entry(entry)
+        # "Позже" keeps ALL snapshots on disk for next launch or menu action.
+        if startup:
+            self._offer_tutorial_once()
+
+    def _restore_recovery_entry(self, entry: RecoveryEntry) -> bool:
+        """User opt-in; source file is untouched until explicit Ctrl+S."""
+        try:
+            loaded, original, original_changed = (
+                self._recovery_store.load_snapshot(entry))
+            project = loaded.project
+            if not project.project_uid:
+                project.project_uid = uuid4().hex
+            pending = plan_custom_catalog_restore(
+                USER_DATA_DIR, loaded.custom_catalogs)
+            restore_custom_catalogs(pending)
+            UserChoices().replace_project_choices(
+                project.project_id, loaded.choices)
+        except (OSError, ValueError, TypeError) as exc:
+            QMessageBox.critical(
+                self, "Восстановление не выполнено",
+                f"Открытый проект сохранён без изменений.\\n\\n{exc}")
+            return False
+        self._activate_project(
+            project, original, recovery_id=entry.snapshot_id)
+        # Snapshot represents UNSAVED work even if the original is attached.
+        self._saved_signature = ""
+        self._update_project_title()
+        self._schedule_autosave()
+        if original_changed:
+            QMessageBox.warning(
+                self, "Исходный файл изменился",
+                "Основной файл был изменён или перемещён после создания "
+                "резервной копии. Восстановленная работа открыта отдельно. "
+                "Используйте «Сохранить как…», чтобы не затереть другую версию.")
+        return True
 
     def _offer_tutorial_once(self) -> None:
         if not self._onboarding.should_offer():
