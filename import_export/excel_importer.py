@@ -375,6 +375,65 @@ class ExcelImporter:
         )
         return converted, machine
 
+    def _check_teacher_cross_tables(
+        self, forms_rows: list[tuple],
+        first_rows: list[tuple],
+        second_rows: list[tuple],
+    ) -> None:
+        """Cross-check Table 8 against original Table 1 and Table 2.
+
+        A missing supporting source or a discrepancy is a WARNING.
+        The table of castings remains entirely based on Table 8: never
+        silently overwrite teacher's source quantities or masses.
+        """
+        def rows_by_index(rows: list[tuple]) -> dict[int, tuple]:
+            output = {}
+            for row in rows:
+                if (len(row) > 1 and isinstance(row[1], int)
+                        and not isinstance(row[1], bool) and row[1] > 0):
+                    output[row[1]] = row
+            return output
+
+        t1 = rows_by_index(first_rows)
+        t2 = rows_by_index(second_rows)
+        if not t1 and not t2:
+            return
+        for row in forms_rows:
+            if not row or not isinstance(row[0], int):
+                continue
+            index = row[0]
+            name = str(row[1] or "").strip()
+            mass = _safe_float(row[2])
+            pieces = _safe_float(row[6])
+            if t1:
+                source1 = t1.get(index)
+                if source1 is None:
+                    self._warnings.append(
+                        f"Позиция {index} ({name}): отсутствует в Таблице 1")
+                else:
+                    name1 = str(source1[0] or "").strip()
+                    mass1 = _safe_float(source1[8] if len(source1) > 8 else None)
+                    if name1 != name or abs(mass1 - mass) > 1e-3:
+                        self._warnings.append(
+                            f"Позиция {index} ({name}): в Таблице 1 имя или "
+                            f"масса с ЛПС ({mass1:g} кг) отличается от Таблицы 8")
+            if t2:
+                source2 = t2.get(index)
+                if source2 is None:
+                    self._warnings.append(
+                        f"Позиция {index} ({name}): отсутствует в Таблице 2")
+                else:
+                    name2 = str(source2[0] or "").strip()
+                    pieces2 = _safe_float(
+                        source2[14] if len(source2) > 14 else None)
+                    # Floating-point quantities in Table 2 become physical
+                    # whole castings in Table 8; <0.5 discrepancy is rounding.
+                    if name2 != name or abs(pieces2 - pieces) > 0.500001:
+                        self._warnings.append(
+                            f"Позиция {index} ({name}): программа с браком "
+                            f"в Таблице 2 ({pieces2:g} шт.) не согласуется "
+                            f"с Таблицей 8 ({pieces:g} шт.).")
+
     def load_preview(self, file_path: Path) -> ImportPreview:
         """
         Загружает файл и формирует предпросмотр.
@@ -405,9 +464,25 @@ class ExcelImporter:
             rows_data = list(ws.iter_rows(
                 min_row=first_row, values_only=True,
             ))
+            if teacher_sheet is not None:
+                table_1 = next(
+                    (sheet for sheet in wb.worksheets
+                     if sheet.title.strip().lower() == "таблица 1"), None)
+                table_2 = next(
+                    (sheet for sheet in wb.worksheets
+                     if sheet.title.strip().lower() == "таблица 2"), None)
+                table_1_rows = (list(table_1.iter_rows(
+                    min_row=6, values_only=True)) if table_1 else [])
+                table_2_rows = (list(table_2.iter_rows(
+                    min_row=8, values_only=True)) if table_2 else [])
+            else:
+                table_1_rows = []
+                table_2_rows = []
         finally:
             wb.close()
         if teacher_sheet is not None:
+            self._check_teacher_cross_tables(
+                rows_data, table_1_rows, table_2_rows)
             self._warnings.append(
                 "Обнаружена ведомость преподавателя «Таблица 8». "
                 "Импортируются только позиции из неё; «Таблицы 1–2» "
