@@ -16,6 +16,7 @@ from zipfile import ZipFile, ZIP_DEFLATED
 from xml.sax.saxutils import escape
 
 ROOT = Path(__file__).resolve().parents[1]
+REFERENCE_DIR = ROOT / "references"
 OUT = ROOT / "examples"
 NAMES2 = [
     "Полумуфта", "Щит", "Кронштейн", "Втулка", "Корпус редуктора",
@@ -29,7 +30,7 @@ def pdf_text(filename: str) -> str:
     with tempfile.TemporaryDirectory() as td:
         temp_file = Path(td) / "source.txt"
         subprocess.run(
-            ["pdftotext", "-layout", str(ROOT / filename), str(temp_file)],
+            ["pdftotext", "-layout", str(REFERENCE_DIR / filename), str(temp_file)],
             check=True,
         )
         return temp_file.read_text(encoding="utf-8")
