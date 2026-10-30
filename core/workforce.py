@@ -273,7 +273,13 @@ def calc_workforce(
     # (методичка, раздел «Фонды времени»: ~1840…2000 ч при 2…3 сменах).
     # Значения > 2500 ч — аномалия / суммарный фонд (старые файлы
     # проектов): тогда делим на сменность.
-    if t_wr_raw > 2500.0:
+    if getattr(project, "time_funds_calendar_applied", False):
+        # New calendar model supplies ONE employee's yearly hours already.
+        # Never divide it by the number of shifts a second time.
+        t_wr = t_wr_raw
+    elif t_wr_raw > 2500.0:
+        # Backwards-compatible interpretation for callers which bypass
+        # TimeFundsTab and still provide older aggregate-style values.
         t_wr = t_wr_raw / max(shifts, 1)
     else:
         t_wr = t_wr_raw or 1840.0
