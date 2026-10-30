@@ -798,7 +798,7 @@ class MainWindow(QMainWindow):
         except (OSError, ValueError, TypeError) as exc:
             QMessageBox.critical(
                 self, "Восстановление не выполнено",
-                f"Открытый проект сохранён без изменений.\\n\\n{exc}")
+                f"Открытый проект сохранён без изменений.\n\n{exc}")
             return False
         self._activate_project(
             project, original, recovery_id=entry.snapshot_id)
