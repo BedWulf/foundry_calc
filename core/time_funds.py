@@ -167,10 +167,10 @@ def calculate_operating_time_funds(
 
     scheduled_equipment = working_days_per_year * shifts_per_day * shift_duration_h
     scheduled_one_worker = working_days_per_year * shift_duration_h
-    if equipment_downtime_h > scheduled_equipment:
-        raise ValueError("Простои оборудования превышают календарный фонд машины")
-    if worker_absence_h > scheduled_one_worker:
-        raise ValueError("Отсутствия работника превышают индивидуальный фонд")
+    if equipment_downtime_h >= scheduled_equipment:
+        raise ValueError("Простои оставляют нулевой фонд оборудования — расчёт невозможен")
+    if worker_absence_h >= scheduled_one_worker:
+        raise ValueError("Отсутствия оставляют нулевой фонд работника — расчёт невозможен")
 
     return TimeFunds(
         F_calendar=DAYS_PER_YEAR * HOURS_PER_DAY,
