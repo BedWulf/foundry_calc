@@ -10,12 +10,13 @@ from PySide6.QtWidgets import (
 )
 from config import COLORS
 from core.project import Project
-from core.casting_audit import audit_castings
+from core.casting_audit import audit_castings, audit_casting_technology
 from core.casting_item import CastingItem
 from import_export.excel_importer import ExcelImporter
 from data.loader import DataLoader
 from gui.dialogs.material_dialog import AddMaterialDialog
 from gui.dialogs.castings_browser import CastingsBrowserDialog
+from gui.dialogs.casting_technology_dialog import CastingTechnologyDialog
 
 
 # ─── Стили ────────────────────────────────────────────────────────────
@@ -434,6 +435,12 @@ class ProjectTab(QWidget):
             "Полноразмерный просмотр всей номенклатуры с поиском и сортировкой")
         self.btn_expand_castings.clicked.connect(self._show_castings_browser)
         toolbar.addWidget(self.btn_expand_castings)
+        self.btn_verify_casting = QPushButton("✎ Проверить позицию")
+        self.btn_verify_casting.setToolTip(
+            "Выберите строку и укажите число стержней, чистую массу "
+            "и документы-источники для данной отливки")
+        self.btn_verify_casting.clicked.connect(self._on_verify_casting)
+        toolbar.addWidget(self.btn_verify_casting)
 
         toolbar.addStretch()
 
@@ -705,6 +712,23 @@ class ProjectTab(QWidget):
         self._castings_browser = CastingsBrowserDialog(self.project.castings, self)
         self._castings_browser.show()
 
+    def _on_verify_casting(self) -> None:
+        row = self.table.currentRow()
+        if not (0 <= row < len(self.project.castings)):
+            QMessageBox.information(
+                self, "Выберите отливку",
+                "Сначала выделите строку номенклатуры, которую нужно проверить.")
+            return
+        dialog = CastingTechnologyDialog(self.project.castings[row], self)
+        if dialog.exec() == dialog.Accepted and dialog.result_item is not None:
+            # A blanket confirmation for the previous source list is no
+            # longer sufficient after an individual technological edit.
+            self.project.cores_zero_confirmed = False
+            self.project.castings[row] = dialog.result_item
+            self._refresh_table()
+            self.table.selectRow(row)
+            self.project_changed.emit()
+
     def _refresh_table(self) -> None:
         items = self.project.castings
         self.table.setRowCount(len(items))
@@ -730,9 +754,9 @@ class ProjectTab(QWidget):
             if i != 1:
                 header.setSectionResizeMode(i, QHeaderView.ResizeToContents)
 
-        issues = audit_castings(items)
+        issues = audit_castings(items) + audit_casting_technology(items)
         self.lbl_summary.setText(
             f"Позиций: {len(items)} | Суммарная масса: {total_mass:.2f} т"
-            + (f" | ⚠ Замечаний: {len(issues)}" if issues else " | Данные согласованы"))
+            + (f" | ⚠ Замечаний: {len(issues)}" if issues else " | Исходные данные проверены"))
         self.lbl_summary.setToolTip("\n".join(i.describe() for i in issues[:40])
                                     or "Арифметические связи номенклатуры проверены")
