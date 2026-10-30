@@ -344,6 +344,13 @@ class MainWindow(QMainWindow):
             # accessible via this newly stable project ID.
             choices_manager.replace_project_choices(
                 self.project.project_id, selections)
+            # Tabs keep UserChoices instances. After migrating the old
+            # name/date ID to a new UUID, reload them before their next edit:
+            # otherwise an old cache may overwrite choices in other tabs.
+            for tab in self.tabs.values():
+                choice_cache = getattr(tab, "choices", None)
+                if isinstance(choice_cache, UserChoices):
+                    choice_cache._load()
         except (OSError, ValueError, TypeError) as exc:
             self.project.project_uid = old_uid
             QMessageBox.critical(
@@ -525,6 +532,8 @@ class MainWindow(QMainWindow):
                     tab.blockSignals(was_blocked)
         finally:
             self._recalculate_active = False
+            if getattr(self, "_saved_signature", ""):
+                self._update_project_title()
 
     def _connect_signals(self) -> None:
         """One-way updates rather than cyclic pairwise Qt connections."""
