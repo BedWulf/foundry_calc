@@ -139,3 +139,22 @@ def test_capacity_summary_tolerates_placeholder_casting_program():
     # Data-quality auditing does not assume a placeholder is a CastingItem.
     assert not any("НЕ ПОДТВЕРЖДЕНА НОМЕНКЛАТУРА" in x
                    for x in result.warnings)
+
+
+
+def test_large_casting_browser_shows_multiplicity_and_row_issues():
+    from PySide6.QtCore import Qt
+    from gui.dialogs.castings_browser import CastingsTableModel
+
+    model = CastingsTableModel([
+        valid_casting(),
+        valid_casting(annual_metal_t=99),
+        valid_casting(castings_per_mold=0),
+    ])
+    assert model.columnCount() == 10
+    assert model.headerData(5, Qt.Horizontal, Qt.DisplayRole) == "Отливок/форму"
+    assert model.data(model.index(0, 5), Qt.DisplayRole) == "2"
+    assert model.data(model.index(2, 5), Qt.DisplayRole) == "неизвестно"
+    assert model.data(model.index(0, 9), Qt.DisplayRole) == "✓"
+    assert "⚠" in model.data(model.index(1, 9), Qt.DisplayRole)
+    assert "не согласуется" in model.data(model.index(1, 9), Qt.ToolTipRole)
