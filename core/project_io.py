@@ -216,9 +216,16 @@ def read_project(path: Path) -> LoadedProject:
 def write_project(
     path: Path, project: Project, choices: dict[str, Any] | None = None,
     custom_catalogs: dict[str, Any] | None = None,
+    *,
+    recovery_metadata: dict[str, Any] | None = None,
 ) -> Path:
     file = Path(path)
     data = make_document(project, choices, custom_catalogs)
+    if recovery_metadata is not None:
+        if not isinstance(recovery_metadata, dict):
+            raise ProjectFileError("Некорректные метаданные восстановления")
+        data["recovery"] = recovery_metadata
+        _check_numbers(data["recovery"], "recovery")
     # Validate the full snapshot before overwriting any existing project.
     _validate_project(data["project"])
     text = json.dumps(data, ensure_ascii=False, indent=2, allow_nan=False)
