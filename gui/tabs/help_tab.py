@@ -16,6 +16,7 @@ class HelpTab(QWidget):
 
     tutorial_requested = Signal()
     example_requested = Signal()
+    diploma_example_requested = Signal(int)
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -40,6 +41,21 @@ class HelpTab(QWidget):
         tutorial_tools.addWidget(self.start_tutorial_button)
         tutorial_tools.addWidget(self.save_example_button)
         root.addLayout(tutorial_tools)
+
+        diploma_tools = QHBoxLayout()
+        self.diploma1_button = QPushButton("Сохранить Excel диплома 1")
+        self.diploma2_button = QPushButton("Сохранить Excel диплома 2")
+        for number, button in (
+            (1, self.diploma1_button), (2, self.diploma2_button)
+        ):
+            button.setToolTip(
+                "Данные из дипломной ведомости с листом сверки; "
+                "сохраняет файл, но не меняет текущую номенклатуру")
+            button.clicked.connect(
+                lambda _checked=False, n=number:
+                    self.diploma_example_requested.emit(n))
+            diploma_tools.addWidget(button)
+        root.addLayout(diploma_tools)
 
         tools = QHBoxLayout()
         self.search_edit = QLineEdit()
