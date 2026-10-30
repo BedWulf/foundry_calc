@@ -3,12 +3,12 @@ from PySide6.QtCore import Qt, Signal
 from PySide6.QtGui import QFont, QColor
 from PySide6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QGroupBox, QLabel,
-    QTableWidget, QTableWidgetItem, QHeaderView, QScrollArea,
+    QTableWidget, QTableWidgetItem, QHeaderView, QScrollArea, QDoubleSpinBox, QCheckBox,
 )
 
 from config import COLORS
 from core.project import Project
-from core.time_funds import calculate_time_funds, get_reference_table
+from core.time_funds import calculate_operating_time_funds, get_reference_table
 
 # ─── Стили ────────────────────────────────────────────────────────────
 GROUP_STYLE = f"""
@@ -110,6 +110,7 @@ class TimeFundsTab(QWidget):
         layout.addWidget(self._build_current_funds_group())
 
         # ── Группа 2: Формулы расчёта ────────────────────────────────
+        layout.addWidget(self._build_loss_settings_group())
         layout.addWidget(self._build_formulas_group())
 
         # ── Группа 3: Справочная таблица ─────────────────────────────
@@ -143,8 +144,8 @@ class TimeFundsTab(QWidget):
         # Параметры режима
         params_layout = QHBoxLayout()
         self.lbl_shifts = QLabel("Смен: —")
-        self.lbl_weekends = QLabel("Выходных: —")
-        self.lbl_holidays = QLabel("Праздников: —")
+        self.lbl_weekends = QLabel("Нерабочих дней: —")
+        self.lbl_holidays = QLabel("Длительность смены: —")
         for lbl in (self.lbl_shifts, self.lbl_weekends, self.lbl_holidays):
             lbl.setStyleSheet(f"""
                 QLabel {{
@@ -224,21 +225,66 @@ class TimeFundsTab(QWidget):
         card._value_label = val_lbl
         return card
 
+    def _build_loss_settings_group(self) -> QGroupBox:
+        g = QGroupBox("Календарный режим и потери")
+        g.setStyleSheet(GROUP_STYLE)
+        layout = QVBoxLayout(g)
+        note = QLabel(
+            "Фонд машины: рабочие дни × смены × часы − простои. "
+            "Фонд одного человека: рабочие дни × часы/смену − отсутствия. "
+            "Нулевые потери означают теоретический максимум, "
+            "а не подтверждённые данные.")
+        note.setWordWrap(True)
+        layout.addWidget(note)
+        row = QHBoxLayout()
+        self.spin_equipment_downtime = QDoubleSpinBox()
+        self.spin_equipment_downtime.setRange(0, 8760)
+        self.spin_equipment_downtime.setDecimals(1)
+        self.spin_equipment_downtime.setSuffix(" ч/год")
+        self.spin_equipment_downtime.setValue(self.project.equipment_downtime_h_per_year)
+        self.spin_worker_absence = QDoubleSpinBox()
+        self.spin_worker_absence.setRange(0, 8760)
+        self.spin_worker_absence.setDecimals(1)
+        self.spin_worker_absence.setSuffix(" ч/год")
+        self.spin_worker_absence.setValue(self.project.worker_absence_h_per_year)
+        row.addWidget(QLabel("Простои машины:"))
+        row.addWidget(self.spin_equipment_downtime)
+        row.addWidget(QLabel("Отсутствия одного работника:"))
+        row.addWidget(self.spin_worker_absence)
+        layout.addLayout(row)
+        self.spin_equipment_downtime.valueChanged.connect(self._on_losses_changed)
+        self.spin_worker_absence.valueChanged.connect(self._on_losses_changed)
+        self.check_verified = QCheckBox("Подтверждаю календарь, простои и отсутствия")
+        self.check_verified.setChecked(self.project.time_funds_verified)
+        self.check_verified.toggled.connect(self._on_verified_changed)
+        layout.addWidget(self.check_verified)
+        self.lbl_time_status = QLabel("")
+        self.lbl_time_status.setWordWrap(True)
+        layout.addWidget(self.lbl_time_status)
+        return g
+
+    def _on_losses_changed(self, *_args) -> None:
+        self.project.equipment_downtime_h_per_year = self.spin_equipment_downtime.value()
+        self.project.worker_absence_h_per_year = self.spin_worker_absence.value()
+        self.project.time_funds_verified = False
+        self._recalculate()
+
+    def _on_verified_changed(self, checked: bool) -> None:
+        self.project.time_funds_verified = bool(checked)
+        self._recalculate()
+
     def _build_formulas_group(self) -> QGroupBox:
-        g = QGroupBox("Формулы расчёта (по методичке)")
+        g = QGroupBox("Формулы расчёта по календарю проекта")
         g.setStyleSheet(GROUP_STYLE)
         layout = QVBoxLayout(g)
         layout.setContentsMargins(12, 20, 12, 12)
         layout.setSpacing(8)
 
         formulas = [
-            ("F_кал", "365 × 24 = 8760 ч", "Календарный фонд — константа"),
-            ("F_ном", "(365 − 104 − 12) × 24 = 5976 ч",
-             "Номинальный фонд (104 выходных + 12 праздников)"),
-            ("F_д.об", "Таблица 3 методички → 3890 ч (2 смены)",
-             "Действительный фонд оборудования (с учётом плановых потерь)"),
-            ("F_д.р", "Таблица 4 методички → 3975 ч (2 смены)",
-             "Действительный фонд рабочих (с учётом отпусков и болезней)"),
+            ("F_кал", "365 × 24", "Календарь планового года"),
+            ("F_ном", "Дни × смены × часы/смену", "Годовой график одной машины"),
+            ("F_д.об", "F_ном − простои", "Доступные часы одной машины"),
+            ("F_д.р", "Дни × часы/смену − отсутствия", "Часы ОДНОГО работника"),
         ]
 
         for code, formula, desc in formulas:
@@ -278,7 +324,7 @@ class TimeFundsTab(QWidget):
         return g
 
     def _build_reference_table_group(self) -> QGroupBox:
-        g = QGroupBox("Справочная таблица фондов времени")
+        g = QGroupBox("Старые табличные нормы — для справки, не используются в расчёте")
         g.setStyleSheet(GROUP_STYLE)
         layout = QVBoxLayout(g)
         layout.setContentsMargins(12, 20, 12, 12)
@@ -345,34 +391,51 @@ class TimeFundsTab(QWidget):
     # Пересчёт
     # ─────────────────────────────────────────────────────────────────
     def _recalculate(self) -> None:
-        """Пересчитать фонды времени на основе параметров проекта."""
-        tf = calculate_time_funds(
-            shifts=self.project.shifts_per_day,
-            weekends=104,
-            holidays=12,
-        )
+        """Считать фонд из фактического проектного календаря."""
+        try:
+            tf = calculate_operating_time_funds(
+                working_days_per_year=self.project.working_days_per_year,
+                shifts_per_day=self.project.shifts_per_day,
+                shift_duration_h=self.project.shift_duration_h,
+                equipment_downtime_h=self.project.equipment_downtime_h_per_year,
+                worker_absence_h=self.project.worker_absence_h_per_year,
+            )
+        except ValueError as exc:
+            for card in (self.lbl_F_cal, self.lbl_F_nom, self.lbl_F_eq, self.lbl_F_wr):
+                card._value_label.setText("—")
+            self.lbl_time_status.setText("ОШИБКА РЕЖИМА: " + str(exc))
+            self.project.time_funds_verified = False
+            self.project.time_funds_calendar_applied = False
+            self.project.F_equipment_h = 0.0
+            self.project.F_workers_h = 0.0
+            return
 
-        # Обновить карточки
-        self.lbl_F_cal._value_label.setText(f"{int(tf.F_calendar):,}")
-        self.lbl_F_nom._value_label.setText(f"{int(tf.F_nominal):,}")
-        self.lbl_F_eq._value_label.setText(f"{int(tf.F_equipment):,}")
-        self.lbl_F_wr._value_label.setText(f"{int(tf.F_workers):,}")
+        def format_h(value: float) -> str:
+            return f"{value:,.1f}".replace(",", " ").removesuffix(".0")
 
-        # Обновить параметры
+        self.lbl_F_cal._value_label.setText(format_h(tf.F_calendar))
+        self.lbl_F_nom._value_label.setText(format_h(tf.F_nominal))
+        self.lbl_F_eq._value_label.setText(format_h(tf.F_equipment))
+        self.lbl_F_wr._value_label.setText(format_h(tf.F_workers))
         self.lbl_shifts.setText(f"Смен: {tf.shifts}")
-        self.lbl_weekends.setText(f"Выходных: {tf.weekends}")
-        self.lbl_holidays.setText(f"Праздников: {tf.holidays}")
-
-        # Обновить выделение в справочной таблице
+        self.lbl_weekends.setText(
+            f"Рабочих/нерабочих дней: {self.project.working_days_per_year}/{tf.weekends}")
+        self.lbl_holidays.setText(
+            f"Смена: {self.project.shift_duration_h:g} ч")
+        self.lbl_time_status.setText(
+            "Исходный режим подтверждён пользователем"
+            if self.project.time_funds_verified
+            else "ПРЕДВАРИТЕЛЬНО: подтвердите календарь и потери. "
+                 "Нулевые потери означают верхнюю границу.")
+        self.check_verified.blockSignals(True)
+        self.check_verified.setChecked(self.project.time_funds_verified)
+        self.check_verified.blockSignals(False)
         self._highlight_current_shifts(tf.shifts)
-
-        # Сохранить в проект
         self.project.F_calendar_h = tf.F_calendar
         self.project.F_nominal_h = tf.F_nominal
         self.project.F_equipment_h = tf.F_equipment
         self.project.F_workers_h = tf.F_workers
-
-        # Сигнал для других вкладок
+        self.project.time_funds_calendar_applied = True
         self.funds_updated.emit(tf.as_dict())
 
     def _highlight_current_shifts(self, shifts: int) -> None:
