@@ -9,6 +9,7 @@ on:
       - 'data/**'
       - 'assets/**'
       - 'docs/**'
+      - 'examples/**'
       - '.github/workflows/windows-exe.yml'
       - 'build_windows.bat'
 
