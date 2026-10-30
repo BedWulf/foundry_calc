@@ -103,3 +103,26 @@ def test_summary_flags_melting_deficit_and_exports_comparable_units(tmp_path):
     rows = list(sheet.values)
     assert any(row[1] == "Металлозавалка" and row[2] == 1000
                and row[3] == 500 for row in rows[1:])
+
+
+def test_sand_operation_incompatible_declared_units_are_unknown():
+    s = sources()
+    s["sand_prep"]["capacity_operations"][0].update(
+        quantity=150, capacity_year=200,
+        quantity_unit="м³/год", capacity_unit="т/год")
+    report = calculate_plant_capacity(s, SimpleNamespace(castings=[object()]))
+    row = next(x for x in report.rows if x.department == "Смесеприготовительное")
+    assert row.status == "unknown"
+    assert row.demand == 150
+    assert row.capacity is None
+    assert "Несовместимые единицы" in row.note
+
+
+def test_sand_operation_matching_declared_units_still_compares():
+    s = sources()
+    s["sand_prep"]["capacity_operations"][0].update(
+        quantity_unit="м³/год", capacity_unit="м³/год")
+    report = calculate_plant_capacity(s)
+    row = next(x for x in report.rows if x.department == "Смесеприготовительное")
+    assert row.status == "ok"
+    assert row.capacity == 200
