@@ -26,6 +26,9 @@ class Project:
     shifts_per_day: int = 2
     shift_duration_h: float = 8.0
     working_days_per_year: int = 249
+    equipment_downtime_h_per_year: float = 0.0  # explicitly provided annual hours per machine
+    worker_absence_h_per_year: float = 0.0  # per ONE employee, hours/year
+    time_funds_verified: bool = False  # user has checked calendar and losses
 
     # План общих формовочных линий: партии, переналадки и резерв фонда.
     molding_batches_per_year: int = 1
