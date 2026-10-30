@@ -1,31 +1,32 @@
-"""Точка входа в приложение «ЛитейныйЦех PRO»."""
+"""Точка входа в приложение «ЛитейныйЦех PRO».
+
+Import GUI modules lazily: smoke mode on headless Windows CI should not
+initialize Qt before it has verified bundled resources.
+"""
+import os
 import sys
 from pathlib import Path
 
-# Добавляем корень проекта в sys.path (на случай запуска из подпапки)
 ROOT = Path(__file__).resolve().parent
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from PySide6.QtWidgets import QApplication
-from PySide6.QtGui import QIcon
-
-from config import APP_ICON, APP_NAME
-from gui.main_window import MainWindow
-
 
 def main() -> int:
-    import os
     if os.environ.get("FOUNDRY_SMOKE_TEST") == "1":
-        # Real packaged EXE import/resources probe. Never construct QApplication
-        # on a Windows CI session without an interactive desktop: this can
-        # hang under certain Qt platform-plugin configurations.
+        # Standard-library-only resource test, before importing PySide6.
+        # Frozen builds store data next to the executable in _internal.
         from config import DATA_DIR, DOCS_DIR
         if not (DATA_DIR / "equipment" / "molding_lines.json").is_file():
             return 21
         if not (DOCS_DIR / "USER_MANUAL.md").is_file():
             return 22
         return 0
+
+    from PySide6.QtGui import QIcon
+    from PySide6.QtWidgets import QApplication
+    from config import APP_ICON, APP_NAME
+    from gui.main_window import MainWindow
 
     app = QApplication(sys.argv)
     app.setApplicationName(APP_NAME)
