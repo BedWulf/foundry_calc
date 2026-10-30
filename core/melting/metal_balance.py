@@ -1,11 +1,14 @@
 from dataclasses import dataclass, field
 from typing import List
+import math
 
 
-#: Эталонный выход годного литья из металлозавалки, доля
-#: («Sample Diploma.pdf», табл. 6, лист 18):
-#: 37 000 т годного / 58 932 т завалки = 0.611 (выход годного 61.1 %).
-REFERENCE_YIELD: float = 0.611
+#: Расчётное отношение годного литья к завалке по ЧИСЛАМ
+#: контрольного сценария («Sample Diploma.pdf», табл. 6, лист 18):
+#: 37 000 т годного / 58 932 т завалки ≈ 0.62784 (62.8 %).
+#: Прежнее 0.611 не соответствовало указанным в комментарии числам.
+#: Это арифметическая проверка отношения, не новая паспортная норма.
+REFERENCE_YIELD: float = 37000.0 / 58932.0
 
 
 def calc_metal_charge(
@@ -33,9 +36,11 @@ def calc_metal_charge(
         М = (37000 + 16320 + 2666)/0.95 = 58 932 т ✓ (табл. 6, лист 18).
       • Диплом 2 (64 000 т годного, ЛП=35 %, Б=6.75 %, У=5 %):
         М = (64000 + 22400 + 4320)/0.95 = 95 494 т ✓ (лист 14).
-      • При значениях по умолчанию из методички (ЛП=28.9 %, Б=5 %) на
-        37 000 т программа даёт ≈58 721 т (−0.36 % от эталона) и
-        предлагает ИСТ-6М1 в количестве 6 шт., К_загр ≈ 0.84 ✓.
+      • При настройках проекта по умолчанию (ЛП=28.9 %, Б=5 %,
+        У=5 %) на 37 000 т формула даёт ≈52 151 т. Это НЕ эталон
+        диплома 1: там ЛП=16 320 т и Б=2 666 т, соответствующие
+        другим процентам. Нельзя приписывать настройкам по умолчанию
+        эталонные 58 932 т или число печей без нового расчёта.
 
     Args:
         annual_output_t: годовой выпуск годных отливок, т
@@ -47,13 +52,26 @@ def calc_metal_charge(
         Годовая металлозавалка, т
 
     Raises:
-        ValueError: если процент угара вне диапазона [0, 100)
+        ValueError: если масса или проценты некорректны, отрицательны,
+            не являются конечными числами или угар достигает 100 %.
     """
-    if annual_output_t <= 0:
+    # Reject invalid source values rather than producing a plausible
+    # physical quantity from a negative percentage or NaN. These guards
+    # also run for zero output, so bad input never masquerades as zero.
+    for name, value in (
+        ("Годовой выпуск", annual_output_t),
+        ("Процент брака", brak_pct),
+        ("Литники и прибыли", litniki_pribyli_pct),
+        ("Процент угара", ugar_pct),
+    ):
+        if (type(value) not in (int, float)
+                or not math.isfinite(value) or value < 0):
+            raise ValueError(f"Некорректный параметр «{name}»: {value}")
+    if ugar_pct >= 100:
+        raise ValueError(f"Некорректный процент угара: {ugar_pct}%")
+    if annual_output_t == 0:
         return 0.0
     ug = ugar_pct / 100.0
-    if not (0.0 <= ug < 1.0):
-        raise ValueError(f"Некорректный процент угара: {ugar_pct}%")
 
     lp = annual_output_t * litniki_pribyli_pct / 100.0   # металл ЛПС, т
     br = annual_output_t * brak_pct / 100.0              # брак, т
