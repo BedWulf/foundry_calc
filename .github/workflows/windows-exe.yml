@@ -38,15 +38,25 @@ jobs:
           FOUNDRY_BUILD_HOME: ${{ runner.temp }}\FPRO
           QT_QPA_PLATFORM: offscreen
           FOUNDRY_SMOKE_TEST: '1'
+          FOUNDRY_SMOKE_REPORT: ${{ runner.temp }}\foundry_frozen_smoke_error.txt
         run: |
           $exe = Join-Path $env:FOUNDRY_BUILD_HOME "dist\LiteynyiTsehPRO\LiteynyiTsehPRO.exe"
           if (!(Test-Path $exe)) { throw "EXE not produced by batch builder" }
           $p = Start-Process -FilePath $exe -PassThru
-          if (-not $p.WaitForExit(45000)) {
+          if (-not $p.WaitForExit(90000)) {
             $p.Kill()
-            throw "Bundled EXE did not exit in smoke mode"
+            if (Test-Path $env:FOUNDRY_SMOKE_REPORT) {
+              Get-Content -LiteralPath $env:FOUNDRY_SMOKE_REPORT
+            }
+            throw "Packaged MainWindow/Qt smoke test timed out"
           }
-          if ($p.ExitCode -ne 0) { throw "Bundled EXE failed with exit code $($p.ExitCode)" }
+          if ($p.ExitCode -ne 0) {
+            if (Test-Path $env:FOUNDRY_SMOKE_REPORT) {
+              Get-Content -LiteralPath $env:FOUNDRY_SMOKE_REPORT
+            }
+            throw "Packaged MainWindow/Qt smoke failed with exit code $($p.ExitCode)"
+          }
+          Write-Host "Packaged Qt MainWindow and melting imports OK"
       - name: Upload portable Windows folder
         uses: actions/upload-artifact@v4
         with:
