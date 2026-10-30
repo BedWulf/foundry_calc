@@ -153,6 +153,7 @@ def calc_sand_volumes(annual_molds: int,
                       cores_mass_per_mold_kg: float,
                       tamped_density: float = DENSITY_TAMPED_PRESS,
                       loose_density: float = DENSITY_LOOSE_MIX,
+                      metal_density_t_m3: float = DENSITY_STEEL,
                       ) -> Dict[str, float]:
     """Годовые объёмы и массы смеси по геометрии форм.
 
@@ -167,18 +168,31 @@ def calc_sand_volumes(annual_molds: int,
         cores_mass_per_mold_kg: суммарная масса стержней в форме, кг
         tamped_density: плотность уплотнённой смеси, т/м3
         loose_density: плотность неуплотнённой смеси, т/м3
+        metal_density_t_m3: плотность конкретного сплава, т/м³.
+            По умолчанию 7.8 для обратной совместимости при прямом вызове;
+            расчёт из проекта всегда передаёт его собственную плотность.
 
     Returns:
         Словарь: ``mold_volume_total_m3``, ``sand_volume_tamped_m3``,
         ``sand_volume_loose_m3``, ``sand_mass_tamped_t``,
         ``sand_mass_loose_t``
     """
+    # Geometric volume = mass / material density. Steel's 7.8 t/m³
+    # cannot be applied to cast iron or aluminum without justification.
+    for label, value in (
+        ("плотность металла", metal_density_t_m3),
+        ("плотность уплотнённой смеси", tamped_density),
+        ("плотность рыхлой смеси", loose_density),
+    ):
+        if (isinstance(value, bool) or not isinstance(value, (int, float))
+                or not math.isfinite(value) or value <= 0):
+            raise ValueError(f"Некорректная {label}: {value}")
     if annual_molds <= 0 or mold_volume_m3 <= 0:
         return {"mold_volume_total_m3": 0.0, "sand_volume_tamped_m3": 0.0,
                 "sand_volume_loose_m3": 0.0, "sand_mass_tamped_t": 0.0,
                 "sand_mass_loose_t": 0.0}
     total = annual_molds * mold_volume_m3
-    occupied = (metal_per_mold_kg / 1000.0 / DENSITY_STEEL
+    occupied = (metal_per_mold_kg / 1000.0 / metal_density_t_m3
                 + cores_mass_per_mold_kg / 1000.0 / DENSITY_GTS)
     sand_tamped_per_mold = max(mold_volume_m3 - occupied, 0.0)
     sand_tamped = annual_molds * sand_tamped_per_mold
@@ -375,6 +389,7 @@ class SandPrepCalculator:
         top_n: int = 5,
         selected_ids: Optional[Dict[str, str]] = None,
         cores_mass_t_direct: Optional[float] = None,
+        metal_density_t_m3: float = DENSITY_STEEL,
     ) -> Dict[str, Any]:
         """Рассчитать все позиции смесеприготовительного отделения.
 
@@ -398,6 +413,8 @@ class SandPrepCalculator:
             lumps_share: доля комьев в обороте смеси для дробилки
             top_n: сколько вариантов показывать по каждой позиции
             selected_ids: сохранённый выбор пользователя {operation: id}
+            metal_density_t_m3: плотность выбранного металла, т/м³.
+                Проект передаёт своё значение; не подменять плотностью стали.
             cores_mass_t_direct: точная годовая масса стержней, т (из
                 номенклатуры проекта). Если задана (>= 0), используется
                 вместо оценки ``annual_molds × cores_per_mold × avg_core_mass``
@@ -430,6 +447,7 @@ class SandPrepCalculator:
             metal_per_mold_kg=metal_per_mold_kg,
             cores_mass_per_mold_kg=cores_mass_per_mold_kg,
             tamped_density=tamped_density,
+            metal_density_t_m3=metal_density_t_m3,
         )
         molding_loose_m3 = volumes["sand_volume_loose_m3"]
         molding_mass_t = volumes["sand_mass_tamped_t"]
@@ -650,6 +668,10 @@ def calc_sand_prep(
     fund = float(getattr(project, "F_equipment_sand_h", 0.0) or
                  getattr(project, "F_equipment_h", 3890.0) or 3890.0)
 
+    density_kg_m3 = float(getattr(project, "alloy_density_kg_m3", 0.0))
+    if not math.isfinite(density_kg_m3) or density_kg_m3 <= 0:
+        raise ValueError("Плотность сплава должна быть положительным конечным числом")
+
     return calc.calc_department(
         annual_output_t=float(getattr(project, "annual_output_t", 0.0) or 0.0),
         annual_molds=annual_molds,
@@ -658,6 +680,7 @@ def calc_sand_prep(
         cores_per_mold=cores_per_mold,
         avg_core_mass_kg=avg_core_mass,
         material_category=category,
+        metal_density_t_m3=density_kg_m3 / 1000.0,
         working_hours=fund,
         top_n=top_n,
         selected_ids=selected_ids,
