@@ -1,5 +1,7 @@
 """Сохранение и загрузка выборов пользователя."""
 import json
+import os
+import tempfile
 from pathlib import Path
 from typing import Dict, Any, Optional
 from datetime import datetime
@@ -29,9 +31,19 @@ class UserChoices:
                 self._data = {}
 
     def _save(self) -> None:
-        """Сохранить выборы в файл."""
-        with open(self.choices_file, "w", encoding="utf-8") as f:
-            json.dump(self._data, f, indent=2, ensure_ascii=False)
+        """Атомарно сохранить выборы без риска обрезать choices.json."""
+        self.choices_dir.mkdir(parents=True, exist_ok=True)
+        fd, temp_path = tempfile.mkstemp(
+            prefix=".choices-", suffix=".tmp", dir=str(self.choices_dir))
+        try:
+            with os.fdopen(fd, "w", encoding="utf-8") as output:
+                json.dump(self._data, output, indent=2, ensure_ascii=False)
+                output.flush()
+                os.fsync(output.fileno())
+            os.replace(temp_path, self.choices_file)
+        finally:
+            if os.path.exists(temp_path):
+                os.unlink(temp_path)
 
     def get_choice(self, project_id: str, category: str) -> Optional[Dict[str, Any]]:
         """Получить выбор для проекта."""
