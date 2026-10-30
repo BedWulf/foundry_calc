@@ -1,2 +1,32 @@
+# Python generated artifacts
 __pycache__/
-*.pyc
+*.py[cod]
+*.pyo
+.pytest_cache/
+.coverage
+htmlcov/
+.mypy_cache/
+.ruff_cache/
+*.egg-info/
+
+# Local virtual environments and PyInstaller builds
+.venv/
+venv/
+env/
+build/
+dist/
+*.spec
+LiteynyiTsehPRO-Windows-x64.zip
+
+# Local user state; must never be overwritten by a repository checkout
+user_data/
+*.log
+
+# OS, editor and temporary files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+*.tmp
+~$*.xlsx
+~$*.docx
