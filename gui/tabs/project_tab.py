@@ -652,6 +652,9 @@ class ProjectTab(QWidget):
                 if answer != QMessageBox.Yes:
                     return
             self.project.clear_castings()
+            # Confirmation applies only to the PREVIOUS nomenclature:
+            # never inherit a declaration of "coreless" after Excel import.
+            self.project.cores_zero_confirmed = False
             for item in items:
                 self.project.add_casting(item)
             self._refresh_table()
