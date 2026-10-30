@@ -630,6 +630,7 @@ class ProjectTab(QWidget):
         path, _ = QFileDialog.getOpenFileName(
             self, "Импорт номенклатуры отливок",
             str(Path.home()), "Excel файлы (*.xlsx *.xlsm);;Все файлы (*)",
+            options=QFileDialog.DontUseNativeDialog,
         )
         if not path:
             return
