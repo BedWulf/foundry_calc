@@ -467,8 +467,9 @@ class MainWindow(QMainWindow):
                           path: Path | None,
                           *, recovery_id: str | None = None) -> None:
         """Rebuild ALL tabs; do not leave stale widgets pointing at old Project."""
-        # Called only after normal save/discard consent or explicit recovery.
-        self._remove_active_recovery()
+        # Retain old crash copy until all tabs have been successfully rebuilt.
+        # A Qt/widget exception during activation must not erase the fallback.
+        prior_recovery_id = self._recovery_id
         self._recovery_id = recovery_id or RecoveryStore.new_session_id()
         self._autosave_last_signature = None
         self._autosave_debounce.stop()
@@ -484,6 +485,11 @@ class MainWindow(QMainWindow):
         self._recalculate_dependents(with_time_funds=True)
         self._saved_signature = self._project_signature()
         self._update_project_title()
+        if prior_recovery_id != self._recovery_id:
+            try:
+                self._recovery_store.delete_snapshot(prior_recovery_id)
+            except OSError:
+                pass
 
     def _new_project(self, _checked=False) -> None:
         if not self._confirm_discard_project():
@@ -687,13 +693,15 @@ class MainWindow(QMainWindow):
         choices = UserChoices()
         old = choices.get_project_choices(self._choice_origin_project_id)
         current = choices.get_project_choices(self.project.project_id)
-        merged = dict(old)
-        for key, value in current.items():
-            if isinstance(merged.get(key), dict) and isinstance(value, dict):
-                merged[key] = {**merged[key], **value}
-            else:
-                merged[key] = value
-        return merged
+        def merge(previous, recent):
+            if not isinstance(previous, dict) or not isinstance(recent, dict):
+                return recent
+            combined = dict(previous)
+            for key, value in recent.items():
+                combined[key] = (merge(combined[key], value)
+                                 if key in combined else value)
+            return combined
+        return merge(old, current)
 
     def _autosave_snapshot(self) -> None:
         """Never touch the original project file. Failures are non-modal."""
