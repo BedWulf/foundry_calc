@@ -137,6 +137,15 @@ def _validate_project(data: Any) -> Project:
         val = payload.get(key)
         if val is not None and (type(val) not in (int, float) or val < 0):
             raise ProjectFileError(f"Недопустимое значение {key}")
+    # The melting module rejects negative losses and 100% burn-off.
+    # Reject a malicious/old JSON document before it reaches Qt refresh(),
+    # where an uncaught ValueError would otherwise interrupt opening.
+    for key in ("brak_pct", "litniki_pribyli_pct", "ugar_pct"):
+        value = payload.get(key, getattr(Project(), key))
+        if type(value) not in (int, float) or not math.isfinite(value) or value < 0:
+            raise ProjectFileError(f"Недопустимый процент {key}")
+    if payload.get("ugar_pct", Project().ugar_pct) >= 100:
+        raise ProjectFileError("Угар должен быть меньше 100 %")
     if payload.get("molding_park_mode", "auto") not in ("auto", "manual"):
         raise ProjectFileError("Неизвестный режим формирования парка")
     counts = payload.get("molding_line_counts", {})
