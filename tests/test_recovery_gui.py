@@ -92,6 +92,6 @@ def test_recovery_dialog_lists_all_and_later_preserves_backups(tmp_path):
     dlg = RecoveryDialog(entries)
     assert dlg.list.count() == 2
     dlg.later_button.click()
-    assert dlg.result() == dlg.Rejected
+    assert dlg.result() == 0  # QDialog.DialogCode.Rejected
     assert len(store.list_snapshots()) == 2
     dlg.close()
