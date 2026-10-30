@@ -1,9 +1,11 @@
 """Главное окно приложения с боковой навигацией."""
 from pathlib import Path
+from uuid import uuid4
+import json
 from shutil import copyfile
 
 from PySide6.QtCore import Qt, QTimer
-from PySide6.QtGui import QPalette, QColor
+from PySide6.QtGui import QPalette, QColor, QAction, QKeySequence
 from PySide6.QtWidgets import (
     QMainWindow, QWidget, QHBoxLayout, QVBoxLayout,
     QStackedWidget, QPushButton, QLabel, QFrame, QScrollArea,
@@ -12,6 +14,13 @@ from PySide6.QtWidgets import (
 
 from config import APP_NAME, APP_VERSION, COLORS, THEME_QSS, EXAMPLES_DIR
 from core.project import Project
+from core.user_choices import UserChoices
+from core.project_io import (
+    FILE_EXTENSION, ProjectFileError, project_inputs, read_project,
+    write_project, read_custom_catalogs, plan_custom_catalog_restore,
+    restore_custom_catalogs,
+)
+from config import USER_DATA_DIR
 from core.onboarding import OnboardingState, TUTORIAL_STEPS
 from core.tutorial_example import save_tutorial_excel
 
@@ -94,11 +103,16 @@ class MainWindow(QMainWindow):
         self._startup_offer_checked = False
         self._tour_index = -1
         self._tour_origin = 0
+        self._project_path: Path | None = None
+        self._saved_signature: str = ""
 
         self._apply_theme()
+        self._build_file_menu()
         self._build_ui()
         self._connect_signals()
         self._select_section(0)
+        self._saved_signature = self._project_signature()
+        self._update_project_title()
 
     def _build_ui(self) -> None:
         central = QWidget()
@@ -209,9 +223,198 @@ class MainWindow(QMainWindow):
         tour_layout.addLayout(tour_controls)
         self.tour_banner.hide()
 
+        file_toolbar = QHBoxLayout()
+        file_toolbar.setContentsMargins(12, 8, 12, 8)
+        self.btn_new_project = QPushButton("Новый")
+        self.btn_open_project = QPushButton("Открыть проект")
+        self.btn_save_project = QPushButton("Сохранить")
+        self.btn_save_as_project = QPushButton("Сохранить как…")
+        for btn, handler in (
+            (self.btn_new_project, self._new_project),
+            (self.btn_open_project, self._open_project),
+            (self.btn_save_project, self._save_project),
+            (self.btn_save_as_project, self._save_project_as),
+        ):
+            btn.clicked.connect(handler)
+            file_toolbar.addWidget(btn)
+        file_toolbar.addStretch()
+        content_layout.addLayout(file_toolbar)
         content_layout.addWidget(self.tour_banner)
         content_layout.addWidget(self.content_stack, 1)
         root_layout.addWidget(content_panel, 1)
+
+    def _build_file_menu(self) -> None:
+        """Клавиатурные команды и дублирующие кнопки панели проекта."""
+        menu = self.menuBar().addMenu("Файл")
+        for text, shortcut, slot in (
+            ("Новый проект", "Ctrl+N", self._new_project),
+            ("Открыть проект…", "Ctrl+O", self._open_project),
+            ("Сохранить проект", "Ctrl+S", self._save_project),
+            ("Сохранить проект как…", "Ctrl+Shift+S", self._save_project_as),
+        ):
+            action = QAction(text, self)
+            action.setShortcut(QKeySequence(shortcut))
+            action.triggered.connect(slot)
+            menu.addAction(action)
+
+    def _project_signature(self) -> str:
+        """Оценка несохранённого ввода; расчётные поля не влияют."""
+        choices = UserChoices().get_project_choices(self.project.project_id)
+        def without_timestamps(value):
+            if isinstance(value, dict):
+                return {
+                    k: without_timestamps(v)
+                    for k, v in value.items() if k != "updated_at"
+                }
+            if isinstance(value, list):
+                return [without_timestamps(x) for x in value]
+            return value
+        return json.dumps({
+            "project": project_inputs(self.project),
+            "choices": without_timestamps(choices),
+        }, ensure_ascii=False, sort_keys=True, allow_nan=False)
+
+    def _is_project_dirty(self) -> bool:
+        return self._project_signature() != self._saved_signature
+
+    def _update_project_title(self) -> None:
+        filename = (self._project_path.name if self._project_path
+                    else "Без имени")
+        marker = " *" if self._is_project_dirty() else ""
+        self.setWindowTitle(
+            f"{APP_NAME} v{APP_VERSION} — {filename}{marker}")
+
+    def _confirm_discard_project(self) -> bool:
+        """Save / discard / cancel. Failure to save blocks closing/opening."""
+        if not self._is_project_dirty():
+            return True
+        answer = QMessageBox.question(
+            self, "Несохранённые изменения",
+            "В текущем проекте есть несохранённые данные.\n"
+            "Сохранить их перед продолжением?",
+            QMessageBox.Save | QMessageBox.Discard | QMessageBox.Cancel,
+            QMessageBox.Cancel,
+        )
+        if answer == QMessageBox.Cancel:
+            return False
+        if answer == QMessageBox.Save:
+            return self._save_project()
+        return answer == QMessageBox.Discard
+
+    def _save_project(self, _checked=False) -> bool:
+        if self._project_path is None:
+            return self._save_project_as()
+        return self._write_project_to(self._project_path)
+
+    def _save_project_as(self, _checked=False) -> bool:
+        suggested = (str(self._project_path) if self._project_path
+                     else str(Path.home() / "ЛитейныйЦех_проект.fpro.json"))
+        filename, _ = QFileDialog.getSaveFileName(
+            self, "Сохранить проект целиком", suggested,
+            "Проект ЛитейныйЦех PRO (*.fpro.json);;JSON (*.json)",
+            options=QFileDialog.DontUseNativeDialog,
+        )
+        if not filename:
+            return False
+        target = Path(filename)
+        if not target.name.lower().endswith(FILE_EXTENSION):
+            target = Path(str(target) + FILE_EXTENSION)
+        if target.exists() and target != self._project_path:
+            choice = QMessageBox.question(
+                self, "Подтверждение перезаписи",
+                f"Файл {target.name} уже существует. Перезаписать?",
+                QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
+            if choice != QMessageBox.Yes:
+                return False
+        return self._write_project_to(target)
+
+    def _write_project_to(self, path: Path) -> bool:
+        old_uid = self.project.project_uid
+        choices_manager = UserChoices()
+        selections = dict(choices_manager.get_project_choices(
+            self.project.project_id))
+        # A persisted project gets a UUID. Unsaved legacy projects continue
+        # using the previous name/date key until the very first save.
+        if not self.project.project_uid:
+            self.project.project_uid = uuid4().hex
+        try:
+            catalogs = read_custom_catalogs(USER_DATA_DIR)
+            write_project(path, self.project, selections, catalogs)
+            # After successful write make the stored equipment choices
+            # accessible via this newly stable project ID.
+            choices_manager.replace_project_choices(
+                self.project.project_id, selections)
+        except (OSError, ValueError, TypeError) as exc:
+            self.project.project_uid = old_uid
+            QMessageBox.critical(
+                self, "Не удалось сохранить проект", str(exc))
+            return False
+        self._project_path = path
+        self._saved_signature = self._project_signature()
+        self._update_project_title()
+        return True
+
+    def _open_project(self, _checked=False) -> None:
+        if not self._confirm_discard_project():
+            return
+        filename, _ = QFileDialog.getOpenFileName(
+            self, "Открыть ранее сохранённый проект",
+            str(self._project_path.parent if self._project_path
+                else Path.home()),
+            "Проект ЛитейныйЦех PRO (*.fpro.json);;JSON (*.json)",
+            options=QFileDialog.DontUseNativeDialog,
+        )
+        if filename:
+            self._load_project_from_path(Path(filename))
+
+    def _load_project_from_path(self, path: Path) -> bool:
+        """Validate before touching current work. No implicit Excel import."""
+        try:
+            imported = read_project(path)
+            pending_catalogs = plan_custom_catalog_restore(
+                USER_DATA_DIR, imported.custom_catalogs)
+            restore_custom_catalogs(pending_catalogs)
+            UserChoices().replace_project_choices(
+                imported.project.project_id, imported.choices)
+        except (OSError, ValueError, TypeError) as exc:
+            QMessageBox.critical(
+                self, "Не удалось открыть проект",
+                f"Текущие данные оставлены без изменений.\n\n{exc}")
+            return False
+        self._activate_project(imported.project, path)
+        return True
+
+    def _activate_project(self, project: Project,
+                          path: Path | None) -> None:
+        """Rebuild ALL tabs; do not leave stale widgets pointing at old Project."""
+        self.project = project
+        self._project_path = path
+        # Existing onboarding state and its first-run marker are untouched.
+        self._tour_index = -1
+        self._tour_origin = 0
+        self._build_ui()
+        self._connect_signals()
+        self._select_section(0)
+        self._recalculate_dependents(with_time_funds=True)
+        self._saved_signature = self._project_signature()
+        self._update_project_title()
+
+    def _new_project(self, _checked=False) -> None:
+        if not self._confirm_discard_project():
+            return
+        self._activate_project(
+            Project(project_uid=uuid4().hex), None)
+
+    def closeEvent(self, event) -> None:  # noqa: N802
+        # Automated offscreen Qt checks cannot answer interactive dialogs;
+        # the user-facing desktop always asks before discarding a project.
+        app = QApplication.instance()
+        if app is not None and app.platformName() == "offscreen":
+            event.accept()
+        elif self._confirm_discard_project():
+            event.accept()
+        else:
+            event.ignore()
 
     def _create_tab(self, key: str, title: str) -> QWidget:
         """Фабрика вкладок."""
