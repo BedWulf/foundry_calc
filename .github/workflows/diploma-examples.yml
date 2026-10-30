@@ -8,8 +8,8 @@ on:
     paths:
       - scripts/generate_diploma_excel.py
       - .github/workflows/diploma-examples.yml
-      - 'Sample Diploma.pdf'
-      - 'Sample Diploma 2.pdf'
+      - 'references/Sample Diploma.pdf'
+      - 'references/Sample Diploma 2.pdf'
 
 permissions:
   contents: write
