@@ -101,3 +101,45 @@ def audit_castings(castings: Iterable[CastingItem]) -> list[CastingIssue]:
                       f"металл {annual:g} т/год не согласуется с "
                       f"{molds} форм × {pour:g} кг/форму = {expected_t:g} т/год")
     return issues
+
+
+def audit_casting_technology(
+    castings: Iterable[CastingItem],
+) -> list[CastingIssue]:
+    """Audit evidence for each productive casting's technological quantities.
+
+    Distinguish source evidence from mathematical consistency. The existence
+    of a positive number does not independently establish that its source is
+    verified. No arbitrary clean-mass or core-count value is manufactured.
+    """
+    issues: list[CastingIssue] = []
+    for row, c in enumerate(castings, 1):
+        if not isinstance(c, CastingItem):
+            continue
+        if c.molds_per_year <= 0:
+            continue
+        name = c.name or "без наименования"
+
+        def add_issue(severity: str, code: str, msg: str) -> None:
+            issues.append(CastingIssue(row, name, severity, code, msg))
+
+        core_source = c.cores_count_source.strip()
+        if not c.cores_count_verified or not core_source:
+            add_issue(
+                "unverified", "core_source_missing",
+                "число стержней на форму не подтверждено по источнику "
+                "данной позиции (включая возможный ноль)")
+        if c.mass_casting_kg <= 0:
+            add_issue("unverified", "clean_mass_missing",
+                      "не задана чистая масса отливки, кг/шт")
+        elif not c.mass_casting_verified or not c.mass_casting_source.strip():
+            add_issue("unverified", "clean_mass_source_missing",
+                      "чистая масса отливки не подтверждена по источнику")
+        if (c.mass_casting_kg > 0 and c.mass_with_LPS_kg > 0
+                and c.mass_casting_kg > c.mass_with_LPS_kg
+                + max(0.01, c.mass_with_LPS_kg * 0.001)):
+            add_issue(
+                "inconsistent", "clean_mass_over_lps",
+                "чистая масса больше массы с ЛПС; уточните определение "
+                "обеих масс и размерности")
+    return issues
