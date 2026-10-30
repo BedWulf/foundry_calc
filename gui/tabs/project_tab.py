@@ -341,7 +341,7 @@ class ProjectTab(QWidget):
 
         self.spin_shift_hours = QDoubleSpinBox()
         self.spin_shift_hours.setRange(1, 24)
-        self.spin_shift_hours.setDecimals(0)
+        self.spin_shift_hours.setDecimals(1)
         self.spin_shift_hours.setValue(8)
         self.spin_shift_hours.setSuffix(" ч/смена")
         self.spin_shift_hours.valueChanged.connect(self._on_mode_changed)
@@ -613,9 +613,17 @@ class ProjectTab(QWidget):
     def _on_mode_changed(self) -> None:
         if self._building:
             return
-        self.project.shifts_per_day = self.spin_shifts.value()
+        # Four 8-hour shifts cannot fit into 24 hours. Enforce the
+        # physical day at input time instead of a fictional annual fund.
+        shifts = self.spin_shifts.value()
+        max_duration = 24.0 / shifts
+        self.spin_shift_hours.blockSignals(True)
+        self.spin_shift_hours.setMaximum(max_duration)
+        self.spin_shift_hours.blockSignals(False)
+        self.project.shifts_per_day = shifts
         self.project.shift_duration_h = self.spin_shift_hours.value()
         self.project.working_days_per_year = self.spin_work_days.value()
+        self.project.time_funds_verified = False
         self.project_changed.emit()
 
     def _on_losses_changed(self) -> None:
