@@ -72,7 +72,7 @@ def main() -> int:
         app.setWindowIcon(QIcon(str(APP_ICON)))
 
     window = MainWindow()
-    window.show()
+    window.showMaximized()
     return app.exec()
 
 if __name__ == "__main__":
