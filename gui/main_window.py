@@ -257,6 +257,20 @@ class MainWindow(QMainWindow):
             action.triggered.connect(slot)
             menu.addAction(action)
 
+    def _flush_pending_text_inputs(self) -> None:
+        """Capture QLineEdit edits before Ctrl+S or closing the main window.
+
+        Some fields are normally committed on editingFinished; pressing
+        Ctrl+S while the cursor is still inside a field must not lose text.
+        """
+        tab = self.tabs.get("project_tab")
+        if tab is None:
+            return
+        self.project.name = (
+            tab.edit_name.text().strip() or "Проект литейного цеха")
+        self.project.customer = tab.edit_customer.text().strip()
+        self.project.alloy = tab.edit_alloy.text().strip()
+
     def _project_signature(self) -> str:
         """Оценка несохранённого ввода; расчётные поля не влияют."""
         choices = UserChoices().get_project_choices(self.project.project_id)
@@ -286,6 +300,7 @@ class MainWindow(QMainWindow):
 
     def _confirm_discard_project(self) -> bool:
         """Save / discard / cancel. Failure to save blocks closing/opening."""
+        self._flush_pending_text_inputs()
         if not self._is_project_dirty():
             return True
         answer = QMessageBox.question(
@@ -329,6 +344,7 @@ class MainWindow(QMainWindow):
         return self._write_project_to(target)
 
     def _write_project_to(self, path: Path) -> bool:
+        self._flush_pending_text_inputs()
         old_uid = self.project.project_uid
         choices_manager = UserChoices()
         selections = dict(choices_manager.get_project_choices(
