@@ -185,6 +185,16 @@ def build_summary(summaries: Dict[str, Dict[str, Any]],
     if project is not None:
         res.project_name = getattr(project, "name", "") or ""
         res.annual_output_t = float(getattr(project, "annual_output_t", 0.0) or 0.0)
+        # The schedule may be an optimistic maximum until actual planned
+        # downtime and per-worker absence assumptions are checked.
+        if (getattr(project, "time_funds_calendar_applied", False)
+                and not getattr(project, "time_funds_verified", False)
+                and getattr(project, "castings", None)):
+            res.ready = False
+            res.warnings.append(
+                "НЕ ПОДТВЕРЖДЕНО: фонд оборудования и одного работника "
+                "основан на календаре без проверенных простоев и отсутствий. "
+                "Уточните и подтвердите раздел «Фонды времени».")
 
     melt = summaries.get("melting", {}) or {}
     mold = summaries.get("molding", {}) or {}
