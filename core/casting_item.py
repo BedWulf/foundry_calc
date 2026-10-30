@@ -37,6 +37,10 @@ class CastingItem:
 
     # --- Стержни ---
     cores_count: int = 0                    # кол-во стержней в форме
+    cores_count_verified: bool = False      # подтверждено по конкретной позиции
+    cores_count_source: str = ""            # чертёж/техкарта/источник
+    mass_casting_verified: bool = False     # чистая масса подтверждена
+    mass_casting_source: str = ""            # источник чистой массы
     core_volume_m3: float = 0.0             # объём стержневой смеси на форму
     core_mass_kg: float = 0.0
 

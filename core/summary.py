@@ -14,7 +14,7 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
 from core.plant_capacity import calculate_plant_capacity
-from core.casting_audit import audit_castings
+from core.casting_audit import audit_castings, audit_casting_technology
 from core.casting_item import CastingItem
 from core.shift_capacity import calculate_shift_stress
 
@@ -192,12 +192,12 @@ def build_summary(summaries: Dict[str, Dict[str, Any]],
         # records; do not crash unrelated shift/capacity summaries on stubs.
         casting_rows = [c for c in (getattr(project, "castings", []) or [])
                         if isinstance(c, CastingItem)]
-        issues = audit_castings(casting_rows)
+        issues = audit_castings(casting_rows) + audit_casting_technology(casting_rows)
         if issues:
             res.ready = False
             res.warnings.append(
                 f"НЕ ПОДТВЕРЖДЕНА НОМЕНКЛАТУРА: {len(issues)} замечаний "
-                "по количеству форм, кратности и массе металла.")
+                "по количеству форм, массе металла и источникам технологических данных.")
             res.warnings.extend(i.describe() for i in issues[:16])
             if len(issues) > 16:
                 res.warnings.append(

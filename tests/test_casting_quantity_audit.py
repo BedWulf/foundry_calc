@@ -147,7 +147,13 @@ def test_large_casting_browser_shows_multiplicity_and_row_issues():
     from gui.dialogs.castings_browser import CastingsTableModel
 
     model = CastingsTableModel([
-        valid_casting(),
+        # Algebra alone is insufficient: the green state requires
+        # traceable evidence for clean mass and core count as well.
+        valid_casting(
+            cores_count=1, cores_count_verified=True,
+            cores_count_source="Карта стержней 1",
+            mass_casting_kg=9, mass_casting_verified=True,
+            mass_casting_source="Чертёж 1"),
         valid_casting(annual_metal_t=99),
         valid_casting(castings_per_mold=0),
     ])

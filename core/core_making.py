@@ -46,8 +46,13 @@ def core_counts_complete(castings, *, zeros_confirmed: bool = False) -> bool:
                   if int(getattr(c, "molds_per_year", 0) or 0) > 0]
     if not productive:
         return False
-    return all(int(getattr(c, "cores_count", 0) or 0) > 0
-               or zeros_confirmed for c in productive)
+    return all(
+        int(getattr(c, "cores_count", 0) or 0) > 0
+        or (bool(getattr(c, "cores_count_verified", False))
+            and bool(str(getattr(c, "cores_count_source", "")).strip()))
+        or zeros_confirmed
+        for c in productive
+    )
 
 
 def calc_annual_cores(annual_molds: int, cores_per_mold: float) -> int:
@@ -289,6 +294,7 @@ class CoreCalculator:
         max_casting_mass_kg: float = 0.0,
         top_n: int = 5,
         selected_machine_id: Optional[str] = None,
+        exact_annual_cores: Optional[int] = None,
     ) -> Dict[str, Any]:
         """Связка «формовка → стержни»: программа стержней и подбор машин.
 
@@ -307,7 +313,12 @@ class CoreCalculator:
             (отсортированные карточки), ``selected_machine_id``,
             ``machine_count``, ``load_factor``, ``hours_required``
         """
-        annual_cores = calc_annual_cores(annual_molds, cores_per_mold)
+        if exact_annual_cores is not None:
+            if type(exact_annual_cores) is not int or exact_annual_cores < 0:
+                raise ValueError("Точное годовое количество стержней должно быть неотрицательным целым")
+            annual_cores = exact_annual_cores
+        else:
+            annual_cores = calc_annual_cores(annual_molds, cores_per_mold)
         options = self.find_machines(
             material_category=material_category,
             annual_cores=annual_cores,
