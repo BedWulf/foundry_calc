@@ -15,7 +15,10 @@ class AddMaterialDialog(QDialog):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setWindowTitle("Добавить новый материал")
-        self.setMinimumWidth(500)
+        self.setMinimumSize(580, 500)
+        self.resize(700, 650)
+        self.setWindowFlag(Qt.WindowMaximizeButtonHint, True)
+        self.setSizeGripEnabled(True)
         self._build_ui()
 
     def _build_ui(self) -> None:
@@ -96,7 +99,7 @@ class AddMaterialDialog(QDialog):
     def _input_style(self) -> str:
         return f"""
             QLineEdit, QComboBox, QDoubleSpinBox {{
-                background-color: #3A1010;
+                background-color: #111A25;
                 color: {COLORS['text_primary']};
                 border: 1px solid {COLORS['separator']};
                 border-radius: 4px;
@@ -119,7 +122,7 @@ class AddMaterialDialog(QDialog):
                 padding: 8px 16px;
                 font-weight: bold;
             }}
-            QPushButton:hover {{ background-color: #FF8555; }}
+            QPushButton:hover {{ background-color: #F3B989; }}
         """
 
     def _on_accept(self) -> None:
