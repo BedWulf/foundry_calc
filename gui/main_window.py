@@ -15,6 +15,8 @@ from PySide6.QtWidgets import (
 from config import APP_NAME, APP_VERSION, COLORS, THEME_QSS, EXAMPLES_DIR
 from core.project import Project
 from core.recovery import RecoveryStore, RecoveryEntry
+from core.version_history import VersionHistoryStore, VersionEntry
+from gui.dialogs.version_history_dialog import VersionHistoryDialog
 from gui.dialogs.recovery_dialog import RecoveryDialog
 from core.user_choices import UserChoices
 from core.project_io import (
@@ -110,6 +112,7 @@ class MainWindow(QMainWindow):
         self._saved_signature: str = ""
         self._autosave_ready = False
         self._recovery_store = RecoveryStore()
+        self._version_history = VersionHistoryStore()
         self._recovery_id = RecoveryStore.new_session_id()
         self._autosave_last_signature: str | None = None
         self._autosave_periodic = QTimer(self)
@@ -267,6 +270,7 @@ class MainWindow(QMainWindow):
             ("Открыть проект…", "Ctrl+O", self._open_project),
             ("Сохранить проект", "Ctrl+S", self._save_project),
             ("Сохранить проект как…", "Ctrl+Shift+S", self._save_project_as),
+            ("История версий проекта…", "", self._show_version_history),
             ("Восстановить несохранённую работу…", "", self._show_recovery_dialog),
         ):
             action = QAction(text, self)
@@ -409,6 +413,7 @@ class MainWindow(QMainWindow):
             self.project.project_uid = uuid4().hex
         try:
             catalogs = read_custom_catalogs(USER_DATA_DIR)
+            self._version_history.preserve_before_save(path)
             write_project(path, self.project, selections, catalogs)
             # After successful write make the stored equipment choices
             # accessible via this newly stable project ID.
@@ -744,6 +749,76 @@ class MainWindow(QMainWindow):
             pass
         self._autosave_last_signature = None
 
+    def _show_version_history(self, _checked=False) -> None:
+        """Browse prior saved versions for the currently opened file."""
+        source = self._project_path
+        if source is None:
+            QMessageBox.information(
+                self, "История версий",
+                "Сначала сохраните проект в файл через «Сохранить как…».")
+            return
+        try:
+            entries = self._version_history.list_versions(source)
+        except (OSError, ValueError, TypeError) as exc:
+            QMessageBox.warning(self, "История версий", str(exc))
+            return
+        if not entries:
+            QMessageBox.information(
+                self, "История версий",
+                "Предыдущих версий пока нет. Версия создаётся перед "
+                "повторным сохранением файла.")
+            return
+        previous = getattr(self, "_version_history_dialog", None)
+        if previous is not None and previous.isVisible():
+            previous.raise_()
+            return
+        dialog = VersionHistoryDialog(entries, self)
+        self._version_history_dialog = dialog
+        dialog.finished.connect(
+            lambda _result, dlg=dialog: self._version_history_finished(dlg))
+        dialog.open()
+
+    def _version_history_finished(self, dialog: VersionHistoryDialog) -> None:
+        entry = dialog.selected_entry
+        if entry is None:
+            return
+        # The picker is modeless: the active project could have changed.
+        if (self._project_path is None
+                or self._project_path.resolve() != entry.source_path):
+            QMessageBox.warning(
+                self, "История версий",
+                "Проект изменился. Откройте историю версий ещё раз.")
+            return
+        if self._confirm_discard_project():
+            self._restore_version_entry(entry)
+
+    def _restore_version_entry(self, entry: VersionEntry) -> bool:
+        """Open history as an unsaved copy, without overwriting its source."""
+        try:
+            loaded = self._version_history.load_version(entry)
+            project = loaded.project
+            # Opening a historical revision as an independent copy must
+            # never replace equipment preferences of the current saved
+            # project. A fresh UID keeps the fork's choices isolated.
+            project.project_uid = uuid4().hex
+            pending = plan_custom_catalog_restore(
+                USER_DATA_DIR, loaded.custom_catalogs)
+            restore_custom_catalogs(pending)
+            UserChoices().replace_project_choices(
+                project.project_id, loaded.choices)
+        except (OSError, ValueError, TypeError) as exc:
+            QMessageBox.critical(
+                self, "Не удалось открыть версию",
+                "Открытый проект не заменён. " + str(exc))
+            return False
+        self._activate_project(project, None)
+        # Ctrl+S asks for a new filename, never silently overwrites the
+        # newer original. The recovered copy is marked as unsaved work.
+        self._saved_signature = ""
+        self._update_project_title()
+        self._schedule_autosave()
+        return True
+
     def _first_show_recovery_or_tutorial(self) -> None:
         # The recovery prompt has higher priority than the first-use tour.
         if not self._show_recovery_dialog(startup=True):
@@ -1019,6 +1094,14 @@ class MainWindow(QMainWindow):
         app = QApplication.instance()
         if app is None:
             return
+        # Repolishing every existing widget on each MainWindow construction
+        # is expensive, particularly during repeated headless GUI tests.
+        # The Qt application owns the palette and stylesheet globally.
+        style_text = (THEME_QSS.read_text(encoding="utf-8")
+                      if THEME_QSS.is_file() else "")
+        if (app.property("_fpro_dark_theme_applied")
+                and app.styleSheet() == style_text):
+            return
         app.setStyle("Fusion")
         palette = QPalette()
         for role, name in (
@@ -1037,5 +1120,5 @@ class MainWindow(QMainWindow):
         ):
             palette.setColor(role, QColor(COLORS[name]))
         app.setPalette(palette)
-        if THEME_QSS.is_file():
-            app.setStyleSheet(THEME_QSS.read_text(encoding="utf-8"))
+        app.setStyleSheet(style_text)
+        app.setProperty("_fpro_dark_theme_applied", True)

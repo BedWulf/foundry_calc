@@ -120,12 +120,32 @@ def calculate_plant_capacity(
         for op in operations:
             if not isinstance(op, Mapping):
                 continue
+            label = str(op.get("title") or op.get("operation") or "Операция")
+            unit = str(op.get("unit") or "ед./год")
+            demand_unit = op.get("quantity_unit")
+            capacity_unit = op.get("capacity_unit")
+            # Legacy rows carry only "unit". Treat this as the unit of both
+            # sides; if either side declares its own unit, check it explicitly.
+            # Annual quantities may be labelled "м³" or "м³/год".
+            def physical_unit(value: Any) -> str:
+                label_unit = str(value).strip().lower().replace(" ", "")
+                return label_unit.removesuffix("/год")
+
+            expected = physical_unit(unit)
+            d_unit = physical_unit(demand_unit) if demand_unit is not None else expected
+            c_unit = physical_unit(capacity_unit) if capacity_unit is not None else expected
+            if d_unit != c_unit or d_unit != expected:
+                out.rows.append(_row(
+                    "Смесеприготовительное", label, op.get("quantity"),
+                    None, unit,
+                    f"Несовместимые единицы: потребность {demand_unit or unit}, "
+                    f"мощность {capacity_unit or unit}, строка {unit}; "
+                    "пересчёт не задан"))
+                continue
             out.rows.append(_row(
-                "Смесеприготовительное",
-                str(op.get("title") or op.get("operation") or "Операция"),
+                "Смесеприготовительное", label,
                 op.get("quantity"), op.get("capacity_year"),
-                str(op.get("unit") or "ед./год"),
-                str(op.get("note") or "")))
+                unit, str(op.get("note") or "")))
     else:
         out.rows.append(_row(
             "Смесеприготовительное", "Операции подготовки смеси", None, None,
