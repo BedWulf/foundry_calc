@@ -135,7 +135,10 @@ class EquipmentDialog(QDialog):
         self._kind = kind
         meta = self._KIND_META[kind]
         self.setWindowTitle(str(meta["title"]))
-        self.setMinimumWidth(420)
+        self.setMinimumSize(560, 480)
+        self.resize(710, 670)
+        self.setWindowFlag(Qt.WindowMaximizeButtonHint, True)
+        self.setSizeGripEnabled(True)
         self._result: Optional[Dict[str, Any]] = None
         self._build_ui()
 
