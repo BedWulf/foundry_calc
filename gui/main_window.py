@@ -749,6 +749,49 @@ class MainWindow(QMainWindow):
             pass
         self._autosave_last_signature = None
 
+    def _show_version_history(self, _checked=False) -> None:
+        """Browse prior saved versions for the currently opened file."""
+        source = self._project_path
+        if source is None:
+            QMessageBox.information(
+                self, "История версий",
+                "Сначала сохраните проект в файл через «Сохранить как…».")
+            return
+        try:
+            entries = self._version_history.list_versions(source)
+        except (OSError, ValueError, TypeError) as exc:
+            QMessageBox.warning(self, "История версий", str(exc))
+            return
+        if not entries:
+            QMessageBox.information(
+                self, "История версий",
+                "Предыдущих версий пока нет. Версия создаётся перед "
+                "повторным сохранением файла.")
+            return
+        previous = getattr(self, "_version_history_dialog", None)
+        if previous is not None and previous.isVisible():
+            previous.raise_()
+            return
+        dialog = VersionHistoryDialog(entries, self)
+        self._version_history_dialog = dialog
+        dialog.finished.connect(
+            lambda _result, dlg=dialog: self._version_history_finished(dlg))
+        dialog.open()
+
+    def _version_history_finished(self, dialog: VersionHistoryDialog) -> None:
+        entry = dialog.selected_entry
+        if entry is None:
+            return
+        # The picker is modeless: the active project could have changed.
+        if (self._project_path is None
+                or self._project_path.resolve() != entry.source_path):
+            QMessageBox.warning(
+                self, "История версий",
+                "Проект изменился. Откройте историю версий ещё раз.")
+            return
+        if self._confirm_discard_project():
+            self._restore_version_entry(entry)
+
     def _first_show_recovery_or_tutorial(self) -> None:
         # The recovery prompt has higher priority than the first-use tour.
         if not self._show_recovery_dialog(startup=True):
