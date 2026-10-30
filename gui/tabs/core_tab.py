@@ -295,6 +295,8 @@ class CoreTab(QWidget):
         has_ambiguous_zeros = any(
             int(getattr(c, "molds_per_year", 0) or 0) > 0
             and int(getattr(c, "cores_count", 0) or 0) == 0
+            and not (bool(getattr(c, "cores_count_verified", False))
+                     and bool(str(getattr(c, "cores_count_source", "")).strip()))
             for c in castings)
         self.confirm_zero_cores.blockSignals(True)
         self.confirm_zero_cores.setChecked(bool(self.project.cores_zero_confirmed))
