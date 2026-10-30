@@ -15,6 +15,8 @@ from PySide6.QtWidgets import (
 from config import APP_NAME, APP_VERSION, COLORS, THEME_QSS, EXAMPLES_DIR
 from core.project import Project
 from core.recovery import RecoveryStore, RecoveryEntry
+from core.version_history import VersionHistoryStore, VersionEntry
+from gui.dialogs.version_history_dialog import VersionHistoryDialog
 from gui.dialogs.recovery_dialog import RecoveryDialog
 from core.user_choices import UserChoices
 from core.project_io import (
@@ -110,6 +112,7 @@ class MainWindow(QMainWindow):
         self._saved_signature: str = ""
         self._autosave_ready = False
         self._recovery_store = RecoveryStore()
+        self._version_history = VersionHistoryStore()
         self._recovery_id = RecoveryStore.new_session_id()
         self._autosave_last_signature: str | None = None
         self._autosave_periodic = QTimer(self)
@@ -267,6 +270,7 @@ class MainWindow(QMainWindow):
             ("Открыть проект…", "Ctrl+O", self._open_project),
             ("Сохранить проект", "Ctrl+S", self._save_project),
             ("Сохранить проект как…", "Ctrl+Shift+S", self._save_project_as),
+            ("История версий проекта…", "", self._show_version_history),
             ("Восстановить несохранённую работу…", "", self._show_recovery_dialog),
         ):
             action = QAction(text, self)
@@ -409,6 +413,7 @@ class MainWindow(QMainWindow):
             self.project.project_uid = uuid4().hex
         try:
             catalogs = read_custom_catalogs(USER_DATA_DIR)
+            self._version_history.preserve_before_save(path)
             write_project(path, self.project, selections, catalogs)
             # After successful write make the stored equipment choices
             # accessible via this newly stable project ID.
