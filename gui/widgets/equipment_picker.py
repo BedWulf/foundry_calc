@@ -6,7 +6,7 @@ from PySide6.QtGui import QFont
 from PySide6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QRadioButton, 
     QButtonGroup, QLabel, QFrame, QScrollArea, QPushButton,
-    QMessageBox, QInputDialog
+    QMessageBox, QInputDialog, QDialog, QDialogButtonBox, QApplication
 )
 from config import COLORS
 
@@ -103,6 +103,7 @@ class EquipmentCard(QFrame):
                 font-weight: bold;
             }}
         """)
+        name_lbl.setWordWrap(True)
         header_layout.addWidget(name_lbl, 1)
         
         # Если рекомендуемое
@@ -110,7 +111,7 @@ class EquipmentCard(QFrame):
             rec_lbl = QLabel("⭐ Рекомендуемое")
             rec_lbl.setStyleSheet(f"""
                 QLabel {{
-                    color: #FFD700;
+                    color: #E8A66F;
                     font-size: 12px;
                     font-weight: bold;
                 }}
@@ -127,6 +128,7 @@ class EquipmentCard(QFrame):
                 font-size: 13px;
             }}
         """)
+        specs_lbl.setWordWrap(True)
         layout.addWidget(specs_lbl)
         
         # Расчётные данные
@@ -190,9 +192,10 @@ class EquipmentPicker(QWidget):
     
     equipment_selected = Signal(dict)
     
-    def __init__(self, category: str, parent=None):
+    def __init__(self, category: str, parent=None, *, allow_expand: bool = True):
         super().__init__(parent)
         self.category = category
+        self._allow_expand = allow_expand
         self.equipment_list: list = []
         self.button_group = QButtonGroup(self)
         self._build_ui()
@@ -206,10 +209,19 @@ class EquipmentPicker(QWidget):
         title = QLabel(f"Выберите оборудование ({self.category})")
         title.setFont(QFont("Segoe UI", 14, QFont.Bold))
         title.setStyleSheet(f"color: {COLORS['accent']};")
-        layout.addWidget(title)
+        title_row = QHBoxLayout()
+        title_row.addWidget(title, 1)
+        if self._allow_expand:
+            self.btn_expand = QPushButton("↗ Развернуть выбор")
+            self.btn_expand.setToolTip(
+                "Открыть большой список оборудования, выбрать модель и применить")
+            self.btn_expand.clicked.connect(self._open_expanded)
+            title_row.addWidget(self.btn_expand)
+        layout.addLayout(title_row)
         
         # Скроллируемая область с вариантами
         self.scroll = QScrollArea()
+        self.scroll.setMinimumHeight(420)
         self.scroll.setWidgetResizable(True)
         self.scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.scroll.setStyleSheet(f"""
@@ -309,6 +321,55 @@ class EquipmentPicker(QWidget):
     def _on_equipment_selected(self, equipment_data: dict):
         if not getattr(self, "_setting_options", False):
             self._emit_selection(equipment_data)
+    def _open_expanded(self) -> None:
+        """Большой выбор оборудования с сохранением выбора только при OK."""
+        if not self.equipment_list:
+            return
+        dialog = QDialog(self)
+        dialog.setWindowTitle("Выбор оборудования — полный просмотр")
+        dialog.setWindowFlag(Qt.WindowMaximizeButtonHint, True)
+        dialog.setSizeGripEnabled(True)
+        dialog.setMinimumSize(740, 480)
+        layout = QVBoxLayout(dialog)
+        expanded = EquipmentPicker(self.category, dialog, allow_expand=False)
+        expanded.set_equipment_options(
+            self.equipment_list,
+            selected_id=self.get_selected_equipment().get("id"))
+        layout.addWidget(expanded, 1)
+        controls = QDialogButtonBox(
+            QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
+        controls.button(QDialogButtonBox.Ok).setText("Применить")
+        controls.button(QDialogButtonBox.Cancel).setText("Отмена")
+        controls.accepted.connect(dialog.accept)
+        controls.rejected.connect(dialog.reject)
+        layout.addWidget(controls)
+        screen = QApplication.primaryScreen()
+        if screen is not None:
+            rect = screen.availableGeometry()
+            dialog.resize(
+                max(740, min(1250, int(rect.width() * .90))),
+                max(480, min(840, int(rect.height() * .84))))
+        else:
+            dialog.resize(1120, 760)
+
+        if dialog.exec() == QDialog.Accepted:
+            choice = expanded.get_selected_equipment()
+            if not choice:
+                return
+            for idx, equip in enumerate(self.equipment_list):
+                if equip.get("id") == choice.get("id"):
+                    button = self.button_group.button(idx)
+                    if button is not None:
+                        # Update radio with signal blocked: the listeners
+                        # receive exactly one equipment_selected signal.
+                        self._setting_options = True
+                        try:
+                            button.setChecked(True)
+                        finally:
+                            self._setting_options = False
+                    self._emit_selection(equip)
+                    break
+
     def get_selected_equipment(self) -> dict:
         """Получить выбранное оборудование."""
         checked_id = self.button_group.checkedId()
