@@ -108,6 +108,7 @@ class MainWindow(QMainWindow):
         self._project_path: Path | None = None
         self._choice_origin_project_id = self.project.project_id
         self._saved_signature: str = ""
+        self._autosave_ready = False
         self._recovery_store = RecoveryStore()
         self._recovery_id = RecoveryStore.new_session_id()
         self._autosave_last_signature: str | None = None
@@ -126,6 +127,7 @@ class MainWindow(QMainWindow):
         self._select_section(0)
         self._saved_signature = self._project_signature()
         self._update_project_title()
+        self._autosave_ready = True
         self._autosave_periodic.start()
 
     def _build_ui(self) -> None:
@@ -696,7 +698,7 @@ class MainWindow(QMainWindow):
     def _autosave_snapshot(self) -> None:
         """Never touch the original project file. Failures are non-modal."""
         self._autosave_debounce.stop()
-        if not self._saved_signature:
+        if not self._autosave_ready:
             return
         try:
             self._flush_pending_text_inputs()
