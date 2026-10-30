@@ -3,10 +3,11 @@ from pathlib import Path
 from shutil import copyfile
 
 from PySide6.QtCore import Qt, QTimer
+from PySide6.QtGui import QPalette, QColor
 from PySide6.QtWidgets import (
     QMainWindow, QWidget, QHBoxLayout, QVBoxLayout,
     QStackedWidget, QPushButton, QLabel, QFrame, QScrollArea,
-    QMessageBox, QFileDialog,
+    QMessageBox, QFileDialog, QApplication,
 )
 
 from config import APP_NAME, APP_VERSION, COLORS, THEME_QSS, EXAMPLES_DIR
@@ -51,11 +52,11 @@ class SideBarButton(QPushButton):
                 border-left: 3px solid transparent;
             }}
             QPushButton:hover {{
-                background-color: #5A1F1F;
+                background-color: #2E3B4C;
                 border-left: 3px solid {COLORS['accent']};
             }}
             QPushButton:checked {{
-                background-color: #6B2525;
+                background-color: #344255;
                 border-left: 3px solid {COLORS['accent']};
                 color: {COLORS['accent']};
             }}
@@ -84,8 +85,8 @@ class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setWindowTitle(f"{APP_NAME} v{APP_VERSION}")
-        self.setMinimumSize(1280, 800)
-        self.resize(1440, 900)
+        self.setMinimumSize(1000, 680)
+        self.resize(1600, 960)
 
         # Модель проекта (единая для всех вкладок)
         self.project = Project()
@@ -108,7 +109,7 @@ class MainWindow(QMainWindow):
 
         # ── Боковая панель ──
         self.sidebar = QFrame()
-        self.sidebar.setFixedWidth(260)
+        self.sidebar.setFixedWidth(235)
         self.sidebar.setStyleSheet(f"""
             QFrame {{
                 background-color: {COLORS['bg_panel']};
@@ -559,11 +560,31 @@ class MainWindow(QMainWindow):
               f"позиций={self.project.total_castings_count()}")
 
     def _apply_theme(self) -> None:
-        if THEME_QSS.exists():
-            with open(THEME_QSS, "r", encoding="utf-8") as f:
-                self.setStyleSheet(f.read())
-        else:
-            self.setStyleSheet(f"""
-                QMainWindow {{ background-color: {COLORS['bg_main']}; }}
-                QLabel {{ color: {COLORS['text_primary']}; }}
-            """)
+        """Единая палитра для окна, диалогов, выпадающих списков и текстовых полей.
+
+        Темы на отдельном MainWindow недостаточно: всплывающие QDialog и
+        системные редакторы могут наследовать светлую палитру Windows.
+        """
+        app = QApplication.instance()
+        if app is None:
+            return
+        app.setStyle("Fusion")
+        palette = QPalette()
+        for role, name in (
+            (QPalette.Window, "bg_main"),
+            (QPalette.WindowText, "text_primary"),
+            (QPalette.Base, "bg_input"),
+            (QPalette.AlternateBase, "bg_panel"),
+            (QPalette.Text, "text_primary"),
+            (QPalette.Button, "bg_panel"),
+            (QPalette.ButtonText, "text_primary"),
+            (QPalette.ToolTipBase, "bg_panel"),
+            (QPalette.ToolTipText, "text_primary"),
+            (QPalette.Highlight, "separator"),
+            (QPalette.HighlightedText, "text_primary"),
+            (QPalette.PlaceholderText, "text_secondary"),
+        ):
+            palette.setColor(role, QColor(COLORS[name]))
+        app.setPalette(palette)
+        if THEME_QSS.is_file():
+            app.setStyleSheet(THEME_QSS.read_text(encoding="utf-8"))
