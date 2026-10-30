@@ -120,12 +120,22 @@ def calculate_plant_capacity(
         for op in operations:
             if not isinstance(op, Mapping):
                 continue
+            label = str(op.get("title") or op.get("operation") or "Операция")
+            unit = str(op.get("unit") or "ед./год")
+            demand_unit = op.get("quantity_unit")
+            capacity_unit = op.get("capacity_unit")
+            if (demand_unit is not None and capacity_unit is not None
+                    and str(demand_unit).strip() != str(capacity_unit).strip()):
+                out.rows.append(_row(
+                    "Смесеприготовительное", label, op.get("quantity"),
+                    None, unit,
+                    f"Несовместимые единицы: потребность {demand_unit}, "
+                    f"мощность {capacity_unit}; пересчёт не задан"))
+                continue
             out.rows.append(_row(
-                "Смесеприготовительное",
-                str(op.get("title") or op.get("operation") or "Операция"),
+                "Смесеприготовительное", label,
                 op.get("quantity"), op.get("capacity_year"),
-                str(op.get("unit") or "ед./год"),
-                str(op.get("note") or "")))
+                unit, str(op.get("note") or "")))
     else:
         out.rows.append(_row(
             "Смесеприготовительное", "Операции подготовки смеси", None, None,
