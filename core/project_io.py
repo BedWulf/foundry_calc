@@ -187,9 +187,20 @@ def _validate_project(data: Any) -> Project:
             item = CastingItem(**raw)
         except (TypeError, ValueError) as exc:
             raise ProjectFileError(f"Ошибка строки отливки №{index}: {exc}") from exc
-        if not isinstance(item.name, str) or (
-            type(item.molds_per_year) is not int or item.molds_per_year < 0):
-            raise ProjectFileError(f"Недопустимые значения отливки №{index}")
+        if (not isinstance(item.name, str) or any(
+            type(v) is not int or v < 0 for v in (
+                item.molds_per_year, item.castings_per_mold,
+                item.annual_qty_pcs, item.annual_qty_with_brak,
+                item.cores_count,
+            )
+        ) or any(
+            type(v) not in (int, float) or not math.isfinite(v) or v < 0
+            for v in (
+                item.mass_with_LPS_kg, item.mass_casting_kg,
+                item.pouring_mass_kg, item.annual_metal_t,
+            )
+        )):
+            raise ProjectFileError(f"Недопустимые количества или массы отливки №{index}")
         result.append(item)
     payload["castings"] = result
     try:

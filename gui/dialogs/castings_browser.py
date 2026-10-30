@@ -2,6 +2,8 @@
 from __future__ import annotations
 
 from PySide6.QtCore import QAbstractTableModel, QSortFilterProxyModel, Qt
+
+from core.casting_audit import audit_castings
 from PySide6.QtWidgets import (
     QDialog, QVBoxLayout, QHBoxLayout, QLabel, QLineEdit, QPushButton,
     QTableView, QHeaderView, QAbstractItemView, QApplication,
@@ -9,7 +11,8 @@ from PySide6.QtWidgets import (
 
 _HEADERS = (
     "№", "Наименование", "Масса с ЛПС, кг", "Габариты, мм",
-    "Форм/год", "Опоки, мм", "Залив. масса, кг", "Металл/год, т",
+    "Форм/год", "Отливок/форму", "Опоки, мм", "Залив. масса, кг",
+    "Металл/год, т", "Проверка",
 )
 
 
@@ -19,6 +22,9 @@ class CastingsTableModel(QAbstractTableModel):
     def __init__(self, castings, parent=None):
         super().__init__(parent)
         self._castings = list(castings)
+        self._issues = {}
+        for issue in audit_castings(self._castings):
+            self._issues.setdefault(issue.row - 1, []).append(issue)
 
     def rowCount(self, parent=None):  # noqa: N802
         return 0 if parent and parent.isValid() else len(self._castings)
@@ -36,10 +42,12 @@ class CastingsTableModel(QAbstractTableModel):
     def data(self, index, role=Qt.DisplayRole):
         if not index.isValid() or not 0 <= index.row() < len(self._castings):
             return None
+        if role == Qt.ToolTipRole:
+            return "\n".join(i.message for i in self._issues.get(index.row(), [])) or "Проверено по доступным полям"
         if role not in (Qt.DisplayRole, Qt.UserRole):
             if role == Qt.TextAlignmentRole:
                 return (Qt.AlignLeft | Qt.AlignVCenter) if index.column() in (
-                    1, 3, 5) else (Qt.AlignRight | Qt.AlignVCenter)
+                    1, 3, 6, 9) else (Qt.AlignRight | Qt.AlignVCenter)
             return None
         casting = self._castings[index.row()]
         values = (
@@ -48,16 +56,22 @@ class CastingsTableModel(QAbstractTableModel):
             getattr(casting, "mass_with_LPS_kg", 0.0),
             getattr(casting, "dimensions_mm", ""),
             getattr(casting, "molds_per_year", 0),
+            getattr(casting, "castings_per_mold", 0),
             getattr(casting, "flask_size_mm", ""),
             getattr(casting, "pouring_mass_kg", 0.0),
             getattr(casting, "annual_metal_t", 0.0),
+            len(self._issues.get(index.row(), [])),
         )
         value = values[index.column()]
         if role == Qt.UserRole:
             return value
-        if index.column() == 4:
+        if index.column() == 9:
+            return "✓" if not value else f"⚠ {value}"
+        if index.column() == 5 and not value:
+            return "неизвестно"
+        if index.column() in (4, 5):
             return f"{int(value):,}".replace(",", " ")
-        if index.column() in (2, 6, 7):
+        if index.column() in (2, 7, 8):
             return f"{float(value):,.3f}".replace(",", " ")
         return str(value)
 
@@ -110,7 +124,7 @@ class CastingsBrowserDialog(QDialog):
         header = self.table.horizontalHeader()
         header.setSectionResizeMode(QHeaderView.Interactive)
         header.setStretchLastSection(False)
-        for col, width in enumerate((65, 270, 150, 140, 120, 170, 150, 160)):
+        for col, width in enumerate((65, 270, 150, 140, 120, 130, 170, 150, 160, 100)):
             self.table.setColumnWidth(col, width)
         self.search.textChanged.connect(self.proxy.setFilterFixedString)
         layout.addWidget(self.table, 1)

@@ -29,7 +29,9 @@ class CastingItem:
     # --- Форма ---
     flask_size_mm: str = "900x600x200/200"  # размер опок
     molds_per_year: int = 0                 # годовое кол-во форм
+    castings_per_mold: int = 0              # отливок/форму; 0 = неизвестно
     pouring_mass_kg: float = 0.0            # масса заливаемого металла в форму
+    pouring_mass_estimated: bool = False    # вычислена как C × G, а не взята из источника
     annual_metal_t: float = 0.0             # масса металла в год по позиции, т
     mix_volume_m3: float = 0.0              # объём формовочной+стержневой смеси
 

@@ -602,7 +602,7 @@ class ExcelImporter:
         mass_lps = _safe_float(row[self.COL_MASS_LPS])
         height = _safe_float(row[self.COL_HEIGHT])
         forms_per_year = _safe_int(row[self.COL_PROG])
-        in_form = _safe_int(row[self.COL_IN_FORM]) or 1
+        in_form = _safe_int(row[self.COL_IN_FORM])
         pour_mass = _safe_float(row[self.COL_POUR_MASS])
         mix_volume = _safe_float(row[self.COL_MIX_VOL])
         machine = str(row[self.COL_MACHINE] or "").strip()
@@ -639,13 +639,20 @@ class ExcelImporter:
         # L — масса металла, заливаемого в ОДНУ форму, включая все
         # отливки, литниковую систему и прибыли.
         effective_pour_mass = pour_mass
-        if effective_pour_mass <= 0:
+        pouring_mass_estimated = effective_pour_mass <= 0
+        if pouring_mass_estimated:
             effective_pour_mass = mass_lps * in_form
             self._warnings.append(
                 f"Строка {row_num} ({name}): L не заполнено; "
                 "заливочная масса оценена как C×G. Проверьте ЛПС.")
         # C — масса одной отливки С ЛПС. Чистая масса без ЛПС неизвестна,
         # не выдаём её за рассчитанный показатель.
+        if effective_pour_mass + 1e-9 < mass_lps * in_form:
+            self._warnings.append(
+                f"Строка {row_num} ({name}): L={effective_pour_mass:g} кг/форму "
+                f"меньше C×G={mass_lps * in_form:g} кг. "
+                "Проверьте трактовку массы с ЛПС и массу заливки; "
+                "значения не исправлены автоматически.")
         metal_year_tons = effective_pour_mass * molds / 1000.0
         # K допускает одну высоту или две полуформы вида 200/250.
         raw_h = str(row[self.COL_FLASK_H] or "").replace(",", ".")
@@ -672,6 +679,8 @@ class ExcelImporter:
             annual_qty_with_brak=forms_per_year,
             brak_pct=0.0,                 # исключить двойное начисление брака
             molds_per_year=molds,
+            castings_per_mold=in_form,
+            pouring_mass_estimated=pouring_mass_estimated,
             flask_size_mm=f"{_dim(flask_l)}x{_dim(flask_w)}x{_dim(upper)}/{_dim(lower)}",
             pouring_mass_kg=effective_pour_mass,
             annual_metal_t=metal_year_tons,
