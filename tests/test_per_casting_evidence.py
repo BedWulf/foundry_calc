@@ -157,3 +157,77 @@ def test_unverified_evidence_is_visible_in_project_summary():
     assert result.ready is False
     assert any("источникам технологических данных" in warning
                for warning in result.warnings)
+
+
+
+def test_project_tab_verification_affects_only_selected_row(monkeypatch):
+    app()
+    p = Project(castings=rows(), cores_zero_confirmed=True)
+    tab = ProjectTab(p)
+    tab.table.selectRow(1)
+    old_first = p.castings[0]
+
+    from dataclasses import replace
+
+    class AcceptedDialog:
+        Accepted = 1
+
+        def __init__(self, casting, parent):
+            self.result_item = replace(
+                casting, mass_casting_verified=True,
+                mass_casting_source="Контрольный чертёж 2",
+                cores_count_verified=True,
+                cores_count_source="Карта 2")
+
+        def exec(self):
+            return self.Accepted
+
+    monkeypatch.setattr(
+        "gui.tabs.project_tab.CastingTechnologyDialog", AcceptedDialog)
+    tab._on_verify_casting()
+    assert p.castings[0] is old_first
+    assert p.castings[1].mass_casting_verified
+    assert p.castings[1].cores_count_source == "Карта 2"
+    assert p.cores_zero_confirmed is False
+    tab.close()
+
+
+def test_exact_annual_core_demand_does_not_round_intermediate_average():
+    from gui.tabs.core_tab import CoreTab
+    app()
+    p = Project(castings=[
+        CastingItem(
+            name="Редкие стержни", molds_per_year=1,
+            cores_count=1, cores_count_verified=True,
+            cores_count_source="Карта A"),
+        CastingItem(
+            name="Без стержней", molds_per_year=100,
+            cores_count=0, cores_count_verified=True,
+            cores_count_source="Карта B"),
+    ])
+    tab = CoreTab(p)
+    assert tab.get_summary()["core_data_complete"]
+    assert tab.get_summary()["annual_cores"] == 1
+    # The displayed mean (0.01) is not sufficiently precise to
+    # compute the 101-form total: ceil(101 × .01) = 2 (WRONG).
+    assert tab.spin_cores_per_mold.value() == pytest.approx(0.01)
+    assert tab.get_summary()["annual_cores_lower_bound"] == 1
+    tab.close()
+
+
+def test_manual_override_is_not_verified_by_source_counts():
+    from gui.tabs.core_tab import CoreTab
+    app()
+    p = Project(castings=[
+        CastingItem(
+            name="Стержни", molds_per_year=100,
+            cores_count=2, cores_count_verified=True,
+            cores_count_source="Карта 7"),
+    ])
+    tab = CoreTab(p)
+    assert tab.get_summary()["core_data_complete"]
+    tab.spin_cores_per_mold.setValue(2.5)
+    assert not tab.get_summary()["core_data_complete"]
+    assert tab.get_summary()["annual_cores"] is None
+    assert tab.get_summary()["annual_cores_lower_bound"] == 200
+    tab.close()
