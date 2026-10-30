@@ -26,7 +26,7 @@ FILE_EXTENSION = ".fpro.json"
 # trusted as an engineering result loaded from an old file.
 DERIVED_FIELDS = frozenset({
     "F_calendar_h", "F_nominal_h", "F_equipment_h", "F_workers_h",
-    "metal_charge_t", "liquid_metal_t",
+    "metal_charge_t", "liquid_metal_t", "time_funds_calendar_applied",
 })
 
 
@@ -123,10 +123,22 @@ def _validate_project(data: Any) -> Project:
     _require_model_field_types(payload, Project(), location="project")
     if not (1 <= payload.get("shifts_per_day", 2) <= 4):
         raise ProjectFileError("Число смен должно быть от 1 до 4")
-    if not (1 <= payload.get("working_days_per_year", 249) <= 366):
-        raise ProjectFileError("Число рабочих дней должно быть от 1 до 366")
+    if not (1 <= payload.get("working_days_per_year", 249) <= 365):
+        raise ProjectFileError("Рабочих дней не может быть более 365 в плановом году")
     if not (0 < payload.get("shift_duration_h", 8) <= 24):
         raise ProjectFileError("Продолжительность смены должна быть от 0 до 24 ч")
+    if (payload.get("shifts_per_day", 2) * payload.get("shift_duration_h", 8)) > 24:
+        raise ProjectFileError("Общая продолжительность смен превышает 24 ч в сутки")
+    nominal = (payload.get("working_days_per_year", 249)
+               * payload.get("shifts_per_day", 2)
+               * payload.get("shift_duration_h", 8))
+    individual = (payload.get("working_days_per_year", 249)
+                  * payload.get("shift_duration_h", 8))
+    for key, upper in (("equipment_downtime_h_per_year", nominal),
+                       ("worker_absence_h_per_year", individual)):
+        value = payload.get(key, 0.0)
+        if type(value) not in (int, float) or not math.isfinite(value) or not 0 <= value < upper:
+            raise ProjectFileError(f"Некорректные годовые часы {key}")
     if not (1 <= payload.get("molding_batches_per_year", 1) <= 10000):
         raise ProjectFileError("Число партий должно быть от 1 до 10000")
     if not (0 < payload.get("molding_max_load_factor", .85) <= 1):

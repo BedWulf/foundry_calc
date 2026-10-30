@@ -121,3 +121,63 @@ def get_reference_table() -> Dict[int, Dict[str, int]]:
             "F_д.р": wr,
         }
     return result
+
+def calculate_operating_time_funds(
+    *,
+    working_days_per_year: int,
+    shifts_per_day: int,
+    shift_duration_h: float,
+    equipment_downtime_h: float = 0.0,
+    worker_absence_h: float = 0.0,
+) -> TimeFunds:
+    """Calendar-based annual funds with explicit, physically distinct units.
+
+    F_nominal is a MACHINE'S scheduled operating hours in the year:
+        days/year * shifts/day * hours/shift.
+    F_equipment removes the specified annual planned/unplanned downtime
+    from this one-machine schedule.
+    F_workers is ONE PERSON'S annual hours: days/year * hours/shift
+    minus that person's annual absence. Do not multiply by the number of
+    shifts to inflate an individual's annual fund.
+
+    The default zero reductions yield UPPER BOUNDS, not verified effective
+    hours. The caller must display that assumption, never claim that zero
+    downtime / absence is an observed industrial fact.
+
+    The standardised 365-day planning year is intentional. A leap-year
+    or continuous-shift schedule requires its own calendar implementation.
+    """
+    import math
+
+    if type(working_days_per_year) is not int or not 1 <= working_days_per_year <= DAYS_PER_YEAR:
+        raise ValueError("Число рабочих дней должно быть целым от 1 до 365")
+    if type(shifts_per_day) is not int or not 1 <= shifts_per_day <= 4:
+        raise ValueError("Число смен должно быть целым от 1 до 4")
+    for name, value in (
+        ("Продолжительность смены", shift_duration_h),
+        ("Простои оборудования", equipment_downtime_h),
+        ("Отсутствия одного работника", worker_absence_h),
+    ):
+        if type(value) not in (int, float) or not math.isfinite(value):
+            raise ValueError(f"{name}: требуется конечное число")
+    if shift_duration_h <= 0 or shifts_per_day * shift_duration_h > HOURS_PER_DAY:
+        raise ValueError("Суммарная длительность смен в сутки должна быть от 0 до 24 часов")
+    if equipment_downtime_h < 0 or worker_absence_h < 0:
+        raise ValueError("Простои/отсутствия не могут быть отрицательными")
+
+    scheduled_equipment = working_days_per_year * shifts_per_day * shift_duration_h
+    scheduled_one_worker = working_days_per_year * shift_duration_h
+    if equipment_downtime_h >= scheduled_equipment:
+        raise ValueError("Простои оставляют нулевой фонд оборудования — расчёт невозможен")
+    if worker_absence_h >= scheduled_one_worker:
+        raise ValueError("Отсутствия оставляют нулевой фонд работника — расчёт невозможен")
+
+    return TimeFunds(
+        F_calendar=DAYS_PER_YEAR * HOURS_PER_DAY,
+        F_nominal=scheduled_equipment,
+        F_equipment=scheduled_equipment - equipment_downtime_h,
+        F_workers=scheduled_one_worker - worker_absence_h,
+        weekends=DAYS_PER_YEAR - working_days_per_year,
+        holidays=0,
+        shifts=shifts_per_day,
+    )
