@@ -4,11 +4,9 @@ These checks cover the code's declared equation, not equipment passport
 authenticity or an independent review of the source diploma PDFs.
 """
 import json
-import math
-
 import pytest
 
-from core.melting import calc_metal_charge
+from core.melting import calc_metal_charge, REFERENCE_YIELD
 from core.project import Project
 from core.project_io import ProjectFileError, read_project, write_project
 
@@ -94,3 +92,9 @@ def test_invalid_percentages_in_json_rejected_before_gui(tmp_path, field, value)
     path.write_text(json.dumps(data, ensure_ascii=False), encoding="utf-8")
     with pytest.raises(ProjectFileError):
         read_project(path)
+
+
+def test_reference_yield_matches_stated_mass_figures():
+    # Reference yield is an algebraic ratio; prior 0.611 was inconsistent.
+    assert REFERENCE_YIELD == pytest.approx(37_000 / 58_932)
+    assert REFERENCE_YIELD == pytest.approx(.6278422588746352)
