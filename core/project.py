@@ -14,6 +14,7 @@ class Project:
     name: str = "Проект литейного цеха"
     created_at: date = field(default_factory=date.today)
     customer: str = ""
+    project_uid: str = ""  # новый уникальный ID, старые проекты сохраняют legacy ID
 
     # --- Производственная программа ---
     annual_output_t: float = 37000.0
@@ -61,6 +62,8 @@ class Project:
         Вычисляется из названия и даты создания, поэтому выбор оборудования
         корректно восстанавливается между запусками приложения.
         """
+        if self.project_uid:
+            return self.project_uid
         raw = f"{self.name}|{self.created_at.isoformat()}"
         return hashlib.md5(raw.encode("utf-8")).hexdigest()[:12]
 
