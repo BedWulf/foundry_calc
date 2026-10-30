@@ -3,7 +3,7 @@ from __future__ import annotations
 
 from PySide6.QtCore import QAbstractTableModel, QSortFilterProxyModel, Qt
 
-from core.casting_audit import audit_castings
+from core.casting_audit import audit_castings, audit_casting_technology
 from PySide6.QtWidgets import (
     QDialog, QVBoxLayout, QHBoxLayout, QLabel, QLineEdit, QPushButton,
     QTableView, QHeaderView, QAbstractItemView, QApplication,
@@ -23,7 +23,7 @@ class CastingsTableModel(QAbstractTableModel):
         super().__init__(parent)
         self._castings = list(castings)
         self._issues = {}
-        for issue in audit_castings(self._castings):
+        for issue in audit_castings(self._castings) + audit_casting_technology(self._castings):
             self._issues.setdefault(issue.row - 1, []).append(issue)
 
     def rowCount(self, parent=None):  # noqa: N802
