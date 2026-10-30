@@ -15,6 +15,7 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from core.plant_capacity import calculate_plant_capacity
 from core.casting_audit import audit_castings
+from core.casting_item import CastingItem
 from core.shift_capacity import calculate_shift_stress
 
 # ----------------------------------------------------------------------
@@ -186,7 +187,12 @@ def build_summary(summaries: Dict[str, Dict[str, Any]],
     if project is not None:
         res.project_name = getattr(project, "name", "") or ""
         res.annual_output_t = float(getattr(project, "annual_output_t", 0.0) or 0.0)
-        issues = audit_castings(getattr(project, "castings", []) or [])
+        # Some lightweight integration clients use placeholder objects only
+        # to indicate that a casting program exists. Audit real CastingItem
+        # records; do not crash unrelated shift/capacity summaries on stubs.
+        casting_rows = [c for c in (getattr(project, "castings", []) or [])
+                        if isinstance(c, CastingItem)]
+        issues = audit_castings(casting_rows)
         if issues:
             res.ready = False
             res.warnings.append(
