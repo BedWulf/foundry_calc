@@ -8,6 +8,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from datetime import datetime, timezone
+from hashlib import sha256
 import json
 from pathlib import Path
 import re
@@ -33,6 +34,7 @@ class RecoveryEntry:
     saved_at: datetime
     original_path: Path | None
     original_mtime_ns: int | None
+    original_sha256: str | None
     castings_count: int
 
 
@@ -67,9 +69,15 @@ class RecoveryStore:
         filename = self.path_for(snapshot_id)
         source = Path(original_path).resolve() if original_path else None
         mtime = None
+        digest = None
         if source is not None:
             try:
                 mtime = source.stat().st_mtime_ns
+                checksum = sha256()
+                with source.open("rb") as stream:
+                    for chunk in iter(lambda: stream.read(1024 * 1024), b""):
+                        checksum.update(chunk)
+                digest = checksum.hexdigest()
             except OSError:
                 pass
         meta = {
@@ -77,6 +85,7 @@ class RecoveryStore:
             "saved_at": datetime.now(timezone.utc).isoformat(),
             "original_path": str(source) if source else None,
             "original_mtime_ns": mtime,
+            "original_sha256": digest,
         }
         write_project(
             filename, project, choices, custom_catalogs,
@@ -111,6 +120,11 @@ class RecoveryStore:
         if source_mtime is not None and (
                 type(source_mtime) is not int or source_mtime < 0):
             raise ProjectFileError("Неверное время исходного проекта")
+        original_hash = meta.get("original_sha256")
+        if original_hash is not None and (
+                not isinstance(original_hash, str)
+                or re.fullmatch(r"[0-9a-f]{64}", original_hash) is None):
+            raise ProjectFileError("Неверная контрольная сумма исходного проекта")
         return RecoveryEntry(
             snapshot_id=expected.group(1),
             file_path=path,
@@ -118,6 +132,7 @@ class RecoveryStore:
             saved_at=dt,
             original_path=Path(original) if original else None,
             original_mtime_ns=source_mtime,
+            original_sha256=original_hash,
             castings_count=len(loaded.project.castings),
         )
 
@@ -164,6 +179,14 @@ class RecoveryStore:
                 if fresh_entry.original_mtime_ns != current_mtime:
                     changed = True
                     source = None
+                elif fresh_entry.original_sha256 is not None:
+                    checksum = sha256()
+                    with source.open("rb") as stream:
+                        for chunk in iter(lambda: stream.read(1024 * 1024), b""):
+                            checksum.update(chunk)
+                    if checksum.hexdigest() != fresh_entry.original_sha256:
+                        changed = True
+                        source = None
             except OSError:
                 changed = True
                 source = None
