@@ -126,8 +126,17 @@ class RecoveryStore:
         if not self.root.is_dir():
             return []
         entries: list[RecoveryEntry] = []
-        for path in sorted(self.root.glob("recovery-*.fpro.json"))[
-                :MAX_RECOVERY_FILES_TO_SCAN]:
+        # Prioritise newest snapshots even after dozens of crashed sessions.
+        # A lexicographical UUID ordering could hide the freshest entry.
+        def newest(path: Path) -> int:
+            try:
+                return path.stat().st_mtime_ns
+            except OSError:
+                return 0
+        files = sorted(
+            self.root.glob("recovery-*.fpro.json"),
+            key=newest, reverse=True)[:MAX_RECOVERY_FILES_TO_SCAN]
+        for path in files:
             try:
                 entries.append(self._read_entry(path))
             except (OSError, ValueError, TypeError):
