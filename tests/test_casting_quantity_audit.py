@@ -127,3 +127,15 @@ def test_bad_casting_cannot_overwrite_saved_project(tmp_path, changes):
     with pytest.raises(ProjectFileError):
         write_project(path, Project(castings=[valid_casting(**changes)]))
     assert path.read_bytes() == original
+
+
+
+def test_capacity_summary_tolerates_placeholder_casting_program():
+    from types import SimpleNamespace
+    placeholder = SimpleNamespace(name="Чужой клиент", annual_output_t=100,
+                                  castings=[object()])
+    result = build_summary({}, placeholder)
+    assert result.project_name == "Чужой клиент"
+    # Data-quality auditing does not assume a placeholder is a CastingItem.
+    assert not any("НЕ ПОДТВЕРЖДЕНА НОМЕНКЛАТУРА" in x
+                   for x in result.warnings)
