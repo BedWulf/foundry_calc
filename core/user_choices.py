@@ -58,6 +58,17 @@ class UserChoices:
         """Получить все выборы для проекта."""
         return self._data.get(project_id, {})
 
+    def replace_project_choices(self, project_id: str, choices: Dict[str, Any]) -> None:
+        """Restore choices from a verified project archive.
+
+        Other project records and unrelated global preferences remain intact.
+        A snapshot from the archive is authoritative for its project ID.
+        """
+        if not isinstance(choices, dict):
+            raise ValueError("Выбор оборудования должен быть словарём")
+        self._data[project_id] = dict(choices)
+        self._save()
+
     def clear_project_choices(self, project_id: str) -> None:
         """Очистить выборы для проекта."""
         if project_id in self._data:
