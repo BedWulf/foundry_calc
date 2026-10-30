@@ -285,7 +285,8 @@ def calc_workforce(
     # это давало якобы точную численность для несуществующего цеха.
     if (getattr(project, "castings", None)
             and isinstance(molding, dict)
-            and molding.get("batch_plan_feasible") is False):
+            and (molding.get("batch_plan_feasible") is False
+                 or bool(molding.get("batch_planning_error")))):
         return WorkforceResult(
             complete=False,
             warnings=["Нельзя определить численность: формовочная программа "
