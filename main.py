@@ -16,11 +16,16 @@ def main() -> int:
     if os.environ.get("FOUNDRY_SMOKE_TEST") == "1":
         # Standard-library-only resource test, before importing PySide6.
         # Frozen builds store data next to the executable in _internal.
-        from config import DATA_DIR, DOCS_DIR
+        from config import DATA_DIR, DOCS_DIR, EXAMPLES_DIR
         if not (DATA_DIR / "equipment" / "molding_lines.json").is_file():
             return 21
         if not (DOCS_DIR / "USER_MANUAL.md").is_file():
             return 22
+        if any(
+            not (EXAMPLES_DIR / f"Диплом_{n}_ведомость_формовки.xlsx").is_file()
+            for n in (1, 2)
+        ):
+            return 23
         return 0
 
     from PySide6.QtGui import QIcon
