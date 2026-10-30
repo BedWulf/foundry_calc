@@ -107,6 +107,6 @@ def test_all_selection_dialogs_allow_resizing():
         ImportDialog(), AddMaterialDialog(), EquipmentDialog(kind="furnace")
     ):
         assert dialog.minimumWidth() >= 550
-        assert dialog.sizeGripEnabled()
+        assert dialog.isSizeGripEnabled()
         assert bool(dialog.windowFlags() & Qt.WindowMaximizeButtonHint)
         dialog.close()
