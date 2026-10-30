@@ -266,10 +266,19 @@ class MainWindow(QMainWindow):
         tab = self.tabs.get("project_tab")
         if tab is None:
             return
-        self.project.name = (
-            tab.edit_name.text().strip() or "Проект литейного цеха")
-        self.project.customer = tab.edit_customer.text().strip()
-        self.project.alloy = tab.edit_alloy.text().strip()
+        for widget, field in (
+            (tab.edit_name, "name"),
+            (tab.edit_customer, "customer"),
+            (tab.edit_alloy, "alloy"),
+        ):
+            # Do not overwrite a programmatic change to the model with
+            # an old text field that the user did NOT actually edit.
+            if widget.isModified():
+                value = widget.text().strip()
+                if field == "name":
+                    value = value or "Проект литейного цеха"
+                setattr(self.project, field, value)
+                widget.setModified(False)
 
     def _project_signature(self) -> str:
         """Оценка несохранённого ввода; расчётные поля не влияют."""
