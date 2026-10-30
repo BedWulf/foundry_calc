@@ -126,3 +126,28 @@ def test_sand_operation_matching_declared_units_still_compares():
     row = next(x for x in report.rows if x.department == "Смесеприготовительное")
     assert row.status == "ok"
     assert row.capacity == 200
+
+
+def test_sand_explicit_volume_demand_vs_mass_capacity_marked_unknown():
+    s = sources()
+    s["sand_prep"]["capacity_operations"][0].update(
+        quantity_unit="м³", capacity_unit="т/год")
+    row = next(x for x in calculate_plant_capacity(s).rows
+               if x.department == "Смесеприготовительное")
+    assert row.status == "unknown"
+
+
+def test_sand_demand_unit_checked_against_legacy_row_unit():
+    s = sources()
+    s["sand_prep"]["capacity_operations"][0]["quantity_unit"] = "т/год"
+    row = next(x for x in calculate_plant_capacity(s).rows
+               if x.department == "Смесеприготовительное")
+    assert row.status == "unknown"
+
+
+def test_sand_volume_without_annual_suffix_matches_annual_volume():
+    s = sources()
+    s["sand_prep"]["capacity_operations"][0]["quantity_unit"] = "м³"
+    row = next(x for x in calculate_plant_capacity(s).rows
+               if x.department == "Смесеприготовительное")
+    assert row.status == "ok"
