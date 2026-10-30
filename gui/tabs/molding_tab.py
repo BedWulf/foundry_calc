@@ -98,15 +98,22 @@ class MoldingTab(QWidget):
         self.choices = UserChoices()
         self._fleet_spins: Dict[str, QSpinBox] = {}
         self._fleet_ids: tuple[str, ...] = ()
-        saved_park = self.choices.get_choice(self.project.project_id, "molding_park") or {}
-        if saved_park.get("mode") in ("auto", "manual"):
-            self.project.molding_park_mode = saved_park["mode"]
-            counts = saved_park.get("counts", {})
-            if isinstance(counts, dict):
-                self.project.molding_line_counts = dict(counts)
-        limit = saved_park.get("peak_lines")
-        if isinstance(limit, int) and not isinstance(limit, bool) and 0 <= limit <= 100:
-            self.project.molding_peak_concurrent_lines = limit
+        # On first launch, legacy choices.json can supply a saved park.
+        # A versioned *.fpro.json project, however, already holds its OWN
+        # authoritative mode/counts/peak. Never overwrite those with stale
+        # global profile preferences from a different editing session.
+        if not getattr(self.project, "project_uid", ""):
+            saved_park = self.choices.get_choice(
+                self.project.project_id, "molding_park") or {}
+            if saved_park.get("mode") in ("auto", "manual"):
+                self.project.molding_park_mode = saved_park["mode"]
+                counts = saved_park.get("counts", {})
+                if isinstance(counts, dict):
+                    self.project.molding_line_counts = dict(counts)
+            limit = saved_park.get("peak_lines")
+            if (isinstance(limit, int) and not isinstance(limit, bool)
+                    and 0 <= limit <= 100):
+                self.project.molding_peak_concurrent_lines = limit
         self._current_options: List[Dict[str, Any]] = []
         self._selected: Dict[str, Any] = {}
         self._last_result: Optional[MoldingCalculation] = None
