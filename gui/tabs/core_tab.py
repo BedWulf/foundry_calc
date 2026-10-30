@@ -304,6 +304,18 @@ class CoreTab(QWidget):
         self.confirm_zero_cores.blockSignals(False)
         self._core_data_complete = core_counts_complete(
             castings, zeros_confirmed=self.project.cores_zero_confirmed)
+        # Exact integer demand: never multiply an annual mold program
+        # by the rounded two-decimal average displayed in the widget.
+        source_molds = sum(
+            int(getattr(c, "molds_per_year", 0) or 0) for c in castings)
+        self._exact_annual_cores = sum(
+            int(getattr(c, "molds_per_year", 0) or 0)
+            * int(getattr(c, "cores_count", 0) or 0)
+            for c in castings)
+        self._exact_source_matches = (
+            source_molds > 0 and source_molds == molding["annual_molds"])
+        if not self._exact_source_matches or self._cores_per_mold_override is not None:
+            self._core_data_complete = False
 
         # k_ст: ручное значение пользователя или расчёт по номенклатуре
         if self._cores_per_mold_override is None:
@@ -329,6 +341,11 @@ class CoreTab(QWidget):
             max_casting_mass_kg=molding["max_mass_kg"],
             top_n=5,
             selected_machine_id=saved_id,
+            exact_annual_cores=(
+                self._exact_annual_cores
+                if (self._exact_source_matches
+                    and self._cores_per_mold_override is None)
+                else None),
         )
         self._last_result = result
 
@@ -344,7 +361,7 @@ class CoreTab(QWidget):
         self._prog_labels["annual_cores"].setText(
             f"{_fmt_int(result['annual_cores'])} шт"
             if self._core_data_complete
-            else f"не подтверждено (оценка ≥ {_fmt_int(result['annual_cores'])})")
+            else f"не подтверждено (расчёт: {_fmt_int(result['annual_cores'])})")
         self._prog_labels["fund_hours"].setText(
             f"{_fmt_int(molding['fund_hours'])} ч")
 
@@ -441,7 +458,9 @@ class CoreTab(QWidget):
             "annual_cores": (res.get("annual_cores", 0)
                              if self._core_data_complete else None),
             "core_data_complete": self._core_data_complete,
-            "annual_cores_lower_bound": res.get("annual_cores", 0),
+            "annual_cores_lower_bound": (
+                self._exact_annual_cores if self._exact_source_matches
+                else None),
             "cores_per_mold": res.get("cores_per_mold", 0.0),
             "machine_name": self._selected.get("name", ""),
             "machine_count": int(self._selected.get("_num_required", 0)),
