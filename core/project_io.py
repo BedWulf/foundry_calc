@@ -26,7 +26,7 @@ FILE_EXTENSION = ".fpro.json"
 # trusted as an engineering result loaded from an old file.
 DERIVED_FIELDS = frozenset({
     "F_calendar_h", "F_nominal_h", "F_equipment_h", "F_workers_h",
-    "metal_charge_t", "liquid_metal_t",
+    "metal_charge_t", "liquid_metal_t", "time_funds_calendar_applied",
 })
 
 
