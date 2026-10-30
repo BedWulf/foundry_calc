@@ -201,6 +201,16 @@ def _validate_project(data: Any) -> Project:
             )
         )):
             raise ProjectFileError(f"Недопустимые количества или массы отливки №{index}")
+        if (item.cores_count_verified and not item.cores_count_source.strip()):
+            raise ProjectFileError(
+                f"Отливка №{index}: подтверждено число стержней без документа-источника")
+        if (item.mass_casting_verified and (
+            item.mass_casting_kg <= 0 or not item.mass_casting_source.strip()
+        )):
+            raise ProjectFileError(
+                f"Отливка №{index}: подтверждена чистая масса без величины/источника")
+        if len(item.cores_count_source) > 2048 or len(item.mass_casting_source) > 2048:
+            raise ProjectFileError(f"Отливка №{index}: слишком длинная ссылка на источник")
         result.append(item)
     payload["castings"] = result
     try:
