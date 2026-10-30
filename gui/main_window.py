@@ -104,6 +104,7 @@ class MainWindow(QMainWindow):
         self._tour_index = -1
         self._tour_origin = 0
         self._project_path: Path | None = None
+        self._choice_origin_project_id = self.project.project_id
         self._saved_signature: str = ""
 
         self._apply_theme()
@@ -366,8 +367,25 @@ class MainWindow(QMainWindow):
         self._flush_pending_text_inputs()
         old_uid = self.project.project_uid
         choices_manager = UserChoices()
-        selections = dict(choices_manager.get_project_choices(
-            self.project.project_id))
+
+        # Legacy (pre-file) choices were keyed by name+date. Renaming a
+        # project must not orphan furnace/core/cleaning selections stored
+        # under its earlier name, even if editingFinished already fired.
+        old_selections = choices_manager.get_project_choices(
+            self._choice_origin_project_id)
+        current_selections = choices_manager.get_project_choices(
+            self.project.project_id)
+
+        def merge_preferences(old, new):
+            if not isinstance(old, dict) or not isinstance(new, dict):
+                return new
+            result = dict(old)
+            for k, value in new.items():
+                result[k] = (merge_preferences(result[k], value)
+                             if k in result else value)
+            return result
+
+        selections = merge_preferences(old_selections, current_selections)
         # A persisted project gets a UUID. Unsaved legacy projects continue
         # using the previous name/date key until the very first save.
         if not self.project.project_uid:
@@ -392,6 +410,7 @@ class MainWindow(QMainWindow):
                 self, "Не удалось сохранить проект", str(exc))
             return False
         self._project_path = path
+        self._choice_origin_project_id = self.project.project_id
         self._saved_signature = self._project_signature()
         self._update_project_title()
         return True
@@ -431,6 +450,7 @@ class MainWindow(QMainWindow):
         """Rebuild ALL tabs; do not leave stale widgets pointing at old Project."""
         self.project = project
         self._project_path = path
+        self._choice_origin_project_id = project.project_id
         # Existing onboarding state and its first-run marker are untouched.
         self._tour_index = -1
         self._tour_origin = 0
