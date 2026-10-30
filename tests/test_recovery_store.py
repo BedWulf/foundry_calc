@@ -82,6 +82,28 @@ def test_modified_original_never_overwritten_by_restoration(tmp_path):
     assert restored.project.castings[0].molds_per_year == 999
 
 
+def test_changed_source_with_same_mtime_must_use_save_as(tmp_path):
+    store = RecoveryStore(tmp_path / "recovery")
+    source = tmp_path / "diploma.fpro.json"
+    base = _project("Диплом 1", 250, "uid1")
+    write_project(source, base)
+    base.castings[0].molds_per_year = 400
+    key = store.new_session_id()
+    store.save_snapshot(key, base, {}, {}, source)
+    stat = source.stat()
+
+    # A copying/syncing tool may overwrite bytes but restore the old
+    # timestamp. Compare SHA256 as well as file modification time.
+    modified = _project("Другая редакция", 750, "uid1")
+    write_project(source, modified)
+    os.utime(source, ns=(stat.st_atime_ns, stat.st_mtime_ns))
+
+    saved, path, changed = store.load_snapshot(store.list_snapshots()[0])
+    assert changed
+    assert path is None
+    assert saved.project.castings[0].molds_per_year == 400
+
+
 def test_broken_snapshot_is_never_deleted_automatically(tmp_path):
     store = RecoveryStore(tmp_path / "recovery")
     key = store.new_session_id()
