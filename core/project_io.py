@@ -146,6 +146,13 @@ def _validate_project(data: Any) -> Project:
             raise ProjectFileError(f"Недопустимый процент {key}")
     if payload.get("ugar_pct", Project().ugar_pct) >= 100:
         raise ProjectFileError("Угар должен быть меньше 100 %")
+    # Geometric calculations divide poured-metal mass by alloy density.
+    # Reject impossible densities before Qt reconstructs the project:
+    # otherwise the sand-preparation estimate would silently use bad data.
+    density = payload.get("alloy_density_kg_m3", Project().alloy_density_kg_m3)
+    if (type(density) not in (float, int)
+            or not math.isfinite(density) or density <= 0):
+        raise ProjectFileError("Плотность сплава должна быть положительной, кг/м³")
     if payload.get("molding_park_mode", "auto") not in ("auto", "manual"):
         raise ProjectFileError("Неизвестный режим формирования парка")
     counts = payload.get("molding_line_counts", {})
