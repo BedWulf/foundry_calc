@@ -69,3 +69,41 @@ def test_save_refuses_to_overwrite_when_history_unavailable(tmp_path, monkeypatc
     assert errors
     assert file.read_bytes() == original
     window.close()
+
+
+def test_historical_copy_cannot_change_source_equipment_choices(tmp_path, monkeypatch):
+    import config
+    import gui.main_window as window_module
+    from core.user_choices import UserChoices
+    from uuid import uuid4
+
+    profile = tmp_path / "profile"
+    monkeypatch.setattr(config, "USER_DATA_DIR", profile)
+    monkeypatch.setattr(window_module, "USER_DATA_DIR", profile)
+    app()
+    window = MainWindow()
+    window._version_history = VersionHistoryStore(tmp_path / "history")
+    original_uid = uuid4().hex
+    window.project.project_uid = original_uid
+    manager = UserChoices()
+    manager.replace_project_choices(
+        original_uid, {"molding_line": {"equipment_id": "OLD"}})
+    filename = tmp_path / "study.fpro.json"
+    assert window._write_project_to(filename)
+
+    manager.replace_project_choices(
+        original_uid, {"molding_line": {"equipment_id": "NEW"}})
+    window.project.castings = [CastingItem(name="Updated", molds_per_year=55)]
+    assert window._save_project()
+    history = window._version_history.list_versions(filename)
+    assert len(history) == 1
+
+    latest_bytes = filename.read_bytes()
+    assert window._restore_version_entry(history[0])
+    assert window.project.project_uid != original_uid
+    original = UserChoices().get_project_choices(original_uid)
+    copy = UserChoices().get_project_choices(window.project.project_id)
+    assert original["molding_line"]["equipment_id"] == "NEW"
+    assert copy["molding_line"]["equipment_id"] == "OLD"
+    assert filename.read_bytes() == latest_bytes
+    window.close()
