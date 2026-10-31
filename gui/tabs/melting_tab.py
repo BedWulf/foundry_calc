@@ -164,7 +164,7 @@ class MeltingTab(QWidget):
         btn_refresh.setStyleSheet(btn_add.styleSheet())
         btn_refresh.clicked.connect(self.refresh)
         top_row.addWidget(btn_refresh)
-        self.btn_official_furnaces = QPushButton("📖 Паспорта печей: сталь и чугун")
+        self.btn_official_furnaces = QPushButton("📖 Техданные изготовителей: сталь и чугун")
         self.btn_official_furnaces.setStyleSheet(btn_add.styleSheet())
         self.btn_official_furnaces.setToolTip(
             "Встроенные характеристики изготовителей и ссылки на таблицы; без загрузки файлов"
