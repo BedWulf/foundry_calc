@@ -1,0 +1,1036 @@
+{
+  "schema_version": "1.0",
+  "dataset": "ferrous_normative_properties",
+  "last_reviewed": "2026-10-31",
+  "source_policy": "Each property references standard, specific table and a source. Official register entry confirms standard metadata; text URLs are THIRD-PARTY reproductions; check controlled official edition before certification.",
+  "usage_policy": "reference_only_no_automatic_selection",
+  "excluded": [
+    "aluminum",
+    "copper",
+    "magnesium"
+  ],
+  "sources": {
+    "GOST_977_88": {
+      "designation": "ГОСТ 977-88",
+      "source_url": "https://protect.gost.ru/gost/details/87232bf6-4cd5-494b-bcf5-deb7ac30d55f",
+      "text_url": "https://allgosts.ru/77/140/gost_977-88",
+      "location": "п. 1.3, табл. 1, нелегированные конструкционные стали"
+    },
+    "GOST_1412_85": {
+      "designation": "ГОСТ 1412-85",
+      "source_url": "https://protect.gost.ru/gost/details/cb7d4cf2-4a02-416e-a751-60e5bd998e03",
+      "text_url": "https://base.garant.ru/70370578/",
+      "location": "п. 2.1, таблица прочности"
+    },
+    "GOST_7293_85": {
+      "designation": "ГОСТ 7293-85",
+      "source_url": "https://protect.gost.ru/gost/details/93b96880-c3b5-46e7-a8a2-f429a48edae7",
+      "text_url": "https://meganorm.ru/mega_doc/norm/gost_gosudarstvennyj-standart/8/gost_7293-85_st_sev_4558-84_gosudarstvennyy_standart_soyuza.html",
+      "location": "п. 2.1, таблица механических свойств"
+    },
+    "GOST_1215_79": {
+      "designation": "ГОСТ 1215-79",
+      "source_url": "https://protect.gost.ru/gost/details/6af4d77a-6d5d-44e3-a7aa-6f902eb582c5",
+      "text_url": "https://markmet.ru/gost/gost-1215-79",
+      "location": "табл. 1, механические свойства"
+    }
+  },
+  "records": [
+    {
+      "name": "15Л",
+      "category": "steel",
+      "standard_id": "GOST_977_88",
+      "properties": {
+        "carbon_mass_pct": {
+          "min": 0.12,
+          "max": 0.2,
+          "unit": "mass_%",
+          "kind": "normative_range",
+          "source": {
+            "standard_id": "GOST_977_88",
+            "location": "п. 1.3, табл. 1, нелегированные конструкционные стали"
+          }
+        },
+        "manganese_mass_pct": {
+          "min": 0.45,
+          "max": 0.9,
+          "unit": "mass_%",
+          "kind": "normative_range",
+          "source": {
+            "standard_id": "GOST_977_88",
+            "location": "п. 1.3, табл. 1, нелегированные конструкционные стали"
+          }
+        },
+        "silicon_mass_pct": {
+          "min": 0.2,
+          "max": 0.52,
+          "unit": "mass_%",
+          "kind": "normative_range",
+          "source": {
+            "standard_id": "GOST_977_88",
+            "location": "п. 1.3, табл. 1, нелегированные конструкционные стали"
+          }
+        }
+      },
+      "scope": "Химический состав конструкционной нелегированной литейной стали; примеси S/P зависят от группы отливки и процесса и здесь НЕ указаны.",
+      "eligible_for_process_calculations": false
+    },
+    {
+      "name": "20Л",
+      "category": "steel",
+      "standard_id": "GOST_977_88",
+      "properties": {
+        "carbon_mass_pct": {
+          "min": 0.17,
+          "max": 0.25,
+          "unit": "mass_%",
+          "kind": "normative_range",
+          "source": {
+            "standard_id": "GOST_977_88",
+            "location": "п. 1.3, табл. 1, нелегированные конструкционные стали"
+          }
+        },
+        "manganese_mass_pct": {
+          "min": 0.45,
+          "max": 0.9,
+          "unit": "mass_%",
+          "kind": "normative_range",
+          "source": {
+            "standard_id": "GOST_977_88",
+            "location": "п. 1.3, табл. 1, нелегированные конструкционные стали"
+          }
+        },
+        "silicon_mass_pct": {
+          "min": 0.2,
+          "max": 0.52,
+          "unit": "mass_%",
+          "kind": "normative_range",
+          "source": {
+            "standard_id": "GOST_977_88",
+            "location": "п. 1.3, табл. 1, нелегированные конструкционные стали"
+          }
+        }
+      },
+      "scope": "Химический состав конструкционной нелегированной литейной стали; примеси S/P зависят от группы отливки и процесса и здесь НЕ указаны.",
+      "eligible_for_process_calculations": false
+    },
+    {
+      "name": "25Л",
+      "category": "steel",
+      "standard_id": "GOST_977_88",
+      "properties": {
+        "carbon_mass_pct": {
+          "min": 0.22,
+          "max": 0.3,
+          "unit": "mass_%",
+          "kind": "normative_range",
+          "source": {
+            "standard_id": "GOST_977_88",
+            "location": "п. 1.3, табл. 1, нелегированные конструкционные стали"
+          }
+        },
+        "manganese_mass_pct": {
+          "min": 0.45,
+          "max": 0.9,
+          "unit": "mass_%",
+          "kind": "normative_range",
+          "source": {
+            "standard_id": "GOST_977_88",
+            "location": "п. 1.3, табл. 1, нелегированные конструкционные стали"
+          }
+        },
+        "silicon_mass_pct": {
+          "min": 0.2,
+          "max": 0.52,
+          "unit": "mass_%",
+          "kind": "normative_range",
+          "source": {
+            "standard_id": "GOST_977_88",
+            "location": "п. 1.3, табл. 1, нелегированные конструкционные стали"
+          }
+        }
+      },
+      "scope": "Химический состав конструкционной нелегированной литейной стали; примеси S/P зависят от группы отливки и процесса и здесь НЕ указаны.",
+      "eligible_for_process_calculations": false
+    },
+    {
+      "name": "30Л",
+      "category": "steel",
+      "standard_id": "GOST_977_88",
+      "properties": {
+        "carbon_mass_pct": {
+          "min": 0.27,
+          "max": 0.35,
+          "unit": "mass_%",
+          "kind": "normative_range",
+          "source": {
+            "standard_id": "GOST_977_88",
+            "location": "п. 1.3, табл. 1, нелегированные конструкционные стали"
+          }
+        },
+        "manganese_mass_pct": {
+          "min": 0.45,
+          "max": 0.9,
+          "unit": "mass_%",
+          "kind": "normative_range",
+          "source": {
+            "standard_id": "GOST_977_88",
+            "location": "п. 1.3, табл. 1, нелегированные конструкционные стали"
+          }
+        },
+        "silicon_mass_pct": {
+          "min": 0.2,
+          "max": 0.52,
+          "unit": "mass_%",
+          "kind": "normative_range",
+          "source": {
+            "standard_id": "GOST_977_88",
+            "location": "п. 1.3, табл. 1, нелегированные конструкционные стали"
+          }
+        }
+      },
+      "scope": "Химический состав конструкционной нелегированной литейной стали; примеси S/P зависят от группы отливки и процесса и здесь НЕ указаны.",
+      "eligible_for_process_calculations": false
+    },
+    {
+      "name": "35Л",
+      "category": "steel",
+      "standard_id": "GOST_977_88",
+      "properties": {
+        "carbon_mass_pct": {
+          "min": 0.32,
+          "max": 0.4,
+          "unit": "mass_%",
+          "kind": "normative_range",
+          "source": {
+            "standard_id": "GOST_977_88",
+            "location": "п. 1.3, табл. 1, нелегированные конструкционные стали"
+          }
+        },
+        "manganese_mass_pct": {
+          "min": 0.45,
+          "max": 0.9,
+          "unit": "mass_%",
+          "kind": "normative_range",
+          "source": {
+            "standard_id": "GOST_977_88",
+            "location": "п. 1.3, табл. 1, нелегированные конструкционные стали"
+          }
+        },
+        "silicon_mass_pct": {
+          "min": 0.2,
+          "max": 0.52,
+          "unit": "mass_%",
+          "kind": "normative_range",
+          "source": {
+            "standard_id": "GOST_977_88",
+            "location": "п. 1.3, табл. 1, нелегированные конструкционные стали"
+          }
+        }
+      },
+      "scope": "Химический состав конструкционной нелегированной литейной стали; примеси S/P зависят от группы отливки и процесса и здесь НЕ указаны.",
+      "eligible_for_process_calculations": false
+    },
+    {
+      "name": "40Л",
+      "category": "steel",
+      "standard_id": "GOST_977_88",
+      "properties": {
+        "carbon_mass_pct": {
+          "min": 0.37,
+          "max": 0.45,
+          "unit": "mass_%",
+          "kind": "normative_range",
+          "source": {
+            "standard_id": "GOST_977_88",
+            "location": "п. 1.3, табл. 1, нелегированные конструкционные стали"
+          }
+        },
+        "manganese_mass_pct": {
+          "min": 0.45,
+          "max": 0.9,
+          "unit": "mass_%",
+          "kind": "normative_range",
+          "source": {
+            "standard_id": "GOST_977_88",
+            "location": "п. 1.3, табл. 1, нелегированные конструкционные стали"
+          }
+        },
+        "silicon_mass_pct": {
+          "min": 0.2,
+          "max": 0.52,
+          "unit": "mass_%",
+          "kind": "normative_range",
+          "source": {
+            "standard_id": "GOST_977_88",
+            "location": "п. 1.3, табл. 1, нелегированные конструкционные стали"
+          }
+        }
+      },
+      "scope": "Химический состав конструкционной нелегированной литейной стали; примеси S/P зависят от группы отливки и процесса и здесь НЕ указаны.",
+      "eligible_for_process_calculations": false
+    },
+    {
+      "name": "45Л",
+      "category": "steel",
+      "standard_id": "GOST_977_88",
+      "properties": {
+        "carbon_mass_pct": {
+          "min": 0.42,
+          "max": 0.5,
+          "unit": "mass_%",
+          "kind": "normative_range",
+          "source": {
+            "standard_id": "GOST_977_88",
+            "location": "п. 1.3, табл. 1, нелегированные конструкционные стали"
+          }
+        },
+        "manganese_mass_pct": {
+          "min": 0.45,
+          "max": 0.9,
+          "unit": "mass_%",
+          "kind": "normative_range",
+          "source": {
+            "standard_id": "GOST_977_88",
+            "location": "п. 1.3, табл. 1, нелегированные конструкционные стали"
+          }
+        },
+        "silicon_mass_pct": {
+          "min": 0.2,
+          "max": 0.52,
+          "unit": "mass_%",
+          "kind": "normative_range",
+          "source": {
+            "standard_id": "GOST_977_88",
+            "location": "п. 1.3, табл. 1, нелегированные конструкционные стали"
+          }
+        }
+      },
+      "scope": "Химический состав конструкционной нелегированной литейной стали; примеси S/P зависят от группы отливки и процесса и здесь НЕ указаны.",
+      "eligible_for_process_calculations": false
+    },
+    {
+      "name": "50Л",
+      "category": "steel",
+      "standard_id": "GOST_977_88",
+      "properties": {
+        "carbon_mass_pct": {
+          "min": 0.47,
+          "max": 0.55,
+          "unit": "mass_%",
+          "kind": "normative_range",
+          "source": {
+            "standard_id": "GOST_977_88",
+            "location": "п. 1.3, табл. 1, нелегированные конструкционные стали"
+          }
+        },
+        "manganese_mass_pct": {
+          "min": 0.45,
+          "max": 0.9,
+          "unit": "mass_%",
+          "kind": "normative_range",
+          "source": {
+            "standard_id": "GOST_977_88",
+            "location": "п. 1.3, табл. 1, нелегированные конструкционные стали"
+          }
+        },
+        "silicon_mass_pct": {
+          "min": 0.2,
+          "max": 0.52,
+          "unit": "mass_%",
+          "kind": "normative_range",
+          "source": {
+            "standard_id": "GOST_977_88",
+            "location": "п. 1.3, табл. 1, нелегированные конструкционные стали"
+          }
+        }
+      },
+      "scope": "Химический состав конструкционной нелегированной литейной стали; примеси S/P зависят от группы отливки и процесса и здесь НЕ указаны.",
+      "eligible_for_process_calculations": false
+    },
+    {
+      "name": "СЧ10",
+      "category": "cast_iron",
+      "standard_id": "GOST_1412_85",
+      "properties": {
+        "tensile_strength_min_mpa": {
+          "value": 100,
+          "unit": "MPa",
+          "kind": "normative_minimum",
+          "source": {
+            "standard_id": "GOST_1412_85",
+            "location": "п. 2.1, таблица прочности"
+          }
+        }
+      },
+      "scope": "Для СЧ10 испытание временного сопротивления проводят по требованию потребителя. Показатель по п. 2.1 для нормируемых образцов; приложение 1 о толщине стенки — справочное, не гарантия прочности конкретной стенки.",
+      "eligible_for_process_calculations": false
+    },
+    {
+      "name": "СЧ15",
+      "category": "cast_iron",
+      "standard_id": "GOST_1412_85",
+      "properties": {
+        "tensile_strength_min_mpa": {
+          "value": 150,
+          "unit": "MPa",
+          "kind": "normative_minimum",
+          "source": {
+            "standard_id": "GOST_1412_85",
+            "location": "п. 2.1, таблица прочности"
+          }
+        }
+      },
+      "scope": "Показатель по п. 2.1 для нормируемых образцов; приложение 1 о толщине стенки — справочное, не гарантия прочности конкретной стенки.",
+      "eligible_for_process_calculations": false
+    },
+    {
+      "name": "СЧ18",
+      "category": "cast_iron",
+      "standard_id": "GOST_1412_85",
+      "properties": {
+        "tensile_strength_min_mpa": {
+          "value": 180,
+          "unit": "MPa",
+          "kind": "normative_minimum",
+          "source": {
+            "standard_id": "GOST_1412_85",
+            "location": "п. 2.1, таблица прочности"
+          }
+        }
+      },
+      "scope": "Показатель по п. 2.1 для нормируемых образцов; приложение 1 о толщине стенки — справочное, не гарантия прочности конкретной стенки.",
+      "eligible_for_process_calculations": false
+    },
+    {
+      "name": "СЧ20",
+      "category": "cast_iron",
+      "standard_id": "GOST_1412_85",
+      "properties": {
+        "tensile_strength_min_mpa": {
+          "value": 200,
+          "unit": "MPa",
+          "kind": "normative_minimum",
+          "source": {
+            "standard_id": "GOST_1412_85",
+            "location": "п. 2.1, таблица прочности"
+          }
+        }
+      },
+      "scope": "Показатель по п. 2.1 для нормируемых образцов; приложение 1 о толщине стенки — справочное, не гарантия прочности конкретной стенки.",
+      "eligible_for_process_calculations": false
+    },
+    {
+      "name": "СЧ21",
+      "category": "cast_iron",
+      "standard_id": "GOST_1412_85",
+      "properties": {
+        "tensile_strength_min_mpa": {
+          "value": 210,
+          "unit": "MPa",
+          "kind": "normative_minimum",
+          "source": {
+            "standard_id": "GOST_1412_85",
+            "location": "п. 2.1, таблица прочности"
+          }
+        }
+      },
+      "scope": "Показатель по п. 2.1 для нормируемых образцов; приложение 1 о толщине стенки — справочное, не гарантия прочности конкретной стенки.",
+      "eligible_for_process_calculations": false
+    },
+    {
+      "name": "СЧ24",
+      "category": "cast_iron",
+      "standard_id": "GOST_1412_85",
+      "properties": {
+        "tensile_strength_min_mpa": {
+          "value": 240,
+          "unit": "MPa",
+          "kind": "normative_minimum",
+          "source": {
+            "standard_id": "GOST_1412_85",
+            "location": "п. 2.1, таблица прочности"
+          }
+        }
+      },
+      "scope": "Показатель по п. 2.1 для нормируемых образцов; приложение 1 о толщине стенки — справочное, не гарантия прочности конкретной стенки.",
+      "eligible_for_process_calculations": false
+    },
+    {
+      "name": "СЧ25",
+      "category": "cast_iron",
+      "standard_id": "GOST_1412_85",
+      "properties": {
+        "tensile_strength_min_mpa": {
+          "value": 250,
+          "unit": "MPa",
+          "kind": "normative_minimum",
+          "source": {
+            "standard_id": "GOST_1412_85",
+            "location": "п. 2.1, таблица прочности"
+          }
+        }
+      },
+      "scope": "Показатель по п. 2.1 для нормируемых образцов; приложение 1 о толщине стенки — справочное, не гарантия прочности конкретной стенки.",
+      "eligible_for_process_calculations": false
+    },
+    {
+      "name": "СЧ30",
+      "category": "cast_iron",
+      "standard_id": "GOST_1412_85",
+      "properties": {
+        "tensile_strength_min_mpa": {
+          "value": 300,
+          "unit": "MPa",
+          "kind": "normative_minimum",
+          "source": {
+            "standard_id": "GOST_1412_85",
+            "location": "п. 2.1, таблица прочности"
+          }
+        }
+      },
+      "scope": "Показатель по п. 2.1 для нормируемых образцов; приложение 1 о толщине стенки — справочное, не гарантия прочности конкретной стенки.",
+      "eligible_for_process_calculations": false
+    },
+    {
+      "name": "СЧ35",
+      "category": "cast_iron",
+      "standard_id": "GOST_1412_85",
+      "properties": {
+        "tensile_strength_min_mpa": {
+          "value": 350,
+          "unit": "MPa",
+          "kind": "normative_minimum",
+          "source": {
+            "standard_id": "GOST_1412_85",
+            "location": "п. 2.1, таблица прочности"
+          }
+        }
+      },
+      "scope": "Показатель по п. 2.1 для нормируемых образцов; приложение 1 о толщине стенки — справочное, не гарантия прочности конкретной стенки.",
+      "eligible_for_process_calculations": false
+    },
+    {
+      "name": "ВЧ35",
+      "category": "ductile_iron",
+      "standard_id": "GOST_7293_85",
+      "properties": {
+        "tensile_strength_min_mpa": {
+          "value": 350,
+          "unit": "MPa",
+          "kind": "normative_minimum",
+          "source": {
+            "standard_id": "GOST_7293_85",
+            "location": "п. 2.1, таблица механических свойств"
+          }
+        },
+        "proof_strength_min_mpa": {
+          "value": 220,
+          "unit": "MPa",
+          "kind": "normative_minimum",
+          "source": {
+            "standard_id": "GOST_7293_85",
+            "location": "п. 2.1, таблица механических свойств"
+          }
+        }
+      },
+      "scope": "В литом состоянии или после термообработки; условия и контроль образцов — по стандарту. Не равно гарантированной прочности стенки произвольной отливки.",
+      "eligible_for_process_calculations": false
+    },
+    {
+      "name": "ВЧ40",
+      "category": "ductile_iron",
+      "standard_id": "GOST_7293_85",
+      "properties": {
+        "tensile_strength_min_mpa": {
+          "value": 400,
+          "unit": "MPa",
+          "kind": "normative_minimum",
+          "source": {
+            "standard_id": "GOST_7293_85",
+            "location": "п. 2.1, таблица механических свойств"
+          }
+        },
+        "proof_strength_min_mpa": {
+          "value": 250,
+          "unit": "MPa",
+          "kind": "normative_minimum",
+          "source": {
+            "standard_id": "GOST_7293_85",
+            "location": "п. 2.1, таблица механических свойств"
+          }
+        }
+      },
+      "scope": "В литом состоянии или после термообработки; условия и контроль образцов — по стандарту. Не равно гарантированной прочности стенки произвольной отливки.",
+      "eligible_for_process_calculations": false
+    },
+    {
+      "name": "ВЧ45",
+      "category": "ductile_iron",
+      "standard_id": "GOST_7293_85",
+      "properties": {
+        "tensile_strength_min_mpa": {
+          "value": 450,
+          "unit": "MPa",
+          "kind": "normative_minimum",
+          "source": {
+            "standard_id": "GOST_7293_85",
+            "location": "п. 2.1, таблица механических свойств"
+          }
+        },
+        "proof_strength_min_mpa": {
+          "value": 310,
+          "unit": "MPa",
+          "kind": "normative_minimum",
+          "source": {
+            "standard_id": "GOST_7293_85",
+            "location": "п. 2.1, таблица механических свойств"
+          }
+        }
+      },
+      "scope": "В литом состоянии или после термообработки; условия и контроль образцов — по стандарту. Не равно гарантированной прочности стенки произвольной отливки.",
+      "eligible_for_process_calculations": false
+    },
+    {
+      "name": "ВЧ50",
+      "category": "ductile_iron",
+      "standard_id": "GOST_7293_85",
+      "properties": {
+        "tensile_strength_min_mpa": {
+          "value": 500,
+          "unit": "MPa",
+          "kind": "normative_minimum",
+          "source": {
+            "standard_id": "GOST_7293_85",
+            "location": "п. 2.1, таблица механических свойств"
+          }
+        },
+        "proof_strength_min_mpa": {
+          "value": 320,
+          "unit": "MPa",
+          "kind": "normative_minimum",
+          "source": {
+            "standard_id": "GOST_7293_85",
+            "location": "п. 2.1, таблица механических свойств"
+          }
+        }
+      },
+      "scope": "В литом состоянии или после термообработки; условия и контроль образцов — по стандарту. Не равно гарантированной прочности стенки произвольной отливки.",
+      "eligible_for_process_calculations": false
+    },
+    {
+      "name": "ВЧ60",
+      "category": "ductile_iron",
+      "standard_id": "GOST_7293_85",
+      "properties": {
+        "tensile_strength_min_mpa": {
+          "value": 600,
+          "unit": "MPa",
+          "kind": "normative_minimum",
+          "source": {
+            "standard_id": "GOST_7293_85",
+            "location": "п. 2.1, таблица механических свойств"
+          }
+        },
+        "proof_strength_min_mpa": {
+          "value": 370,
+          "unit": "MPa",
+          "kind": "normative_minimum",
+          "source": {
+            "standard_id": "GOST_7293_85",
+            "location": "п. 2.1, таблица механических свойств"
+          }
+        }
+      },
+      "scope": "В литом состоянии или после термообработки; условия и контроль образцов — по стандарту. Не равно гарантированной прочности стенки произвольной отливки.",
+      "eligible_for_process_calculations": false
+    },
+    {
+      "name": "ВЧ70",
+      "category": "ductile_iron",
+      "standard_id": "GOST_7293_85",
+      "properties": {
+        "tensile_strength_min_mpa": {
+          "value": 700,
+          "unit": "MPa",
+          "kind": "normative_minimum",
+          "source": {
+            "standard_id": "GOST_7293_85",
+            "location": "п. 2.1, таблица механических свойств"
+          }
+        },
+        "proof_strength_min_mpa": {
+          "value": 420,
+          "unit": "MPa",
+          "kind": "normative_minimum",
+          "source": {
+            "standard_id": "GOST_7293_85",
+            "location": "п. 2.1, таблица механических свойств"
+          }
+        }
+      },
+      "scope": "В литом состоянии или после термообработки; условия и контроль образцов — по стандарту. Не равно гарантированной прочности стенки произвольной отливки.",
+      "eligible_for_process_calculations": false
+    },
+    {
+      "name": "ВЧ80",
+      "category": "ductile_iron",
+      "standard_id": "GOST_7293_85",
+      "properties": {
+        "tensile_strength_min_mpa": {
+          "value": 800,
+          "unit": "MPa",
+          "kind": "normative_minimum",
+          "source": {
+            "standard_id": "GOST_7293_85",
+            "location": "п. 2.1, таблица механических свойств"
+          }
+        },
+        "proof_strength_min_mpa": {
+          "value": 480,
+          "unit": "MPa",
+          "kind": "normative_minimum",
+          "source": {
+            "standard_id": "GOST_7293_85",
+            "location": "п. 2.1, таблица механических свойств"
+          }
+        }
+      },
+      "scope": "В литом состоянии или после термообработки; условия и контроль образцов — по стандарту. Не равно гарантированной прочности стенки произвольной отливки.",
+      "eligible_for_process_calculations": false
+    },
+    {
+      "name": "ВЧ100",
+      "category": "ductile_iron",
+      "standard_id": "GOST_7293_85",
+      "properties": {
+        "tensile_strength_min_mpa": {
+          "value": 1000,
+          "unit": "MPa",
+          "kind": "normative_minimum",
+          "source": {
+            "standard_id": "GOST_7293_85",
+            "location": "п. 2.1, таблица механических свойств"
+          }
+        },
+        "proof_strength_min_mpa": {
+          "value": 700,
+          "unit": "MPa",
+          "kind": "normative_minimum",
+          "source": {
+            "standard_id": "GOST_7293_85",
+            "location": "п. 2.1, таблица механических свойств"
+          }
+        }
+      },
+      "scope": "В литом состоянии или после термообработки; условия и контроль образцов — по стандарту. Не равно гарантированной прочности стенки произвольной отливки.",
+      "eligible_for_process_calculations": false
+    },
+    {
+      "name": "КЧ30-6",
+      "category": "malleable_iron",
+      "standard_id": "GOST_1215_79",
+      "properties": {
+        "tensile_strength_min_mpa": {
+          "value": 294,
+          "unit": "MPa",
+          "kind": "normative_minimum",
+          "source": {
+            "standard_id": "GOST_1215_79",
+            "location": "табл. 1, механические свойства"
+          }
+        },
+        "elongation_min_pct": {
+          "value": 6,
+          "unit": "%",
+          "kind": "normative_minimum",
+          "source": {
+            "standard_id": "GOST_1215_79",
+            "location": "табл. 1, механические свойства"
+          }
+        }
+      },
+      "scope": "Механические свойства по табл. 1 с требованиями испытаний стандарта.",
+      "eligible_for_process_calculations": false
+    },
+    {
+      "name": "КЧ33-8",
+      "category": "malleable_iron",
+      "standard_id": "GOST_1215_79",
+      "properties": {
+        "tensile_strength_min_mpa": {
+          "value": 323,
+          "unit": "MPa",
+          "kind": "normative_minimum",
+          "source": {
+            "standard_id": "GOST_1215_79",
+            "location": "табл. 1, механические свойства"
+          }
+        },
+        "elongation_min_pct": {
+          "value": 8,
+          "unit": "%",
+          "kind": "normative_minimum",
+          "source": {
+            "standard_id": "GOST_1215_79",
+            "location": "табл. 1, механические свойства"
+          }
+        }
+      },
+      "scope": "Механические свойства по табл. 1 с требованиями испытаний стандарта.",
+      "eligible_for_process_calculations": false
+    },
+    {
+      "name": "КЧ35-10",
+      "category": "malleable_iron",
+      "standard_id": "GOST_1215_79",
+      "properties": {
+        "tensile_strength_min_mpa": {
+          "value": 333,
+          "unit": "MPa",
+          "kind": "normative_minimum",
+          "source": {
+            "standard_id": "GOST_1215_79",
+            "location": "табл. 1, механические свойства"
+          }
+        },
+        "elongation_min_pct": {
+          "value": 10,
+          "unit": "%",
+          "kind": "normative_minimum",
+          "source": {
+            "standard_id": "GOST_1215_79",
+            "location": "табл. 1, механические свойства"
+          }
+        }
+      },
+      "scope": "Механические свойства по табл. 1 с требованиями испытаний стандарта.",
+      "eligible_for_process_calculations": false
+    },
+    {
+      "name": "КЧ37-12",
+      "category": "malleable_iron",
+      "standard_id": "GOST_1215_79",
+      "properties": {
+        "tensile_strength_min_mpa": {
+          "value": 362,
+          "unit": "MPa",
+          "kind": "normative_minimum",
+          "source": {
+            "standard_id": "GOST_1215_79",
+            "location": "табл. 1, механические свойства"
+          }
+        },
+        "elongation_min_pct": {
+          "value": 12,
+          "unit": "%",
+          "kind": "normative_minimum",
+          "source": {
+            "standard_id": "GOST_1215_79",
+            "location": "табл. 1, механические свойства"
+          }
+        }
+      },
+      "scope": "Механические свойства по табл. 1 с требованиями испытаний стандарта.",
+      "eligible_for_process_calculations": false
+    },
+    {
+      "name": "КЧ45-7",
+      "category": "malleable_iron",
+      "standard_id": "GOST_1215_79",
+      "properties": {
+        "tensile_strength_min_mpa": {
+          "value": 441,
+          "unit": "MPa",
+          "kind": "normative_minimum",
+          "source": {
+            "standard_id": "GOST_1215_79",
+            "location": "табл. 1, механические свойства"
+          }
+        },
+        "elongation_min_pct": {
+          "value": 7,
+          "unit": "%",
+          "kind": "normative_minimum",
+          "source": {
+            "standard_id": "GOST_1215_79",
+            "location": "табл. 1, механические свойства"
+          }
+        }
+      },
+      "scope": "Для относительного удлинения по соглашению изготовителя и потребителя допускается снижение на 1 процентный пункт. Механические свойства по табл. 1 с требованиями испытаний стандарта.",
+      "eligible_for_process_calculations": false
+    },
+    {
+      "name": "КЧ50-5",
+      "category": "malleable_iron",
+      "standard_id": "GOST_1215_79",
+      "properties": {
+        "tensile_strength_min_mpa": {
+          "value": 490,
+          "unit": "MPa",
+          "kind": "normative_minimum",
+          "source": {
+            "standard_id": "GOST_1215_79",
+            "location": "табл. 1, механические свойства"
+          }
+        },
+        "elongation_min_pct": {
+          "value": 5,
+          "unit": "%",
+          "kind": "normative_minimum",
+          "source": {
+            "standard_id": "GOST_1215_79",
+            "location": "табл. 1, механические свойства"
+          }
+        }
+      },
+      "scope": "Для относительного удлинения по соглашению изготовителя и потребителя допускается снижение на 1 процентный пункт. Механические свойства по табл. 1 с требованиями испытаний стандарта.",
+      "eligible_for_process_calculations": false
+    },
+    {
+      "name": "КЧ55-4",
+      "category": "malleable_iron",
+      "standard_id": "GOST_1215_79",
+      "properties": {
+        "tensile_strength_min_mpa": {
+          "value": 539,
+          "unit": "MPa",
+          "kind": "normative_minimum",
+          "source": {
+            "standard_id": "GOST_1215_79",
+            "location": "табл. 1, механические свойства"
+          }
+        },
+        "elongation_min_pct": {
+          "value": 4,
+          "unit": "%",
+          "kind": "normative_minimum",
+          "source": {
+            "standard_id": "GOST_1215_79",
+            "location": "табл. 1, механические свойства"
+          }
+        }
+      },
+      "scope": "Для относительного удлинения по соглашению изготовителя и потребителя допускается снижение на 1 процентный пункт. Механические свойства по табл. 1 с требованиями испытаний стандарта.",
+      "eligible_for_process_calculations": false
+    },
+    {
+      "name": "КЧ60-3",
+      "category": "malleable_iron",
+      "standard_id": "GOST_1215_79",
+      "properties": {
+        "tensile_strength_min_mpa": {
+          "value": 588,
+          "unit": "MPa",
+          "kind": "normative_minimum",
+          "source": {
+            "standard_id": "GOST_1215_79",
+            "location": "табл. 1, механические свойства"
+          }
+        },
+        "elongation_min_pct": {
+          "value": 3,
+          "unit": "%",
+          "kind": "normative_minimum",
+          "source": {
+            "standard_id": "GOST_1215_79",
+            "location": "табл. 1, механические свойства"
+          }
+        }
+      },
+      "scope": "Механические свойства по табл. 1 с требованиями испытаний стандарта.",
+      "eligible_for_process_calculations": false
+    },
+    {
+      "name": "КЧ65-3",
+      "category": "malleable_iron",
+      "standard_id": "GOST_1215_79",
+      "properties": {
+        "tensile_strength_min_mpa": {
+          "value": 637,
+          "unit": "MPa",
+          "kind": "normative_minimum",
+          "source": {
+            "standard_id": "GOST_1215_79",
+            "location": "табл. 1, механические свойства"
+          }
+        },
+        "elongation_min_pct": {
+          "value": 3,
+          "unit": "%",
+          "kind": "normative_minimum",
+          "source": {
+            "standard_id": "GOST_1215_79",
+            "location": "табл. 1, механические свойства"
+          }
+        }
+      },
+      "scope": "Механические свойства по табл. 1 с требованиями испытаний стандарта.",
+      "eligible_for_process_calculations": false
+    },
+    {
+      "name": "КЧ70-2",
+      "category": "malleable_iron",
+      "standard_id": "GOST_1215_79",
+      "properties": {
+        "tensile_strength_min_mpa": {
+          "value": 686,
+          "unit": "MPa",
+          "kind": "normative_minimum",
+          "source": {
+            "standard_id": "GOST_1215_79",
+            "location": "табл. 1, механические свойства"
+          }
+        },
+        "elongation_min_pct": {
+          "value": 2,
+          "unit": "%",
+          "kind": "normative_minimum",
+          "source": {
+            "standard_id": "GOST_1215_79",
+            "location": "табл. 1, механические свойства"
+          }
+        }
+      },
+      "scope": "Механические свойства по табл. 1 с требованиями испытаний стандарта.",
+      "eligible_for_process_calculations": false
+    },
+    {
+      "name": "КЧ80-1,5",
+      "category": "malleable_iron",
+      "standard_id": "GOST_1215_79",
+      "properties": {
+        "tensile_strength_min_mpa": {
+          "value": 784,
+          "unit": "MPa",
+          "kind": "normative_minimum",
+          "source": {
+            "standard_id": "GOST_1215_79",
+            "location": "табл. 1, механические свойства"
+          }
+        },
+        "elongation_min_pct": {
+          "value": 1.5,
+          "unit": "%",
+          "kind": "normative_minimum",
+          "source": {
+            "standard_id": "GOST_1215_79",
+            "location": "табл. 1, механические свойства"
+          }
+        }
+      },
+      "scope": "Механические свойства по табл. 1 с требованиями испытаний стандарта.",
+      "eligible_for_process_calculations": false
+    }
+  ],
+  "process_parameters_not_proven": [
+    "density_kg_m3",
+    "pouring_temp_C",
+    "melting_temp_C",
+    "shrinkage_pct",
+    "burnout_pct",
+    "melt_cycle",
+    "casting_wall_mechanical_properties"
+  ]
+}
