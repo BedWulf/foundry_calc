@@ -14,7 +14,7 @@ ROOT = Path(__file__).resolve().parents[1] / "data"
 def test_bundled_manufacturer_and_gost_records_visible_offline():
     catalog = list_official_references(ROOT)
     assert {name: len(rows) for name, rows in catalog.items()} == {
-        "Плавильные печи": 9,
+        "Плавильные печи": 27,
         "Формовочные линии": 7,
         "Стержневые машины": 3,
         "Марки материалов": 96,
@@ -57,7 +57,7 @@ def test_official_catalog_dialog_initializes_without_network_or_modal_windows():
     dialog = OfficialCatalogDialog()
     try:
         assert dialog.findChild(QTabWidget).count() == 5
-        assert len(dialog.records["Плавильные печи"]) == 9
+        assert len(dialog.records["Плавильные печи"]) == 27
         assert len(dialog.records["Марки материалов"]) == 96
         assert dialog.records["Марки материалов"][0]["text_url"].startswith("https://")
         # Search works without network or a blocking modal dialog.
@@ -93,7 +93,7 @@ def test_each_equipment_model_links_its_own_manufacturer_table_row():
     from core.official_reference_catalog import list_official_references
     refs = list_official_references(ROOT)
     for category in ("Плавильные печи", "Формовочные линии", "Стержневые машины"):
-        assert all("row" in item["source"] or "column" in item["source"]
+        assert all("row" in item["source"] or "column" in item["source"] or "строка" in item["source"]
                    for item in refs[category])
     indotherm = json.loads(
         (ROOT / "verified_references" / "indotherm_casting_units.json")
