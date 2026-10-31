@@ -1,103 +1,861 @@
 {
-  "schema_version": "1.0",
+  "schema_version": "2.0",
+  "last_verified_at": "2026-10-31",
   "usage_policy": "reference_only_do_not_override_process_properties",
+  "source_policy": "Official Rosstandart registry proves standard status; grade spellings were checked against openly available reproductions of the corresponding standard sections. Reproductions are not authenticated official full-text publications.",
   "sources": [
     {
       "id": "GOST_977_88",
       "designation": "ГОСТ 977-88",
       "title": "Отливки стальные. Общие технические условия",
       "url": "https://protect.gost.ru/gost/details/87232bf6-4cd5-494b-bcf5-deb7ac30d55f",
+      "text_url": "https://www.tehnorma.ru/gosttext/gost/gost_2476.htm",
+      "text_kind": "third_party_reproduction",
       "status": "active_according_to_rosstandart",
-      "evidence_scope": "scope_and_grade_designations"
+      "evidence_scope": "grade_designations_section_1_1"
     },
     {
       "id": "GOST_1412_85",
       "designation": "ГОСТ 1412-85",
       "title": "Чугун с пластинчатым графитом для отливок. Марки",
       "url": "https://protect.gost.ru/gost/details/cb7d4cf2-4a02-416e-a751-60e5bd998e03",
+      "text_url": "https://base.garant.ru/70370578/",
+      "text_kind": "third_party_reproduction",
       "status": "active_according_to_rosstandart",
-      "evidence_scope": "scope_and_grade_designations"
+      "evidence_scope": "grade_designations_section_1_1"
+    },
+    {
+      "id": "GOST_7293_85",
+      "designation": "ГОСТ 7293-85",
+      "title": "Чугун с шаровидным графитом для отливок. Марки",
+      "url": "https://protect.gost.ru/gost/details/93b96880-c3b5-46e7-a8a2-f429a48edae7",
+      "text_url": "https://mpchb.ru/gost/chernye-metally/gost-7293-85",
+      "text_kind": "third_party_reproduction",
+      "status": "active_according_to_rosstandart",
+      "evidence_scope": "grade_designations_section_1_1"
+    },
+    {
+      "id": "GOST_1215_79",
+      "designation": "ГОСТ 1215-79",
+      "title": "Отливки из ковкого чугуна. Общие технические условия",
+      "url": "https://protect.gost.ru/gost/details/6af4d77a-6d5d-44e3-a7aa-6f902eb582c5",
+      "text_url": "https://base.garant.ru/5923326/",
+      "text_kind": "third_party_reproduction",
+      "status": "active_according_to_rosstandart",
+      "evidence_scope": "grade_designations_section_1_2"
     },
     {
       "id": "GOST_1583_93",
       "designation": "ГОСТ 1583-93",
       "title": "Сплавы алюминиевые литейные. Технические условия",
       "url": "https://protect.gost.ru/gost/details/404ae642-6b30-451b-b215-22860d4e2b38",
+      "text_url": "https://mvesta.ru/gost/alyuminiy-i-alyuminievye-splavy/gost-1583-93",
+      "text_kind": "third_party_reproduction",
       "status": "active_according_to_rosstandart",
-      "evidence_scope": "scope_only"
+      "evidence_scope": "grade_designations_table_1_section_3_1",
+      "correction_url": "https://base.garant.ru/70176968/"
     }
   ],
   "grades": [
     {
+      "name": "15Л",
+      "category": "steel",
+      "standard_id": "GOST_977_88",
+      "group": "Конструкционные нелегированные",
+      "evidence": "раздел 1.1",
+      "verification_status": "verified_designation_only"
+    },
+    {
       "name": "20Л",
       "category": "steel",
       "standard_id": "GOST_977_88",
-      "evidence": "grade_list_section_1_1",
+      "group": "Конструкционные нелегированные",
+      "evidence": "раздел 1.1",
       "verification_status": "verified_designation_only"
     },
     {
       "name": "25Л",
       "category": "steel",
       "standard_id": "GOST_977_88",
-      "evidence": "grade_list_section_1_1",
+      "group": "Конструкционные нелегированные",
+      "evidence": "раздел 1.1",
+      "verification_status": "verified_designation_only"
+    },
+    {
+      "name": "30Л",
+      "category": "steel",
+      "standard_id": "GOST_977_88",
+      "group": "Конструкционные нелегированные",
+      "evidence": "раздел 1.1",
       "verification_status": "verified_designation_only"
     },
     {
       "name": "35Л",
       "category": "steel",
       "standard_id": "GOST_977_88",
-      "evidence": "grade_list_section_1_1",
+      "group": "Конструкционные нелегированные",
+      "evidence": "раздел 1.1",
+      "verification_status": "verified_designation_only"
+    },
+    {
+      "name": "40Л",
+      "category": "steel",
+      "standard_id": "GOST_977_88",
+      "group": "Конструкционные нелегированные",
+      "evidence": "раздел 1.1",
       "verification_status": "verified_designation_only"
     },
     {
       "name": "45Л",
       "category": "steel",
       "standard_id": "GOST_977_88",
-      "evidence": "grade_list_section_1_1",
+      "group": "Конструкционные нелегированные",
+      "evidence": "раздел 1.1",
+      "verification_status": "verified_designation_only"
+    },
+    {
+      "name": "50Л",
+      "category": "steel",
+      "standard_id": "GOST_977_88",
+      "group": "Конструкционные нелегированные",
+      "evidence": "раздел 1.1",
+      "verification_status": "verified_designation_only"
+    },
+    {
+      "name": "20ГЛ",
+      "category": "steel",
+      "standard_id": "GOST_977_88",
+      "group": "Конструкционные легированные",
+      "evidence": "раздел 1.1",
+      "verification_status": "verified_designation_only"
+    },
+    {
+      "name": "35ГЛ",
+      "category": "steel",
+      "standard_id": "GOST_977_88",
+      "group": "Конструкционные легированные",
+      "evidence": "раздел 1.1",
+      "verification_status": "verified_designation_only"
+    },
+    {
+      "name": "20ГСЛ",
+      "category": "steel",
+      "standard_id": "GOST_977_88",
+      "group": "Конструкционные легированные",
+      "evidence": "раздел 1.1",
+      "verification_status": "verified_designation_only"
+    },
+    {
+      "name": "30ГСЛ",
+      "category": "steel",
+      "standard_id": "GOST_977_88",
+      "group": "Конструкционные легированные",
+      "evidence": "раздел 1.1",
+      "verification_status": "verified_designation_only"
+    },
+    {
+      "name": "20Г1ФЛ",
+      "category": "steel",
+      "standard_id": "GOST_977_88",
+      "group": "Конструкционные легированные",
+      "evidence": "раздел 1.1",
+      "verification_status": "verified_designation_only"
+    },
+    {
+      "name": "20ФЛ",
+      "category": "steel",
+      "standard_id": "GOST_977_88",
+      "group": "Конструкционные легированные",
+      "evidence": "раздел 1.1",
+      "verification_status": "verified_designation_only"
+    },
+    {
+      "name": "30ХГСФЛ",
+      "category": "steel",
+      "standard_id": "GOST_977_88",
+      "group": "Конструкционные легированные",
+      "evidence": "раздел 1.1",
+      "verification_status": "verified_designation_only"
+    },
+    {
+      "name": "45ФЛ",
+      "category": "steel",
+      "standard_id": "GOST_977_88",
+      "group": "Конструкционные легированные",
+      "evidence": "раздел 1.1",
+      "verification_status": "verified_designation_only"
+    },
+    {
+      "name": "32Х06Л",
+      "category": "steel",
+      "standard_id": "GOST_977_88",
+      "group": "Конструкционные легированные",
+      "evidence": "раздел 1.1",
+      "verification_status": "verified_designation_only"
+    },
+    {
+      "name": "40ХЛ",
+      "category": "steel",
+      "standard_id": "GOST_977_88",
+      "group": "Конструкционные легированные",
+      "evidence": "раздел 1.1",
+      "verification_status": "verified_designation_only"
+    },
+    {
+      "name": "20ХМЛ",
+      "category": "steel",
+      "standard_id": "GOST_977_88",
+      "group": "Конструкционные легированные",
+      "evidence": "раздел 1.1",
+      "verification_status": "verified_designation_only"
+    },
+    {
+      "name": "20ХМФЛ",
+      "category": "steel",
+      "standard_id": "GOST_977_88",
+      "group": "Конструкционные легированные",
+      "evidence": "раздел 1.1",
+      "verification_status": "verified_designation_only"
+    },
+    {
+      "name": "20ГНМФЛ",
+      "category": "steel",
+      "standard_id": "GOST_977_88",
+      "group": "Конструкционные легированные",
+      "evidence": "раздел 1.1",
+      "verification_status": "verified_designation_only"
+    },
+    {
+      "name": "35ХМЛ",
+      "category": "steel",
+      "standard_id": "GOST_977_88",
+      "group": "Конструкционные легированные",
+      "evidence": "раздел 1.1",
+      "verification_status": "verified_designation_only"
+    },
+    {
+      "name": "30ХНМЛ",
+      "category": "steel",
+      "standard_id": "GOST_977_88",
+      "group": "Конструкционные легированные",
+      "evidence": "раздел 1.1",
+      "verification_status": "verified_designation_only"
+    },
+    {
+      "name": "35ХГСЛ",
+      "category": "steel",
+      "standard_id": "GOST_977_88",
+      "group": "Конструкционные легированные",
+      "evidence": "раздел 1.1",
+      "verification_status": "verified_designation_only"
+    },
+    {
+      "name": "35НГМЛ",
+      "category": "steel",
+      "standard_id": "GOST_977_88",
+      "group": "Конструкционные легированные",
+      "evidence": "раздел 1.1",
+      "verification_status": "verified_designation_only"
+    },
+    {
+      "name": "20ДХЛ",
+      "category": "steel",
+      "standard_id": "GOST_977_88",
+      "group": "Конструкционные легированные",
+      "evidence": "раздел 1.1",
+      "verification_status": "verified_designation_only"
+    },
+    {
+      "name": "08ГДНФЛ",
+      "category": "steel",
+      "standard_id": "GOST_977_88",
+      "group": "Конструкционные легированные",
+      "evidence": "раздел 1.1",
+      "verification_status": "verified_designation_only"
+    },
+    {
+      "name": "13ХНДФТЛ",
+      "category": "steel",
+      "standard_id": "GOST_977_88",
+      "group": "Конструкционные легированные",
+      "evidence": "раздел 1.1",
+      "verification_status": "verified_designation_only"
+    },
+    {
+      "name": "12ДН2ФЛ",
+      "category": "steel",
+      "standard_id": "GOST_977_88",
+      "group": "Конструкционные легированные",
+      "evidence": "раздел 1.1",
+      "verification_status": "verified_designation_only"
+    },
+    {
+      "name": "12ДХН1МФЛ",
+      "category": "steel",
+      "standard_id": "GOST_977_88",
+      "group": "Конструкционные легированные",
+      "evidence": "раздел 1.1",
+      "verification_status": "verified_designation_only"
+    },
+    {
+      "name": "23ХГС2МФЛ",
+      "category": "steel",
+      "standard_id": "GOST_977_88",
+      "group": "Конструкционные легированные",
+      "evidence": "раздел 1.1",
+      "verification_status": "verified_designation_only"
+    },
+    {
+      "name": "12Х7Г3СЛ",
+      "category": "steel",
+      "standard_id": "GOST_977_88",
+      "group": "Конструкционные легированные",
+      "evidence": "раздел 1.1",
+      "verification_status": "verified_designation_only"
+    },
+    {
+      "name": "25Х2ГНМФЛ",
+      "category": "steel",
+      "standard_id": "GOST_977_88",
+      "group": "Конструкционные легированные",
+      "evidence": "раздел 1.1",
+      "verification_status": "verified_designation_only"
+    },
+    {
+      "name": "27Х5ГСМЛ",
+      "category": "steel",
+      "standard_id": "GOST_977_88",
+      "group": "Конструкционные легированные",
+      "evidence": "раздел 1.1",
+      "verification_status": "verified_designation_only"
+    },
+    {
+      "name": "30Х3С3ГМЛ",
+      "category": "steel",
+      "standard_id": "GOST_977_88",
+      "group": "Конструкционные легированные",
+      "evidence": "раздел 1.1",
+      "verification_status": "verified_designation_only"
+    },
+    {
+      "name": "03Н12Х5М3ТЛ",
+      "category": "steel",
+      "standard_id": "GOST_977_88",
+      "group": "Конструкционные легированные",
+      "evidence": "раздел 1.1",
+      "verification_status": "verified_designation_only"
+    },
+    {
+      "name": "03Н12Х5М3ТЮЛ",
+      "category": "steel",
+      "standard_id": "GOST_977_88",
+      "group": "Конструкционные легированные",
+      "evidence": "раздел 1.1",
+      "verification_status": "verified_designation_only"
+    },
+    {
+      "name": "20Х13Л",
+      "category": "steel",
+      "standard_id": "GOST_977_88",
+      "group": "Легированные со специальными свойствами",
+      "evidence": "раздел 1.1",
+      "verification_status": "verified_designation_only"
+    },
+    {
+      "name": "08Х14НДЛ",
+      "category": "steel",
+      "standard_id": "GOST_977_88",
+      "group": "Легированные со специальными свойствами",
+      "evidence": "раздел 1.1",
+      "verification_status": "verified_designation_only"
+    },
+    {
+      "name": "09Х16Н4БЛ",
+      "category": "steel",
+      "standard_id": "GOST_977_88",
+      "group": "Легированные со специальными свойствами",
+      "evidence": "раздел 1.1",
+      "verification_status": "verified_designation_only"
+    },
+    {
+      "name": "09Х17Н3СЛ",
+      "category": "steel",
+      "standard_id": "GOST_977_88",
+      "group": "Легированные со специальными свойствами",
+      "evidence": "раздел 1.1",
+      "verification_status": "verified_designation_only"
+    },
+    {
+      "name": "10Х12НДЛ",
+      "category": "steel",
+      "standard_id": "GOST_977_88",
+      "group": "Легированные со специальными свойствами",
+      "evidence": "раздел 1.1",
+      "verification_status": "verified_designation_only"
+    },
+    {
+      "name": "15Х13Л",
+      "category": "steel",
+      "standard_id": "GOST_977_88",
+      "group": "Легированные со специальными свойствами",
+      "evidence": "раздел 1.1",
+      "verification_status": "verified_designation_only"
+    },
+    {
+      "name": "15Х25ТЛ",
+      "category": "steel",
+      "standard_id": "GOST_977_88",
+      "group": "Легированные со специальными свойствами",
+      "evidence": "раздел 1.1",
+      "verification_status": "verified_designation_only"
+    },
+    {
+      "name": "10Х18Н9Л",
+      "category": "steel",
+      "standard_id": "GOST_977_88",
+      "group": "Легированные со специальными свойствами",
+      "evidence": "раздел 1.1",
+      "verification_status": "verified_designation_only"
+    },
+    {
+      "name": "12Х18Н9ТЛ",
+      "category": "steel",
+      "standard_id": "GOST_977_88",
+      "group": "Легированные со специальными свойствами",
+      "evidence": "раздел 1.1",
+      "verification_status": "verified_designation_only"
+    },
+    {
+      "name": "110Г13Л",
+      "category": "steel",
+      "standard_id": "GOST_977_88",
+      "group": "Легированные со специальными свойствами",
+      "evidence": "раздел 1.1",
+      "verification_status": "verified_designation_only"
+    },
+    {
+      "name": "110Г13Х2БРЛ",
+      "category": "steel",
+      "standard_id": "GOST_977_88",
+      "group": "Легированные со специальными свойствами",
+      "evidence": "раздел 1.1",
+      "verification_status": "verified_designation_only"
+    },
+    {
+      "name": "110Г13ФТЛ",
+      "category": "steel",
+      "standard_id": "GOST_977_88",
+      "group": "Легированные со специальными свойствами",
+      "evidence": "раздел 1.1",
+      "verification_status": "verified_designation_only"
+    },
+    {
+      "name": "130Г14ХМФАЛ",
+      "category": "steel",
+      "standard_id": "GOST_977_88",
+      "group": "Легированные со специальными свойствами",
+      "evidence": "раздел 1.1",
+      "verification_status": "verified_designation_only"
+    },
+    {
+      "name": "120Г10ФЛ",
+      "category": "steel",
+      "standard_id": "GOST_977_88",
+      "group": "Легированные со специальными свойствами",
+      "evidence": "раздел 1.1",
       "verification_status": "verified_designation_only"
     },
     {
       "name": "СЧ10",
       "category": "cast_iron",
       "standard_id": "GOST_1412_85",
-      "evidence": "grade_list_section_1_1",
+      "group": "Серый чугун",
+      "evidence": "п. 1.1",
       "verification_status": "verified_designation_only"
     },
     {
       "name": "СЧ15",
       "category": "cast_iron",
       "standard_id": "GOST_1412_85",
-      "evidence": "grade_list_section_1_1",
+      "group": "Серый чугун",
+      "evidence": "п. 1.1",
       "verification_status": "verified_designation_only"
     },
     {
       "name": "СЧ20",
       "category": "cast_iron",
       "standard_id": "GOST_1412_85",
-      "evidence": "grade_list_section_1_1",
+      "group": "Серый чугун",
+      "evidence": "п. 1.1",
       "verification_status": "verified_designation_only"
     },
     {
       "name": "СЧ25",
       "category": "cast_iron",
       "standard_id": "GOST_1412_85",
-      "evidence": "grade_list_section_1_1",
+      "group": "Серый чугун",
+      "evidence": "п. 1.1",
       "verification_status": "verified_designation_only"
     },
     {
       "name": "СЧ30",
       "category": "cast_iron",
       "standard_id": "GOST_1412_85",
-      "evidence": "grade_list_section_1_1",
+      "group": "Серый чугун",
+      "evidence": "п. 1.1",
       "verification_status": "verified_designation_only"
     },
     {
       "name": "СЧ35",
       "category": "cast_iron",
       "standard_id": "GOST_1412_85",
-      "evidence": "grade_list_section_1_1",
+      "group": "Серый чугун",
+      "evidence": "п. 1.1",
       "verification_status": "verified_designation_only"
+    },
+    {
+      "name": "СЧ18",
+      "category": "cast_iron",
+      "standard_id": "GOST_1412_85",
+      "group": "Серый чугун (по требованию потребителя)",
+      "evidence": "п. 1.1",
+      "verification_status": "verified_designation_only",
+      "customer_request_only": true
+    },
+    {
+      "name": "СЧ21",
+      "category": "cast_iron",
+      "standard_id": "GOST_1412_85",
+      "group": "Серый чугун (по требованию потребителя)",
+      "evidence": "п. 1.1",
+      "verification_status": "verified_designation_only",
+      "customer_request_only": true
+    },
+    {
+      "name": "СЧ24",
+      "category": "cast_iron",
+      "standard_id": "GOST_1412_85",
+      "group": "Серый чугун (по требованию потребителя)",
+      "evidence": "п. 1.1",
+      "verification_status": "verified_designation_only",
+      "customer_request_only": true
+    },
+    {
+      "name": "ВЧ35",
+      "category": "ductile_iron",
+      "standard_id": "GOST_7293_85",
+      "group": "Высокопрочный чугун с шаровидным графитом",
+      "evidence": "п. 1.1",
+      "verification_status": "verified_designation_only"
+    },
+    {
+      "name": "ВЧ40",
+      "category": "ductile_iron",
+      "standard_id": "GOST_7293_85",
+      "group": "Высокопрочный чугун с шаровидным графитом",
+      "evidence": "п. 1.1",
+      "verification_status": "verified_designation_only"
+    },
+    {
+      "name": "ВЧ45",
+      "category": "ductile_iron",
+      "standard_id": "GOST_7293_85",
+      "group": "Высокопрочный чугун с шаровидным графитом",
+      "evidence": "п. 1.1",
+      "verification_status": "verified_designation_only"
+    },
+    {
+      "name": "ВЧ50",
+      "category": "ductile_iron",
+      "standard_id": "GOST_7293_85",
+      "group": "Высокопрочный чугун с шаровидным графитом",
+      "evidence": "п. 1.1",
+      "verification_status": "verified_designation_only"
+    },
+    {
+      "name": "ВЧ60",
+      "category": "ductile_iron",
+      "standard_id": "GOST_7293_85",
+      "group": "Высокопрочный чугун с шаровидным графитом",
+      "evidence": "п. 1.1",
+      "verification_status": "verified_designation_only"
+    },
+    {
+      "name": "ВЧ70",
+      "category": "ductile_iron",
+      "standard_id": "GOST_7293_85",
+      "group": "Высокопрочный чугун с шаровидным графитом",
+      "evidence": "п. 1.1",
+      "verification_status": "verified_designation_only"
+    },
+    {
+      "name": "ВЧ80",
+      "category": "ductile_iron",
+      "standard_id": "GOST_7293_85",
+      "group": "Высокопрочный чугун с шаровидным графитом",
+      "evidence": "п. 1.1",
+      "verification_status": "verified_designation_only"
+    },
+    {
+      "name": "ВЧ100",
+      "category": "ductile_iron",
+      "standard_id": "GOST_7293_85",
+      "group": "Высокопрочный чугун с шаровидным графитом",
+      "evidence": "п. 1.1",
+      "verification_status": "verified_designation_only"
+    },
+    {
+      "name": "КЧ30-6",
+      "category": "malleable_iron",
+      "standard_id": "GOST_1215_79",
+      "group": "Ковкий чугун, ферритный класс",
+      "evidence": "п. 1.2",
+      "verification_status": "verified_designation_only"
+    },
+    {
+      "name": "КЧ33-8",
+      "category": "malleable_iron",
+      "standard_id": "GOST_1215_79",
+      "group": "Ковкий чугун, ферритный класс",
+      "evidence": "п. 1.2",
+      "verification_status": "verified_designation_only"
+    },
+    {
+      "name": "КЧ35-10",
+      "category": "malleable_iron",
+      "standard_id": "GOST_1215_79",
+      "group": "Ковкий чугун, ферритный класс",
+      "evidence": "п. 1.2",
+      "verification_status": "verified_designation_only"
+    },
+    {
+      "name": "КЧ37-12",
+      "category": "malleable_iron",
+      "standard_id": "GOST_1215_79",
+      "group": "Ковкий чугун, ферритный класс",
+      "evidence": "п. 1.2",
+      "verification_status": "verified_designation_only"
+    },
+    {
+      "name": "КЧ45-7",
+      "category": "malleable_iron",
+      "standard_id": "GOST_1215_79",
+      "group": "Ковкий чугун, перлитный класс",
+      "evidence": "п. 1.2",
+      "verification_status": "verified_designation_only"
+    },
+    {
+      "name": "КЧ50-5",
+      "category": "malleable_iron",
+      "standard_id": "GOST_1215_79",
+      "group": "Ковкий чугун, перлитный класс",
+      "evidence": "п. 1.2",
+      "verification_status": "verified_designation_only"
+    },
+    {
+      "name": "КЧ55-4",
+      "category": "malleable_iron",
+      "standard_id": "GOST_1215_79",
+      "group": "Ковкий чугун, перлитный класс",
+      "evidence": "п. 1.2",
+      "verification_status": "verified_designation_only"
+    },
+    {
+      "name": "КЧ60-3",
+      "category": "malleable_iron",
+      "standard_id": "GOST_1215_79",
+      "group": "Ковкий чугун, перлитный класс",
+      "evidence": "п. 1.2",
+      "verification_status": "verified_designation_only"
+    },
+    {
+      "name": "КЧ65-3",
+      "category": "malleable_iron",
+      "standard_id": "GOST_1215_79",
+      "group": "Ковкий чугун, перлитный класс",
+      "evidence": "п. 1.2",
+      "verification_status": "verified_designation_only"
+    },
+    {
+      "name": "КЧ70-2",
+      "category": "malleable_iron",
+      "standard_id": "GOST_1215_79",
+      "group": "Ковкий чугун, перлитный класс",
+      "evidence": "п. 1.2",
+      "verification_status": "verified_designation_only"
+    },
+    {
+      "name": "КЧ80-1,5",
+      "category": "malleable_iron",
+      "standard_id": "GOST_1215_79",
+      "group": "Ковкий чугун, перлитный класс",
+      "evidence": "п. 1.2",
+      "verification_status": "verified_designation_only"
+    },
+    {
+      "name": "АК12",
+      "category": "aluminum",
+      "standard_id": "GOST_1583_93",
+      "group": "Система Al–Si–Mg",
+      "evidence": "п. 3.1, таблица 1",
+      "verification_status": "verified_designation_only",
+      "aliases": [
+        "АЛ2"
+      ]
+    },
+    {
+      "name": "АК13",
+      "category": "aluminum",
+      "standard_id": "GOST_1583_93",
+      "group": "Система Al–Si–Mg",
+      "evidence": "п. 3.1, таблица 1",
+      "verification_status": "verified_designation_only"
+    },
+    {
+      "name": "АК9",
+      "category": "aluminum",
+      "standard_id": "GOST_1583_93",
+      "group": "Система Al–Si–Mg",
+      "evidence": "п. 3.1, таблица 1",
+      "verification_status": "verified_designation_only"
+    },
+    {
+      "name": "АК9с",
+      "category": "aluminum",
+      "standard_id": "GOST_1583_93",
+      "group": "Система Al–Si–Mg",
+      "evidence": "п. 3.1, таблица 1",
+      "verification_status": "verified_designation_only"
+    },
+    {
+      "name": "АК9ч",
+      "category": "aluminum",
+      "standard_id": "GOST_1583_93",
+      "group": "Система Al–Si–Mg",
+      "evidence": "п. 3.1, таблица 1",
+      "verification_status": "verified_designation_only",
+      "aliases": [
+        "АЛ4"
+      ]
+    },
+    {
+      "name": "АК9пч",
+      "category": "aluminum",
+      "standard_id": "GOST_1583_93",
+      "group": "Система Al–Si–Mg",
+      "evidence": "п. 3.1, таблица 1",
+      "verification_status": "verified_designation_only",
+      "aliases": [
+        "АЛ4-1"
+      ]
+    },
+    {
+      "name": "АК8л",
+      "category": "aluminum",
+      "standard_id": "GOST_1583_93",
+      "group": "Система Al–Si–Mg",
+      "evidence": "п. 3.1, таблица 1",
+      "verification_status": "verified_designation_only",
+      "aliases": [
+        "АЛ34"
+      ]
+    },
+    {
+      "name": "АК7",
+      "category": "aluminum",
+      "standard_id": "GOST_1583_93",
+      "group": "Система Al–Si–Mg",
+      "evidence": "п. 3.1, таблица 1",
+      "verification_status": "verified_designation_only"
+    },
+    {
+      "name": "АК7ч",
+      "category": "aluminum",
+      "standard_id": "GOST_1583_93",
+      "group": "Система Al–Si–Mg",
+      "evidence": "п. 3.1, таблица 1",
+      "verification_status": "verified_designation_only",
+      "aliases": [
+        "АЛ9"
+      ]
+    },
+    {
+      "name": "АК7пч",
+      "category": "aluminum",
+      "standard_id": "GOST_1583_93",
+      "group": "Система Al–Si–Mg",
+      "evidence": "п. 3.1, таблица 1",
+      "verification_status": "verified_designation_only",
+      "aliases": [
+        "АЛ9-1"
+      ],
+      "note": "Для прежнего обозначения АЛ9-1 учтена поправка к таблице 1 (ИУС 7-2004)."
+    },
+    {
+      "name": "АК10Су",
+      "category": "aluminum",
+      "standard_id": "GOST_1583_93",
+      "group": "Система Al–Si–Mg",
+      "evidence": "п. 3.1, таблица 1",
+      "verification_status": "verified_designation_only"
+    },
+    {
+      "name": "АК5М",
+      "category": "aluminum",
+      "standard_id": "GOST_1583_93",
+      "group": "Система Al–Si–Cu",
+      "evidence": "п. 3.1, таблица 1",
+      "verification_status": "verified_designation_only",
+      "aliases": [
+        "АЛ5"
+      ]
+    },
+    {
+      "name": "АК5Мч",
+      "category": "aluminum",
+      "standard_id": "GOST_1583_93",
+      "group": "Система Al–Si–Cu",
+      "evidence": "п. 3.1, таблица 1",
+      "verification_status": "verified_designation_only",
+      "aliases": [
+        "АЛ5-1"
+      ]
+    },
+    {
+      "name": "АК5М2",
+      "category": "aluminum",
+      "standard_id": "GOST_1583_93",
+      "group": "Система Al–Si–Cu",
+      "evidence": "п. 3.1, таблица 1",
+      "verification_status": "verified_designation_only"
+    },
+    {
+      "name": "АК5М7",
+      "category": "aluminum",
+      "standard_id": "GOST_1583_93",
+      "group": "Система Al–Si–Cu",
+      "evidence": "п. 3.1, таблица 1",
+      "verification_status": "verified_designation_only"
+    },
+    {
+      "name": "АК6М2",
+      "category": "aluminum",
+      "standard_id": "GOST_1583_93",
+      "group": "Система Al–Si–Cu",
+      "evidence": "п. 3.1, таблица 1",
+      "verification_status": "verified_designation_only"
+    },
+    {
+      "name": "АК8М",
+      "category": "aluminum",
+      "standard_id": "GOST_1583_93",
+      "group": "Система Al–Si–Cu",
+      "evidence": "п. 3.1, таблица 1",
+      "verification_status": "verified_designation_only",
+      "aliases": [
+        "АЛ32"
+      ]
     }
   ],
-  "notes": "Only listed grade designations and standard scope verified. Density, melting/pouring temperatures, shrinkage, and burnout values in operating alloys.json are not verified by this dataset. No standard is asserted for grades absent from reference list."
+  "notes": "Only designation of a standard grade (and documented legacy alias) is confirmed. No casting density, pouring/melting temperatures, shrinkage, burnout, engineering compatibility, or operating equipment parameters are inferred. Legacy operating alloys.json is separate and not silently overwritten."
 }
