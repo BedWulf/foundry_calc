@@ -38,7 +38,9 @@ def test_unalloyed_steel_ranges_follow_table_one_not_middle_values():
         assert record["properties"]["manganese_mass_pct"]["max"] == .90
         assert record["properties"]["silicon_mass_pct"]["min"] == .20
         assert record["properties"]["silicon_mass_pct"]["max"] == .52
-    assert get_ferrous_grade_properties("steel", "20ГЛ", DATA) is None
+    # Newly verified alloyed steel now exists; unverified variants remain absent.
+    assert get_ferrous_grade_properties("steel", "20ГЛ", DATA) is not None
+    assert get_ferrous_grade_properties("steel", "12Х7Г3СЛ", DATA) is None
 
 
 def test_gray_ductile_and_malleable_mechanical_properties_are_minimums():
