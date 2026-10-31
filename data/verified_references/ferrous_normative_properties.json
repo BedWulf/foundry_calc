@@ -748,6 +748,16 @@
             "standard_id": "GOST_1215_79",
             "location": "табл. 1, механические свойства"
           }
+        },
+        "brinell_hardness_hb": {
+          "min": 100,
+          "max": 163,
+          "unit": "HB",
+          "kind": "normative_range",
+          "source": {
+            "standard_id": "GOST_1215_79",
+            "location": "п. 3.2, таблица 1, строка КЧ30-6, твердость по Бринеллю"
+          }
         }
       },
       "scope": "Механические свойства по табл. 1 с требованиями испытаний стандарта.",
@@ -774,6 +784,16 @@
           "source": {
             "standard_id": "GOST_1215_79",
             "location": "табл. 1, механические свойства"
+          }
+        },
+        "brinell_hardness_hb": {
+          "min": 100,
+          "max": 163,
+          "unit": "HB",
+          "kind": "normative_range",
+          "source": {
+            "standard_id": "GOST_1215_79",
+            "location": "п. 3.2, таблица 1, строка КЧ33-8, твердость по Бринеллю"
           }
         }
       },
@@ -802,6 +822,16 @@
             "standard_id": "GOST_1215_79",
             "location": "табл. 1, механические свойства"
           }
+        },
+        "brinell_hardness_hb": {
+          "min": 100,
+          "max": 163,
+          "unit": "HB",
+          "kind": "normative_range",
+          "source": {
+            "standard_id": "GOST_1215_79",
+            "location": "п. 3.2, таблица 1, строка КЧ35-10, твердость по Бринеллю"
+          }
         }
       },
       "scope": "Механические свойства по табл. 1 с требованиями испытаний стандарта.",
@@ -828,6 +858,16 @@
           "source": {
             "standard_id": "GOST_1215_79",
             "location": "табл. 1, механические свойства"
+          }
+        },
+        "brinell_hardness_hb": {
+          "min": 110,
+          "max": 163,
+          "unit": "HB",
+          "kind": "normative_range",
+          "source": {
+            "standard_id": "GOST_1215_79",
+            "location": "п. 3.2, таблица 1, строка КЧ37-12, твердость по Бринеллю"
           }
         }
       },
@@ -856,6 +896,16 @@
             "standard_id": "GOST_1215_79",
             "location": "табл. 1, механические свойства"
           }
+        },
+        "brinell_hardness_hb": {
+          "min": 150,
+          "max": 207,
+          "unit": "HB",
+          "kind": "normative_range",
+          "source": {
+            "standard_id": "GOST_1215_79",
+            "location": "п. 3.2, таблица 1, строка КЧ45-7, твердость по Бринеллю"
+          }
         }
       },
       "scope": "Для относительного удлинения по соглашению изготовителя и потребителя допускается снижение на 1 процентный пункт. Механические свойства по табл. 1 с требованиями испытаний стандарта.",
@@ -882,6 +932,16 @@
           "source": {
             "standard_id": "GOST_1215_79",
             "location": "табл. 1, механические свойства"
+          }
+        },
+        "brinell_hardness_hb": {
+          "min": 170,
+          "max": 230,
+          "unit": "HB",
+          "kind": "normative_range",
+          "source": {
+            "standard_id": "GOST_1215_79",
+            "location": "п. 3.2, таблица 1, строка КЧ50-5, твердость по Бринеллю"
           }
         }
       },
@@ -910,6 +970,16 @@
             "standard_id": "GOST_1215_79",
             "location": "табл. 1, механические свойства"
           }
+        },
+        "brinell_hardness_hb": {
+          "min": 192,
+          "max": 241,
+          "unit": "HB",
+          "kind": "normative_range",
+          "source": {
+            "standard_id": "GOST_1215_79",
+            "location": "п. 3.2, таблица 1, строка КЧ55-4, твердость по Бринеллю"
+          }
         }
       },
       "scope": "Для относительного удлинения по соглашению изготовителя и потребителя допускается снижение на 1 процентный пункт. Механические свойства по табл. 1 с требованиями испытаний стандарта.",
@@ -936,6 +1006,16 @@
           "source": {
             "standard_id": "GOST_1215_79",
             "location": "табл. 1, механические свойства"
+          }
+        },
+        "brinell_hardness_hb": {
+          "min": 200,
+          "max": 269,
+          "unit": "HB",
+          "kind": "normative_range",
+          "source": {
+            "standard_id": "GOST_1215_79",
+            "location": "п. 3.2, таблица 1, строка КЧ60-3, твердость по Бринеллю"
           }
         }
       },
@@ -964,6 +1044,16 @@
             "standard_id": "GOST_1215_79",
             "location": "табл. 1, механические свойства"
           }
+        },
+        "brinell_hardness_hb": {
+          "min": 212,
+          "max": 269,
+          "unit": "HB",
+          "kind": "normative_range",
+          "source": {
+            "standard_id": "GOST_1215_79",
+            "location": "п. 3.2, таблица 1, строка КЧ65-3, твердость по Бринеллю"
+          }
         }
       },
       "scope": "Механические свойства по табл. 1 с требованиями испытаний стандарта.",
@@ -991,6 +1081,16 @@
             "standard_id": "GOST_1215_79",
             "location": "табл. 1, механические свойства"
           }
+        },
+        "brinell_hardness_hb": {
+          "min": 241,
+          "max": 285,
+          "unit": "HB",
+          "kind": "normative_range",
+          "source": {
+            "standard_id": "GOST_1215_79",
+            "location": "п. 3.2, таблица 1, строка КЧ70-2, твердость по Бринеллю"
+          }
         }
       },
       "scope": "Механические свойства по табл. 1 с требованиями испытаний стандарта.",
@@ -1017,6 +1117,16 @@
           "source": {
             "standard_id": "GOST_1215_79",
             "location": "табл. 1, механические свойства"
+          }
+        },
+        "brinell_hardness_hb": {
+          "min": 270,
+          "max": 320,
+          "unit": "HB",
+          "kind": "normative_range",
+          "source": {
+            "standard_id": "GOST_1215_79",
+            "location": "п. 3.2, таблица 1, строка КЧ80-1,5, твердость по Бринеллю"
           }
         }
       },
@@ -1262,6 +1372,7 @@
     "casting_wall_mechanical_properties"
   ],
   "review_notes": [
-    "4 alloyed steel grades 20ГЛ/35ГЛ/20ГСЛ/30ГСЛ checked against GOST 977-88 section 1.3, table 1, including P/S upper limits; secondary transcriptions cross-checked: https://standartgost.ru/g/ГОСТ_977-88 and https://allgosts.ru/77/140/gost_977-88."
+    "4 alloyed steel grades 20ГЛ/35ГЛ/20ГСЛ/30ГСЛ checked against GOST 977-88 section 1.3, table 1, including P/S upper limits; secondary transcriptions cross-checked: https://standartgost.ru/g/ГОСТ_977-88 and https://allgosts.ru/77/140/gost_977-88.",
+    "KCH grade Brinell hardness bounds sourced from GOST 1215-79 paragraph 3.2/table 1; values are hardness range in HB, not tensile strength or estimated hardness."
   ]
 }
