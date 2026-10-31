@@ -18,6 +18,7 @@ PROPERTY_LABELS = {
     "tensile_strength_min_mpa": "Предел прочности σв",
     "proof_strength_min_mpa": "Условный предел текучести",
     "elongation_min_pct": "Относительное удлинение δ",
+    "brinell_hardness_hb": "Твёрдость по Бринеллю",
 }
 PROPERTY_UNITS = {
     "carbon_mass_pct": "mass_%",
@@ -28,6 +29,7 @@ PROPERTY_UNITS = {
     "tensile_strength_min_mpa": "MPa",
     "proof_strength_min_mpa": "MPa",
     "elongation_min_pct": "%",
+    "brinell_hardness_hb": "HB",
 }
 PROCESS_PARAMETERS = frozenset((
     "density_kg_m3", "pouring_temp_C", "melting_temp_C",
