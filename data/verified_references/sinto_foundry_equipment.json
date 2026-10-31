@@ -1,0 +1,214 @@
+{
+  "schema_version": "1.0",
+  "description": "Официальные характеристики конкретных моделей Sinto. Не доказывают применимость к выбранной отливке без параметров процесса и ограничений изготовителя.",
+  "usage_policy": "reference_only_no_automatic_selection",
+  "sources": {
+    "hsp": {
+      "manufacturer": "Sinto America",
+      "source_type": "manufacturer_product_specifications",
+      "document_title": "HSP Series — HSP and HSP-D Specifications",
+      "url": "https://sintoamerica.com/product/hsp-series/",
+      "verified_on": "2026-10-31"
+    },
+    "cb": {
+      "manufacturer": "Sinto America",
+      "source_type": "manufacturer_product_specifications",
+      "document_title": "CB Cold Box Core Machine — Specifications",
+      "url": "https://sintoamerica.com/product/cb-cold-box-core-machine/",
+      "verified_on": "2026-10-31"
+    }
+  },
+  "molding_lines": [
+    {
+      "id": "SINTO-HSP-1",
+      "model": "HSP-1",
+      "source_id": "hsp",
+      "specs": {
+        "mold_width_mm": 650,
+        "mold_length_mm": 500,
+        "mold_height_min_mm": 150,
+        "mold_height_max_mm": 250,
+        "published_molding_rate_molds_h": 35
+      },
+      "conditions": {
+        "molding_system": "Air Flow + Squeeze",
+        "rate_scope": "as published by manufacturer; core setting, actual operating availability and metal capacity not specified"
+      },
+      "verification_status": "manufacturer_catalog_verified",
+      "eligible_for_final_design": false
+    },
+    {
+      "id": "SINTO-HSP-2",
+      "model": "HSP-2",
+      "source_id": "hsp",
+      "specs": {
+        "mold_width_mm": 800,
+        "mold_length_mm": 650,
+        "mold_height_min_mm": 150,
+        "mold_height_max_mm": 350,
+        "published_molding_rate_molds_h": 25
+      },
+      "conditions": {
+        "molding_system": "Air Flow + Squeeze",
+        "rate_scope": "as published by manufacturer; core setting, actual operating availability and metal capacity not specified"
+      },
+      "verification_status": "manufacturer_catalog_verified",
+      "eligible_for_final_design": false
+    },
+    {
+      "id": "SINTO-HSP-3",
+      "model": "HSP-3",
+      "source_id": "hsp",
+      "specs": {
+        "mold_width_mm": 1000,
+        "mold_length_mm": 800,
+        "mold_height_min_mm": 150,
+        "mold_height_max_mm": 400,
+        "published_molding_rate_molds_h": 18
+      },
+      "conditions": {
+        "molding_system": "Air Flow + Squeeze",
+        "rate_scope": "as published by manufacturer; core setting, actual operating availability and metal capacity not specified"
+      },
+      "verification_status": "manufacturer_catalog_verified",
+      "eligible_for_final_design": false
+    },
+    {
+      "id": "SINTO-HSP-1D",
+      "model": "HSP-1D",
+      "source_id": "hsp",
+      "specs": {
+        "mold_width_mm": 650,
+        "mold_length_mm": 500,
+        "mold_height_min_mm": 150,
+        "mold_height_max_mm": 300,
+        "published_molding_rate_molds_h": 70
+      },
+      "conditions": {
+        "molding_system": "Air Flow + Squeeze",
+        "rate_scope": "as published by manufacturer; core setting, actual operating availability and metal capacity not specified"
+      },
+      "verification_status": "manufacturer_catalog_verified",
+      "eligible_for_final_design": false
+    },
+    {
+      "id": "SINTO-HSP-2D",
+      "model": "HSP-2D",
+      "source_id": "hsp",
+      "specs": {
+        "mold_width_mm": 800,
+        "mold_length_mm": 650,
+        "mold_height_min_mm": 150,
+        "mold_height_max_mm": 350,
+        "published_molding_rate_molds_h": 60
+      },
+      "conditions": {
+        "molding_system": "Air Flow + Squeeze",
+        "rate_scope": "as published by manufacturer; core setting, actual operating availability and metal capacity not specified"
+      },
+      "verification_status": "manufacturer_catalog_verified",
+      "eligible_for_final_design": false
+    },
+    {
+      "id": "SINTO-HSP-3D",
+      "model": "HSP-3D",
+      "source_id": "hsp",
+      "specs": {
+        "mold_width_mm": 1000,
+        "mold_length_mm": 800,
+        "mold_height_min_mm": 150,
+        "mold_height_max_mm": 400,
+        "published_molding_rate_molds_h": 50
+      },
+      "conditions": {
+        "molding_system": "Air Flow + Squeeze",
+        "rate_scope": "as published by manufacturer; core setting, actual operating availability and metal capacity not specified"
+      },
+      "verification_status": "manufacturer_catalog_verified",
+      "eligible_for_final_design": false
+    },
+    {
+      "id": "SINTO-HSP-4D",
+      "model": "HSP-4D",
+      "source_id": "hsp",
+      "specs": {
+        "mold_width_mm": 1250,
+        "mold_length_mm": 1000,
+        "mold_height_min_mm": 140,
+        "mold_height_max_mm": 450,
+        "published_molding_rate_molds_h": 40
+      },
+      "conditions": {
+        "molding_system": "Air Flow + Squeeze",
+        "rate_scope": "as published by manufacturer; core setting, actual operating availability and metal capacity not specified"
+      },
+      "verification_status": "manufacturer_catalog_verified",
+      "eligible_for_final_design": false
+    }
+  ],
+  "core_machines": [
+    {
+      "id": "SINTO-CB10",
+      "model": "CB10",
+      "source_id": "cb",
+      "specs": {
+        "max_core_box_dimensions_mm": [
+          420,
+          590,
+          480
+        ],
+        "single_shot_core_weight_kg": 16,
+        "double_shot_core_weight_kg": 31,
+        "dry_cycle_time_s": 13
+      },
+      "conditions": {
+        "process": "cold_box",
+        "rate_scope": "dry cycle excludes gassing and other stages; NOT finished cores per hour"
+      },
+      "verification_status": "manufacturer_catalog_verified",
+      "eligible_for_final_design": false
+    },
+    {
+      "id": "SINTO-CB30",
+      "model": "CB30",
+      "source_id": "cb",
+      "specs": {
+        "max_core_box_dimensions_mm": [
+          680,
+          795,
+          610
+        ],
+        "single_shot_core_weight_kg": 48,
+        "double_shot_core_weight_kg": 90,
+        "dry_cycle_time_s": 21
+      },
+      "conditions": {
+        "process": "cold_box",
+        "rate_scope": "dry cycle excludes gassing and other stages; NOT finished cores per hour"
+      },
+      "verification_status": "manufacturer_catalog_verified",
+      "eligible_for_final_design": false
+    },
+    {
+      "id": "SINTO-CB60",
+      "model": "CB60",
+      "source_id": "cb",
+      "specs": {
+        "max_core_box_dimensions_mm": [
+          1000,
+          1195,
+          820
+        ],
+        "single_shot_core_weight_kg": 96,
+        "double_shot_core_weight_kg": 170,
+        "dry_cycle_time_s": 26
+      },
+      "conditions": {
+        "process": "cold_box",
+        "rate_scope": "dry cycle excludes gassing and other stages; NOT finished cores per hour"
+      },
+      "verification_status": "manufacturer_catalog_verified",
+      "eligible_for_final_design": false
+    }
+  ]
+}
