@@ -82,6 +82,9 @@ def test_project_material_tab_warns_about_unverified_process_values():
         tab._update_alloy_info("steel_20L")
         assert "не подтверждены" in tab.lbl_alloy_info.text()
         assert "ГОСТ: 96 марок" in tab.btn_official_materials.text()
+        assert "C: 0.17–0.25 %" in tab.lbl_alloy_info.text()
+        tab._update_alloy_info("cast_iron_SCh20")
+        assert "Предел прочности σв: не менее 200 MPa" in tab.lbl_alloy_info.text()
     finally:
         tab.close()
 
