@@ -1,0 +1,103 @@
+{
+  "schema_version": "1.0",
+  "usage_policy": "reference_only_do_not_override_process_properties",
+  "sources": [
+    {
+      "id": "GOST_977_88",
+      "designation": "ГОСТ 977-88",
+      "title": "Отливки стальные. Общие технические условия",
+      "url": "https://protect.gost.ru/gost/details/87232bf6-4cd5-494b-bcf5-deb7ac30d55f",
+      "status": "active_according_to_rosstandart",
+      "evidence_scope": "scope_and_grade_designations"
+    },
+    {
+      "id": "GOST_1412_85",
+      "designation": "ГОСТ 1412-85",
+      "title": "Чугун с пластинчатым графитом для отливок. Марки",
+      "url": "https://protect.gost.ru/gost/details/cb7d4cf2-4a02-416e-a751-60e5bd998e03",
+      "status": "active_according_to_rosstandart",
+      "evidence_scope": "scope_and_grade_designations"
+    },
+    {
+      "id": "GOST_1583_93",
+      "designation": "ГОСТ 1583-93",
+      "title": "Сплавы алюминиевые литейные. Технические условия",
+      "url": "https://protect.gost.ru/gost/details/404ae642-6b30-451b-b215-22860d4e2b38",
+      "status": "active_according_to_rosstandart",
+      "evidence_scope": "scope_only"
+    }
+  ],
+  "grades": [
+    {
+      "name": "20Л",
+      "category": "steel",
+      "standard_id": "GOST_977_88",
+      "evidence": "grade_list_section_1_1",
+      "verification_status": "verified_designation_only"
+    },
+    {
+      "name": "25Л",
+      "category": "steel",
+      "standard_id": "GOST_977_88",
+      "evidence": "grade_list_section_1_1",
+      "verification_status": "verified_designation_only"
+    },
+    {
+      "name": "35Л",
+      "category": "steel",
+      "standard_id": "GOST_977_88",
+      "evidence": "grade_list_section_1_1",
+      "verification_status": "verified_designation_only"
+    },
+    {
+      "name": "45Л",
+      "category": "steel",
+      "standard_id": "GOST_977_88",
+      "evidence": "grade_list_section_1_1",
+      "verification_status": "verified_designation_only"
+    },
+    {
+      "name": "СЧ10",
+      "category": "cast_iron",
+      "standard_id": "GOST_1412_85",
+      "evidence": "grade_list_section_1_1",
+      "verification_status": "verified_designation_only"
+    },
+    {
+      "name": "СЧ15",
+      "category": "cast_iron",
+      "standard_id": "GOST_1412_85",
+      "evidence": "grade_list_section_1_1",
+      "verification_status": "verified_designation_only"
+    },
+    {
+      "name": "СЧ20",
+      "category": "cast_iron",
+      "standard_id": "GOST_1412_85",
+      "evidence": "grade_list_section_1_1",
+      "verification_status": "verified_designation_only"
+    },
+    {
+      "name": "СЧ25",
+      "category": "cast_iron",
+      "standard_id": "GOST_1412_85",
+      "evidence": "grade_list_section_1_1",
+      "verification_status": "verified_designation_only"
+    },
+    {
+      "name": "СЧ30",
+      "category": "cast_iron",
+      "standard_id": "GOST_1412_85",
+      "evidence": "grade_list_section_1_1",
+      "verification_status": "verified_designation_only"
+    },
+    {
+      "name": "СЧ35",
+      "category": "cast_iron",
+      "standard_id": "GOST_1412_85",
+      "evidence": "grade_list_section_1_1",
+      "verification_status": "verified_designation_only"
+    }
+  ],
+  "notes": "Only listed grade designations and standard scope verified. Density, melting/pouring temperatures, shrinkage, and burnout values in operating alloys.json are not verified by this dataset. No standard is asserted for grades absent from reference list."
+}
