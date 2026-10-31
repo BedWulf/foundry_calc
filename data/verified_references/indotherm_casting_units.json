@@ -1,0 +1,52 @@
+{
+  "schema_version": "1.0",
+  "description": "Manufacturer-published reference specifications; not automatically selectable until engineering fit is checked.",
+  "source": {
+    "organization": "Indotherm",
+    "url": "https://www.indotherm.net/urls/product.html",
+    "document_title": "TECHNICAL SPECIFICATIONS FOR INDUCTION FURNACES (CASTING UNITS)",
+    "source_type": "manufacturer_catalog",
+    "accessed_at": "2026-10-31"
+  },
+  "conditions": {
+    "material": "steel scrap",
+    "temperature_c": 1675,
+    "stated_yield_pct": 100,
+    "note": "Manufacturer's catalogue test/reference conditions; not validated operating yield for a real foundry."
+  },
+  "entries": [
+    {
+      "id": "INDOTHERM-CU-1000-500",
+      "name": "Indotherm casting unit 1000 kg / 500 kW",
+      "equipment_type": "induction_furnace",
+      "capacity_kg": 1000,
+      "power_kw": 500,
+      "published_melting_rate_kg_h": 875,
+      "frequency_hz": 1000,
+      "source_fields": [
+        "Furnace Capacity (Kgs)",
+        "MF Power (KW)",
+        "Steel Melting Rate @ 1675 deg cent for steel scrap 100% yield (Kgs/Hr)"
+      ],
+      "verification_status": "manufacturer_catalog_verified",
+      "operating_validation_status": "not_validated"
+    },
+    {
+      "id": "INDOTHERM-CU-2000-1000",
+      "name": "Indotherm casting unit 2000 kg / 1000 kW",
+      "equipment_type": "induction_furnace",
+      "capacity_kg": 2000,
+      "power_kw": 1000,
+      "published_melting_rate_kg_h": 1850,
+      "frequency_hz": 500,
+      "source_fields": [
+        "Furnace Capacity (Kgs)",
+        "MF Power (KW)",
+        "Steel Melting Rate @ 1675 deg cent for steel scrap 100% yield (Kgs/Hr)"
+      ],
+      "verification_status": "manufacturer_catalog_verified",
+      "operating_validation_status": "not_validated"
+    }
+  ],
+  "usage_policy": "reference_only_no_automatic_selection"
+}
