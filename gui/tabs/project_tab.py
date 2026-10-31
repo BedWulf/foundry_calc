@@ -14,6 +14,7 @@ from core.casting_audit import audit_castings, audit_casting_technology
 from core.casting_item import CastingItem
 from import_export.excel_importer import ExcelImporter
 from data.loader import DataLoader
+from core.ferrous_normative_catalog import get_ferrous_grade_properties, property_description
 from gui.dialogs.material_dialog import AddMaterialDialog
 from gui.dialogs.castings_browser import CastingsBrowserDialog
 from gui.dialogs.official_catalog_dialog import OfficialCatalogDialog
@@ -297,6 +298,18 @@ class ProjectTab(QWidget):
             "марки первоисточником. Не считать их нормами ГОСТ. "
             "Проверенные обозначения марок: «ГОСТ: 96 марок и источники»."
         )
+        # Published GOST norms are separate from the old physical/process
+        # assumptions above. Only use exact grade + material category.
+        norm = get_ferrous_grade_properties(alloy.get("category", ""),
+                                            alloy["name"])
+        if norm is not None:
+            properties = "; ".join(
+                property_description(field, value)
+                for field, value in norm["properties"].items()
+            )
+            info += ("\nНормативные показатели марки: " + properties +
+                     ". Источник и условия: «ГОСТ: 96 марок и источники» → "
+                     "«Нормы чёрных сплавов».")
         self.lbl_alloy_info.setText(info)
 
     # ─────────────────────────────────────────────────────────────────
