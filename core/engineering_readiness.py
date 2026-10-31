@@ -8,6 +8,7 @@ are validated. This module does not invent missing values.
 from __future__ import annotations
 
 from collections.abc import Mapping
+import json
 from pathlib import Path
 from typing import Any
 
@@ -29,13 +30,22 @@ REQUIRED_FURNACE_FIELDS = {
 FERROUS = frozenset({"steel", "cast_iron", "ductile_iron", "malleable_iron"})
 
 
-def _source_complete(source: object, *, grade: str, field: str) -> bool:
+def _source_complete(source: object, *, grade: str, field: str,
+                     approved: Mapping | None = None, value: Any = None) -> bool:
     """Only accept explicit source evidence for this exact property and grade.
 
     A link/description alone is insufficient: actual conditions must be
     documented. Structural validation does not authenticate the document.
     """
-    if not isinstance(source, Mapping):
+    if not isinstance(source, Mapping) or not isinstance(approved, Mapping):
+        return False
+    # The working alloy JSON cannot grant approval to itself. The same
+    # evidence and numerical value must be reviewed in a separate shipped
+    # manifest; its records are maintained by the developer, not users.
+    if (approved.get("review_status") != "approved" or
+            not approved.get("reviewer") or not approved.get("review_date") or
+            approved.get("value") != value or
+            approved.get("source") != dict(source)):
         return False
     return (
         source.get("verification_status") == "verified"
@@ -69,10 +79,33 @@ def audit_calculation_sources(project: Any, melting_summary: Mapping | None = No
         return ["Выбранная марка вне текущей проверенной базы сталей и чугунов; "
                 "технологические характеристики не сертифицированы"]
     evidence = alloy.get("field_provenance") or {}
+    if not isinstance(evidence, Mapping):
+        evidence = {}
+    try:
+        registry_path = (Path(data_dir) if data_dir is not None else DATA_DIR)
+        registry_path = registry_path / "verified_references" / "approved_operational_material_properties.json"
+        registry = json.loads(registry_path.read_text(encoding="utf-8"))
+        records = registry["approved_records"]
+        if (registry["usage_policy"] != "fail_closed_no_approvals_until_documented"
+                or not isinstance(records, list)):
+            raise ValueError("недопустимая политика допуска")
+        approvals: dict[tuple[str, str], Mapping] = {}
+        for entry in records:
+            if not isinstance(entry, Mapping):
+                raise ValueError("некорректная карточка допуска")
+            key = (entry.get("alloy_id"), entry.get("field"))
+            if key in approvals:
+                raise ValueError(f"повторный допуск: {key!r}")
+            approvals[key] = entry
+    except (OSError, ValueError, KeyError, TypeError) as exc:
+        return [f"Реестр допуска физических свойств недоступен или повреждён: {exc}"]
     for field in REQUIRED_MATERIAL_FIELDS:
         if field not in alloy:
             errors.append(f"{grade}: отсутствует технологическое поле {field}")
-        elif not _source_complete(evidence.get(field), grade=grade, field=field):
+        elif not _source_complete(
+            evidence.get(field), grade=grade, field=field,
+            approved=approvals.get((selected, field)), value=alloy[field]
+        ):
             errors.append(f"{grade}: нет подтверждённого источника и условий для {field}")
     melting = melting_summary or {}
     if melting:
