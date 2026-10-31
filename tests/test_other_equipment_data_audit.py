@@ -39,3 +39,24 @@ def test_boolean_and_nan_values_are_invalid():
     }}]}
     issues = audit_equipment_catalog(data, "furnaces")
     assert sum(x["code"] == "INVALID_SPEC" for x in issues) == 2
+
+
+def test_continuous_cupola_is_not_checked_with_batch_cycle_ceiling():
+    """A cupola throughput must not be bounded by batch crucible logic."""
+    data = {"furnaces": [{
+        "id": "continuous", "type": "cupola_water_cooled",
+        "specs": {"capacity_t": 1.5, "productivity_t_h": 4.0,
+                  "melt_time_h": 0.5, "power_kw": 0},
+    }]}
+    issues = audit_equipment_catalog(data, "furnaces")
+    assert "RATE_EXCEEDS_SIMPLE_CYCLE" not in {i["code"] for i in issues}
+
+
+def test_batch_furnace_inconsistent_cycle_still_warns():
+    data = {"furnaces": [{
+        "id": "batch", "type": "induction_crucible",
+        "specs": {"capacity_t": 1.0, "productivity_t_h": 1.0,
+                  "melt_time_h": 2.0, "power_kw": 500},
+    }]}
+    issues = audit_equipment_catalog(data, "furnaces")
+    assert "RATE_EXCEEDS_SIMPLE_CYCLE" in {i["code"] for i in issues}
