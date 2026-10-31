@@ -99,11 +99,19 @@ def list_official_references(data_dir: Path | None = None) -> dict[str, list[dic
         if item.get("verification_status") != "verified_designation_only":
             continue
         src = sources[item["standard_id"]]
+        aliases = item.get("aliases", [])
+        title = item["name"] + (f" ({', '.join(aliases)})" if aliases else "")
+        qualification = ("По требованию потребителя. "
+                         if item.get("customer_request_only") else "")
         out["Марки материалов"].append({
-            "name": item["name"],
-            "specs": src["designation"],
-            "conditions": "Подтверждено только обозначение марки. Плотность, усадка и температуры НЕ подтверждены.",
-            "source": src["title"], "url": src["url"],
+            "name": title,
+            "specs": f"{src['designation']}; {item['group']}",
+            "conditions": (qualification +
+                           "Подтверждено только обозначение марки. "
+                           "Плотность, усадка и температуры НЕ подтверждены."),
+            "source": f"{src['title']}, {item['evidence']}",
+            "url": src["url"],
+            "text_url": src["text_url"],
             "status": "Нормативное обозначение, не технологические параметры",
         })
     return out
