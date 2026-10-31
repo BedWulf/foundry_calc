@@ -1022,6 +1022,234 @@
       },
       "scope": "Механические свойства по табл. 1 с требованиями испытаний стандарта.",
       "eligible_for_process_calculations": false
+    },
+    {
+      "name": "20ГЛ",
+      "category": "steel",
+      "standard_id": "GOST_977_88",
+      "properties": {
+        "carbon_mass_pct": {
+          "min": 0.15,
+          "max": 0.25,
+          "unit": "mass_%",
+          "kind": "normative_range",
+          "source": {
+            "standard_id": "GOST_977_88",
+            "location": "п. 1.3, таблица 1, строка 20ГЛ (стали конструкционные легированные)"
+          }
+        },
+        "manganese_mass_pct": {
+          "min": 1.2,
+          "max": 1.6,
+          "unit": "mass_%",
+          "kind": "normative_range",
+          "source": {
+            "standard_id": "GOST_977_88",
+            "location": "п. 1.3, таблица 1, строка 20ГЛ (стали конструкционные легированные)"
+          }
+        },
+        "silicon_mass_pct": {
+          "min": 0.2,
+          "max": 0.4,
+          "unit": "mass_%",
+          "kind": "normative_range",
+          "source": {
+            "standard_id": "GOST_977_88",
+            "location": "п. 1.3, таблица 1, строка 20ГЛ (стали конструкционные легированные)"
+          }
+        },
+        "phosphorus_mass_pct": {
+          "value": 0.04,
+          "unit": "mass_%",
+          "kind": "normative_maximum",
+          "source": {
+            "standard_id": "GOST_977_88",
+            "location": "п. 1.3, таблица 1, строка 20ГЛ (стали конструкционные легированные)"
+          }
+        },
+        "sulfur_mass_pct": {
+          "value": 0.04,
+          "unit": "mass_%",
+          "kind": "normative_maximum",
+          "source": {
+            "standard_id": "GOST_977_88",
+            "location": "п. 1.3, таблица 1, строка 20ГЛ (стали конструкционные легированные)"
+          }
+        }
+      },
+      "scope": "Легированная конструкционная литейная сталь. Предельные P и S приведены как верхние границы; значения действуют с учётом нормативных примечаний и отклонений анализа готовой отливки, а не как заданные значения плавки.",
+      "eligible_for_process_calculations": false
+    },
+    {
+      "name": "35ГЛ",
+      "category": "steel",
+      "standard_id": "GOST_977_88",
+      "properties": {
+        "carbon_mass_pct": {
+          "min": 0.3,
+          "max": 0.4,
+          "unit": "mass_%",
+          "kind": "normative_range",
+          "source": {
+            "standard_id": "GOST_977_88",
+            "location": "п. 1.3, таблица 1, строка 35ГЛ (стали конструкционные легированные)"
+          }
+        },
+        "manganese_mass_pct": {
+          "min": 1.2,
+          "max": 1.6,
+          "unit": "mass_%",
+          "kind": "normative_range",
+          "source": {
+            "standard_id": "GOST_977_88",
+            "location": "п. 1.3, таблица 1, строка 35ГЛ (стали конструкционные легированные)"
+          }
+        },
+        "silicon_mass_pct": {
+          "min": 0.2,
+          "max": 0.4,
+          "unit": "mass_%",
+          "kind": "normative_range",
+          "source": {
+            "standard_id": "GOST_977_88",
+            "location": "п. 1.3, таблица 1, строка 35ГЛ (стали конструкционные легированные)"
+          }
+        },
+        "phosphorus_mass_pct": {
+          "value": 0.04,
+          "unit": "mass_%",
+          "kind": "normative_maximum",
+          "source": {
+            "standard_id": "GOST_977_88",
+            "location": "п. 1.3, таблица 1, строка 35ГЛ (стали конструкционные легированные)"
+          }
+        },
+        "sulfur_mass_pct": {
+          "value": 0.04,
+          "unit": "mass_%",
+          "kind": "normative_maximum",
+          "source": {
+            "standard_id": "GOST_977_88",
+            "location": "п. 1.3, таблица 1, строка 35ГЛ (стали конструкционные легированные)"
+          }
+        }
+      },
+      "scope": "Легированная конструкционная литейная сталь. Предельные P и S приведены как верхние границы; значения действуют с учётом нормативных примечаний и отклонений анализа готовой отливки, а не как заданные значения плавки.",
+      "eligible_for_process_calculations": false
+    },
+    {
+      "name": "20ГСЛ",
+      "category": "steel",
+      "standard_id": "GOST_977_88",
+      "properties": {
+        "carbon_mass_pct": {
+          "min": 0.16,
+          "max": 0.22,
+          "unit": "mass_%",
+          "kind": "normative_range",
+          "source": {
+            "standard_id": "GOST_977_88",
+            "location": "п. 1.3, таблица 1, строка 20ГСЛ (стали конструкционные легированные)"
+          }
+        },
+        "manganese_mass_pct": {
+          "min": 1,
+          "max": 1.3,
+          "unit": "mass_%",
+          "kind": "normative_range",
+          "source": {
+            "standard_id": "GOST_977_88",
+            "location": "п. 1.3, таблица 1, строка 20ГСЛ (стали конструкционные легированные)"
+          }
+        },
+        "silicon_mass_pct": {
+          "min": 0.6,
+          "max": 0.8,
+          "unit": "mass_%",
+          "kind": "normative_range",
+          "source": {
+            "standard_id": "GOST_977_88",
+            "location": "п. 1.3, таблица 1, строка 20ГСЛ (стали конструкционные легированные)"
+          }
+        },
+        "phosphorus_mass_pct": {
+          "value": 0.03,
+          "unit": "mass_%",
+          "kind": "normative_maximum",
+          "source": {
+            "standard_id": "GOST_977_88",
+            "location": "п. 1.3, таблица 1, строка 20ГСЛ (стали конструкционные легированные)"
+          }
+        },
+        "sulfur_mass_pct": {
+          "value": 0.03,
+          "unit": "mass_%",
+          "kind": "normative_maximum",
+          "source": {
+            "standard_id": "GOST_977_88",
+            "location": "п. 1.3, таблица 1, строка 20ГСЛ (стали конструкционные легированные)"
+          }
+        }
+      },
+      "scope": "Легированная конструкционная литейная сталь. Предельные P и S приведены как верхние границы; значения действуют с учётом нормативных примечаний и отклонений анализа готовой отливки, а не как заданные значения плавки.",
+      "eligible_for_process_calculations": false
+    },
+    {
+      "name": "30ГСЛ",
+      "category": "steel",
+      "standard_id": "GOST_977_88",
+      "properties": {
+        "carbon_mass_pct": {
+          "min": 0.25,
+          "max": 0.35,
+          "unit": "mass_%",
+          "kind": "normative_range",
+          "source": {
+            "standard_id": "GOST_977_88",
+            "location": "п. 1.3, таблица 1, строка 30ГСЛ (стали конструкционные легированные)"
+          }
+        },
+        "manganese_mass_pct": {
+          "min": 1.1,
+          "max": 1.4,
+          "unit": "mass_%",
+          "kind": "normative_range",
+          "source": {
+            "standard_id": "GOST_977_88",
+            "location": "п. 1.3, таблица 1, строка 30ГСЛ (стали конструкционные легированные)"
+          }
+        },
+        "silicon_mass_pct": {
+          "min": 0.6,
+          "max": 0.8,
+          "unit": "mass_%",
+          "kind": "normative_range",
+          "source": {
+            "standard_id": "GOST_977_88",
+            "location": "п. 1.3, таблица 1, строка 30ГСЛ (стали конструкционные легированные)"
+          }
+        },
+        "phosphorus_mass_pct": {
+          "value": 0.04,
+          "unit": "mass_%",
+          "kind": "normative_maximum",
+          "source": {
+            "standard_id": "GOST_977_88",
+            "location": "п. 1.3, таблица 1, строка 30ГСЛ (стали конструкционные легированные)"
+          }
+        },
+        "sulfur_mass_pct": {
+          "value": 0.04,
+          "unit": "mass_%",
+          "kind": "normative_maximum",
+          "source": {
+            "standard_id": "GOST_977_88",
+            "location": "п. 1.3, таблица 1, строка 30ГСЛ (стали конструкционные легированные)"
+          }
+        }
+      },
+      "scope": "Легированная конструкционная литейная сталь. Предельные P и S приведены как верхние границы; значения действуют с учётом нормативных примечаний и отклонений анализа готовой отливки, а не как заданные значения плавки.",
+      "eligible_for_process_calculations": false
     }
   ],
   "process_parameters_not_proven": [
@@ -1032,5 +1260,8 @@
     "burnout_pct",
     "melt_cycle",
     "casting_wall_mechanical_properties"
+  ],
+  "review_notes": [
+    "4 alloyed steel grades 20ГЛ/35ГЛ/20ГСЛ/30ГСЛ checked against GOST 977-88 section 1.3, table 1, including P/S upper limits; secondary transcriptions cross-checked: https://standartgost.ru/g/ГОСТ_977-88 and https://allgosts.ru/77/140/gost_977-88."
   ]
 }
