@@ -68,3 +68,18 @@ def test_official_catalog_dialog_initializes_without_network_or_modal_windows():
         assert dialog.tabs.tabText(3).endswith("(96/96)")
     finally:
         dialog.close()
+
+
+def test_project_material_tab_warns_about_unverified_process_values():
+    from PySide6.QtWidgets import QApplication
+    from core.project import Project
+    from gui.tabs.project_tab import ProjectTab
+
+    app = QApplication.instance() or QApplication([])
+    tab = ProjectTab(Project())
+    try:
+        tab._update_alloy_info("steel_20L")
+        assert "не подтверждены" in tab.lbl_alloy_info.text()
+        assert "ГОСТ: 96 марок" in tab.btn_official_materials.text()
+    finally:
+        tab.close()
