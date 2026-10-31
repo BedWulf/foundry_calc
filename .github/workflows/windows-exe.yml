@@ -2,9 +2,9 @@ name: Build Windows EXE (PySide6)
 on:
   workflow_dispatch:
   pull_request:
-    branches: [engineering-audit-batch-planning-20261028]
+    branches: [worck-branch]
   push:
-    branches: [engineering-audit-batch-planning-20261028]
+    branches: [worck-branch]
     paths:
       - '**/*.py'
       - 'requirements.txt'
