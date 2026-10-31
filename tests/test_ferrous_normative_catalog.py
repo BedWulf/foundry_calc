@@ -76,7 +76,7 @@ def test_reject_invalid_units_sources_nonfinite_ranges_or_color_entries():
         (DATA/"verified_references"/"alloy_standards.json").read_text(encoding="utf-8")
     )
     assert validate_ferrous_catalog(data, index) == []
-    for modification in ("nan", "unit", "source", "color", "auto", "dup"):
+    for modification in ("nan", "unit", "source", "color", "auto", "wrong_gost_url", "dup"):
         broken = copy.deepcopy(data)
         r = broken["records"][0]
         if modification == "nan":
@@ -89,6 +89,9 @@ def test_reject_invalid_units_sources_nonfinite_ranges_or_color_entries():
             r["category"] = "aluminum"
         elif modification == "auto":
             r["eligible_for_process_calculations"] = True
+        elif modification == "wrong_gost_url":
+            broken["sources"]["GOST_977_88"]["source_url"] = (
+                broken["sources"]["GOST_1412_85"]["source_url"])
         else:
             broken["records"].append(copy.deepcopy(r))
         assert validate_ferrous_catalog(broken, index), modification
