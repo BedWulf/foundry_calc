@@ -53,6 +53,7 @@ def _smoke_test_frozen() -> int:
         assert len(references["Формовочные линии"]) == 7
         assert len(references["Стержневые машины"]) == 3
         assert len(references["Марки материалов"]) == 96
+        assert len(references["Нормы чёрных сплавов"]) == 36
         window.close()
         return 0
     except BaseException:
