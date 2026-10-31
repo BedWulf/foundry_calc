@@ -166,6 +166,19 @@ class MeltingTab(QWidget):
         top_row.addWidget(btn_refresh)
         vbox.addLayout(top_row)
 
+        self.lbl_source_status = QLabel(
+            "⚠ ПРЕДВАРИТЕЛЬНЫЙ ПОДБОР: старый каталог печей ещё не имеет "
+            "подтверждённых паспортных источников для всех расчётных полей. "
+            "Количество и загрузка печей не могут считаться окончательным "
+            "проектным решением. См. «Сводка → Проверка источников»."
+        )
+        self.lbl_source_status.setWordWrap(True)
+        self.lbl_source_status.setStyleSheet(
+            f"color: {COLORS['warning']}; padding: 8px; "
+            f"background-color: {COLORS['bg_panel']};"
+        )
+        vbox.addWidget(self.lbl_source_status)
+
         self.picker = EquipmentPicker(category="плавильные печи")
         self.picker.equipment_selected.connect(self._on_equipment_selected)
         vbox.addWidget(self.picker, 1)
