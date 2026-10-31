@@ -49,7 +49,7 @@ def _smoke_test_frozen() -> int:
         # without any user-supplied catalog files or network access.
         from core.official_reference_catalog import list_official_references
         references = list_official_references(DATA_DIR)
-        assert len(references["Плавильные печи"]) == 9
+        assert len(references["Плавильные печи"]) == 27
         assert len(references["Формовочные линии"]) == 7
         assert len(references["Стержневые машины"]) == 3
         assert len(references["Марки материалов"]) == 96
