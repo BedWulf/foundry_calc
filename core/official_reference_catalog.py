@@ -12,6 +12,7 @@ from pathlib import Path
 from typing import Any
 
 from config import DATA_DIR
+from core.ferrous_normative_catalog import list_ferrous_reference_rows
 
 
 def _read(path: Path) -> dict[str, Any]:
@@ -32,7 +33,7 @@ def _verified_number(item: dict, field: str, unit: str) -> str:
 
 
 def list_official_references(data_dir: Path | None = None) -> dict[str, list[dict[str, str]]]:
-    """Four display categories; values are literal manufacturer/GOST evidence.
+    """Manufacturer/GOST references, including ferrous normative property records.
 
     The presence of a record here never makes it eligible for final design.
     """
@@ -44,6 +45,7 @@ def list_official_references(data_dir: Path | None = None) -> dict[str, list[dic
     out: dict[str, list[dict[str, str]]] = {
         "Плавильные печи": [], "Формовочные линии": [],
         "Стержневые машины": [], "Марки материалов": [],
+        "Нормы чёрных сплавов": [],
     }
     url = furnace["source"]["url"]
     for item in furnace["entries"]:
@@ -116,4 +118,5 @@ def list_official_references(data_dir: Path | None = None) -> dict[str, list[dic
             "text_url": src["text_url"],
             "status": "Нормативное обозначение, не технологические параметры",
         })
+    out["Нормы чёрных сплавов"] = list_ferrous_reference_rows(root)
     return out
