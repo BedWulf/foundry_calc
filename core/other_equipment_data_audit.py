@@ -58,7 +58,12 @@ def audit_equipment_catalog(data: object, kind: str) -> list[dict[str, str]]:
             capacity = specs.get("capacity_t")
             rate = specs.get("productivity_t_h")
             cycle = specs.get("melt_time_h")
-            if all(_num(v) for v in (capacity, rate, cycle)):
+            # Continuous cupolas and other non-batch furnaces do not have
+            # a meaningful capacity / melt-cycle hourly ceiling.
+            is_batch_furnace = machine.get("type") in (
+                "induction_crucible", "arc_steel", "gas_crucible"
+            )
+            if is_batch_furnace and all(_num(v) for v in (capacity, rate, cycle)):
                 theoretical_rate = capacity / cycle
                 if rate > theoretical_rate * 1.01:
                     add("RATE_EXCEEDS_SIMPLE_CYCLE", eid, "productivity_t_h",
