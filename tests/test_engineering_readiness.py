@@ -163,5 +163,6 @@ def test_melting_tab_labels_unverified_legacy_equipment():
     try:
         assert "ПРЕДВАРИТЕЛЬНЫЙ ПОДБОР" in tab.lbl_source_status.text()
         assert "паспортных источников" in tab.lbl_source_status.text()
+        assert "Паспорта печей" in tab.btn_official_furnaces.text()
     finally:
         tab.close()
