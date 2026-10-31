@@ -293,7 +293,7 @@ class ProjectTab(QWidget):
         # physical properties. The grade name and cited GOST are separate
         # from proof of density, pouring temperature and process shrinkage.
         info += (
-            "\\n⚠ Технологические значения выше не подтверждены для этой "
+            "\n⚠ Технологические значения выше не подтверждены для этой "
             "марки первоисточником. Не считать их нормами ГОСТ. "
             "Проверенные обозначения марок: «ГОСТ: 96 марок и источники»."
         )
