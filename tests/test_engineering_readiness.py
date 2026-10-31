@@ -128,9 +128,16 @@ def test_export_contains_visible_source_check_sheet(tmp_path):
     workbook.close()
 
 
-def test_missing_and_duplicate_material_approval_fail_closed(tmp_path):
+def test_missing_material_approval_manifest_fails_closed(tmp_path):
+    (tmp_path / "materials").mkdir()
+    (tmp_path / "materials" / "alloys.json").write_text(
+        json.dumps({"alloys": [{"id": "steel_20L", "name": "20Л",
+                                 "category": "steel", **{
+                                     field: 1 for field in REQUIRED_MATERIAL_FIELDS
+                                 }}]}, ensure_ascii=False), encoding="utf-8"
+    )
     p = Project(selected_alloy_id="steel_20L")
-    # No approval manifest in this empty directory: refuse, never infer.
+    # A complete alloy card without the independent approval manifest fails.
     assert "Реестр допуска" in audit_calculation_sources(
         p, data_dir=tmp_path
     )[0]
