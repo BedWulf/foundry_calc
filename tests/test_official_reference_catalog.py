@@ -18,7 +18,7 @@ def test_bundled_manufacturer_and_gost_records_visible_offline():
         "Формовочные линии": 7,
         "Стержневые машины": 3,
         "Марки материалов": 96,
-        "Нормы чёрных сплавов": 36,
+        "Нормы чёрных сплавов": 40,
     }
     for records in catalog.values():
         for row in records:
