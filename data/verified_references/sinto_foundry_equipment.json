@@ -35,7 +35,13 @@
         "rate_scope": "as published by manufacturer; core setting, actual operating availability and metal capacity not specified"
       },
       "verification_status": "manufacturer_catalog_verified",
-      "eligible_for_final_design": false
+      "eligible_for_final_design": false,
+      "source_reference": {
+        "url": "https://sintoamerica.com/product/hsp-series/",
+        "document": "HSP Series — HSP and HSP-D Specifications",
+        "location": "Specifications / HSP-1 row",
+        "source_kind": "manufacturer_product_specifications"
+      }
     },
     {
       "id": "SINTO-HSP-2",
@@ -53,7 +59,13 @@
         "rate_scope": "as published by manufacturer; core setting, actual operating availability and metal capacity not specified"
       },
       "verification_status": "manufacturer_catalog_verified",
-      "eligible_for_final_design": false
+      "eligible_for_final_design": false,
+      "source_reference": {
+        "url": "https://sintoamerica.com/product/hsp-series/",
+        "document": "HSP Series — HSP and HSP-D Specifications",
+        "location": "Specifications / HSP-2 row",
+        "source_kind": "manufacturer_product_specifications"
+      }
     },
     {
       "id": "SINTO-HSP-3",
@@ -71,7 +83,13 @@
         "rate_scope": "as published by manufacturer; core setting, actual operating availability and metal capacity not specified"
       },
       "verification_status": "manufacturer_catalog_verified",
-      "eligible_for_final_design": false
+      "eligible_for_final_design": false,
+      "source_reference": {
+        "url": "https://sintoamerica.com/product/hsp-series/",
+        "document": "HSP Series — HSP and HSP-D Specifications",
+        "location": "Specifications / HSP-3 row",
+        "source_kind": "manufacturer_product_specifications"
+      }
     },
     {
       "id": "SINTO-HSP-1D",
@@ -89,7 +107,13 @@
         "rate_scope": "as published by manufacturer; core setting, actual operating availability and metal capacity not specified"
       },
       "verification_status": "manufacturer_catalog_verified",
-      "eligible_for_final_design": false
+      "eligible_for_final_design": false,
+      "source_reference": {
+        "url": "https://sintoamerica.com/product/hsp-series/",
+        "document": "HSP Series — HSP and HSP-D Specifications",
+        "location": "Specifications / HSP-1D row",
+        "source_kind": "manufacturer_product_specifications"
+      }
     },
     {
       "id": "SINTO-HSP-2D",
@@ -107,7 +131,13 @@
         "rate_scope": "as published by manufacturer; core setting, actual operating availability and metal capacity not specified"
       },
       "verification_status": "manufacturer_catalog_verified",
-      "eligible_for_final_design": false
+      "eligible_for_final_design": false,
+      "source_reference": {
+        "url": "https://sintoamerica.com/product/hsp-series/",
+        "document": "HSP Series — HSP and HSP-D Specifications",
+        "location": "Specifications / HSP-2D row",
+        "source_kind": "manufacturer_product_specifications"
+      }
     },
     {
       "id": "SINTO-HSP-3D",
@@ -125,7 +155,13 @@
         "rate_scope": "as published by manufacturer; core setting, actual operating availability and metal capacity not specified"
       },
       "verification_status": "manufacturer_catalog_verified",
-      "eligible_for_final_design": false
+      "eligible_for_final_design": false,
+      "source_reference": {
+        "url": "https://sintoamerica.com/product/hsp-series/",
+        "document": "HSP Series — HSP and HSP-D Specifications",
+        "location": "Specifications / HSP-3D row",
+        "source_kind": "manufacturer_product_specifications"
+      }
     },
     {
       "id": "SINTO-HSP-4D",
@@ -143,7 +179,13 @@
         "rate_scope": "as published by manufacturer; core setting, actual operating availability and metal capacity not specified"
       },
       "verification_status": "manufacturer_catalog_verified",
-      "eligible_for_final_design": false
+      "eligible_for_final_design": false,
+      "source_reference": {
+        "url": "https://sintoamerica.com/product/hsp-series/",
+        "document": "HSP Series — HSP and HSP-D Specifications",
+        "location": "Specifications / HSP-4D row",
+        "source_kind": "manufacturer_product_specifications"
+      }
     }
   ],
   "core_machines": [
@@ -166,7 +208,13 @@
         "rate_scope": "dry cycle excludes gassing and other stages; NOT finished cores per hour"
       },
       "verification_status": "manufacturer_catalog_verified",
-      "eligible_for_final_design": false
+      "eligible_for_final_design": false,
+      "source_reference": {
+        "url": "https://sintoamerica.com/product/cb-cold-box-core-machine/",
+        "document": "CB Cold Box Core Machine — Specifications",
+        "location": "Specifications / CB10 row",
+        "source_kind": "manufacturer_product_specifications"
+      }
     },
     {
       "id": "SINTO-CB30",
@@ -187,7 +235,13 @@
         "rate_scope": "dry cycle excludes gassing and other stages; NOT finished cores per hour"
       },
       "verification_status": "manufacturer_catalog_verified",
-      "eligible_for_final_design": false
+      "eligible_for_final_design": false,
+      "source_reference": {
+        "url": "https://sintoamerica.com/product/cb-cold-box-core-machine/",
+        "document": "CB Cold Box Core Machine — Specifications",
+        "location": "Specifications / CB30 row",
+        "source_kind": "manufacturer_product_specifications"
+      }
     },
     {
       "id": "SINTO-CB60",
@@ -208,7 +262,13 @@
         "rate_scope": "dry cycle excludes gassing and other stages; NOT finished cores per hour"
       },
       "verification_status": "manufacturer_catalog_verified",
-      "eligible_for_final_design": false
+      "eligible_for_final_design": false,
+      "source_reference": {
+        "url": "https://sintoamerica.com/product/cb-cold-box-core-machine/",
+        "document": "CB Cold Box Core Machine — Specifications",
+        "location": "Specifications / CB60 row",
+        "source_kind": "manufacturer_product_specifications"
+      }
     }
   ]
 }
