@@ -16,6 +16,7 @@ from import_export.excel_importer import ExcelImporter
 from data.loader import DataLoader
 from gui.dialogs.material_dialog import AddMaterialDialog
 from gui.dialogs.castings_browser import CastingsBrowserDialog
+from gui.dialogs.official_catalog_dialog import OfficialCatalogDialog
 from gui.dialogs.casting_technology_dialog import CastingTechnologyDialog
 
 
@@ -195,12 +196,19 @@ class ProjectTab(QWidget):
         """)
         self.btn_add_material.clicked.connect(self._on_add_material)
         top_row.addWidget(self.btn_add_material)
+        self.btn_official_materials = QPushButton("ГОСТ: 96 марок и источники")
+        self.btn_official_materials.setToolTip(
+            "Встроенный нормативный справочник; без подмены технологических свойств"
+        )
+        self.btn_official_materials.clicked.connect(self._show_official_materials)
+        top_row.addWidget(self.btn_official_materials)
         
         top_row.addStretch()
         layout.addLayout(top_row)
         
         # Информация о выбранном сплаве
         self.lbl_alloy_info = QLabel("Выберите сплав для просмотра характеристик")
+        self.lbl_alloy_info.setWordWrap(True)
         self.lbl_alloy_info.setStyleSheet(f"""
             QLabel {{
                 color: {COLORS['text_secondary']};
@@ -217,6 +225,11 @@ class ProjectTab(QWidget):
         self._populate_categories()
         
         return g
+
+    def _show_official_materials(self) -> None:
+        dialog = OfficialCatalogDialog(self)
+        dialog.tabs.setCurrentIndex(3)
+        dialog.exec()
 
     def _combo_style(self) -> str:
         return f"""
@@ -275,6 +288,14 @@ class ProjectTab(QWidget):
             f"T плавл: {alloy['melting_temp_C']}°C | "
             f"T заливки: {alloy['pouring_temp_C']}°C | "
             f"Усадка: {alloy['shrinkage_pct']}%"
+        )
+        # These are legacy operating assumptions, NOT verified normative
+        # physical properties. The grade name and cited GOST are separate
+        # from proof of density, pouring temperature and process shrinkage.
+        info += (
+            "\\n⚠ Технологические значения выше не подтверждены для этой "
+            "марки первоисточником. Не считать их нормами ГОСТ. "
+            "Проверенные обозначения марок: «ГОСТ: 96 марок и источники»."
         )
         self.lbl_alloy_info.setText(info)
 
