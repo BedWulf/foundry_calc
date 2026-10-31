@@ -13,7 +13,7 @@ def test_manufacturer_reference_documented_and_not_auto_selected():
     assert data["source"]["url"].startswith("https://")
     assert data["conditions"]["temperature_c"] == 1675
     assert data["conditions"]["material"] == "steel scrap"
-    assert len(data["entries"]) == 2
+    assert len(data["entries"]) == 9
     for entry in data["entries"]:
         assert entry["verification_status"] == "manufacturer_catalog_verified"
         assert entry["operating_validation_status"] == "not_validated"
@@ -26,4 +26,6 @@ def test_reference_rows_are_the_manufacturer_published_pairs():
     data = json.loads(REFERENCE.read_text(encoding="utf-8"))
     rows = [(e["capacity_kg"], e["power_kw"], e["published_melting_rate_kg_h"])
             for e in data["entries"]]
-    assert rows == [(1000, 500, 875), (2000, 1000, 1850)]
+    assert rows == [(100, 75, 125), (200, 150, 265), (500, 250, 440),
+                    (750, 375, 660), (1000, 500, 875), (1500, 750, 1375),
+                    (2000, 1000, 1850), (2500, 1250, 2300), (3000, 1500, 2750)]
