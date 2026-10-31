@@ -56,7 +56,7 @@ def list_official_references(data_dir: Path | None = None) -> dict[str, list[dic
                       f"плавка стали {_verified_number(item, 'published_melting_rate_kg_h', 'кг/ч')}; "
                       f"частота {_verified_number(item, 'frequency_hz', 'Гц')}"),
             "conditions": "Стальной лом, 1675 °C, опубликованное допущение 100% выхода",
-            "source": "Indotherm — Casting Units, строки 01, 02, 05, 09",
+            "source": "Indotherm — " + item["source_reference"]["location"],
             "url": url,
             "status": "Параметры из каталога; пригодность для проекта не проверена",
         })
@@ -73,7 +73,8 @@ def list_official_references(data_dir: Path | None = None) -> dict[str, list[dic
                       f"{_verified_number(spec, 'mold_height_max_mm', 'мм')}; "
                       f"опубликовано {_verified_number(spec, 'published_molding_rate_molds_h', 'форм/ч')}"),
             "conditions": "Air-flow + squeeze; металлоёмкость формы не опубликована",
-            "source": src["document_title"], "url": src["url"],
+            "source": src["document_title"] + ", " + item["source_reference"]["location"],
+            "url": src["url"],
             "status": "Параметры из каталога; пригодность для проекта не проверена",
         })
     for item in sinto["core_machines"]:
@@ -91,7 +92,8 @@ def list_official_references(data_dir: Path | None = None) -> dict[str, list[dic
                       f"двойной {_verified_number(spec, 'double_shot_core_weight_kg', 'кг')}; "
                       f"сухой цикл {_verified_number(spec, 'dry_cycle_time_s', 'с')}"),
             "conditions": "Cold-box; сухой цикл НЕ является производительностью готовых стержней",
-            "source": src["document_title"], "url": src["url"],
+            "source": src["document_title"] + ", " + item["source_reference"]["location"],
+            "url": src["url"],
             "status": "Параметры из каталога; пригодность для проекта не проверена",
         })
     sources = {s["id"]: s for s in grades["sources"]}
