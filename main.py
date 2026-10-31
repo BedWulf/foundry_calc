@@ -45,6 +45,14 @@ def _smoke_test_frozen() -> int:
         assert "melting_tab" in window.tabs
         assert "molding_tab" in window.tabs
         assert "help_tab" in window.tabs
+        # Shipped manufacturer/GOST references must exist INSIDE the EXE,
+        # without any user-supplied catalog files or network access.
+        from core.official_reference_catalog import list_official_references
+        references = list_official_references(DATA_DIR)
+        assert len(references["Плавильные печи"]) == 9
+        assert len(references["Формовочные линии"]) == 7
+        assert len(references["Стержневые машины"]) == 3
+        assert len(references["Марки материалов"]) == 10
         window.close()
         return 0
     except BaseException:
