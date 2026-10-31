@@ -11,10 +11,10 @@ from core.ferrous_normative_catalog import (
 DATA = Path(__file__).resolve().parents[1] / "data"
 
 
-def test_40_ferrous_grades_and_91_documented_properties():
+def test_40_ferrous_grades_and_102_documented_properties():
     data = load_ferrous_catalog(DATA)
     assert len(data["records"]) == 40
-    assert sum(len(r["properties"]) for r in data["records"]) == 91
+    assert sum(len(r["properties"]) for r in data["records"]) == 102
     assert {r["category"] for r in data["records"]} == {
         "steel", "cast_iron", "ductile_iron", "malleable_iron",
     }
@@ -168,3 +168,27 @@ def test_wrong_alloyed_steel_source_and_impurity_kind_fail_closed():
         else:
             p["value"] = "0.03"
         assert validate_ferrous_catalog(broken, index), defect
+
+
+def test_all_eleven_malleable_iron_brinell_ranges_exact():
+    # GOST 1215-79 section 3.2, table 1; no hardness inferred from strength.
+    expected = {
+        "КЧ30-6": (100,163), "КЧ33-8": (100,163),
+        "КЧ35-10": (100,163), "КЧ37-12": (110,163),
+        "КЧ45-7": (150,207), "КЧ50-5": (170,230),
+        "КЧ55-4": (192,241), "КЧ60-3": (200,269),
+        "КЧ65-3": (212,269), "КЧ70-2": (241,285),
+        "КЧ80-1,5": (270,320),
+    }
+    for grade, (low, high) in expected.items():
+        record = get_ferrous_grade_properties("malleable_iron", grade, DATA)
+        hb = record["properties"]["brinell_hardness_hb"]
+        assert hb["kind"] == "normative_range"
+        assert hb["unit"] == "HB"
+        assert (hb["min"], hb["max"]) == (low, high)
+        assert grade in hb["source"]["location"]
+        assert property_description("brinell_hardness_hb", hb).endswith("HB")
+
+
+def test_nonexistent_malleable_iron_hardness_is_not_assumed():
+    assert get_ferrous_grade_properties("malleable_iron", "КЧ99-99", DATA) is None
