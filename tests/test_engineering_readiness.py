@@ -60,6 +60,25 @@ def test_only_complete_grade_and_field_provenance_is_accepted(tmp_path):
         json.dumps({"alloys": [entries]}, ensure_ascii=False), encoding="utf-8"
     )
     p = SimpleNamespace(selected_alloy_id="steel_20L")
+    # Self-declared "verified" must NEVER grant release approval.
+    (tmp_path / "verified_references").mkdir()
+    registry_path = tmp_path / "verified_references" / "approved_operational_material_properties.json"
+    registry = {
+        "usage_policy": "fail_closed_no_approvals_until_documented",
+        "approved_records": [],
+    }
+    registry_path.write_text(json.dumps(registry), encoding="utf-8")
+    assert len(audit_calculation_sources(p, data_dir=tmp_path)) == 5
+    # Even after adding manifest records, the exact values and sources
+    # must match; this only tests matching logic, NOT source authenticity.
+    registry["approved_records"] = [
+        {"alloy_id": "steel_20L", "field": field,
+         "value": entries[field], "source": entries["field_provenance"][field],
+         "review_status": "approved", "reviewer": "test-reviewer",
+         "review_date": "2026-10-31"}
+        for field in REQUIRED_MATERIAL_FIELDS
+    ]
+    registry_path.write_text(json.dumps(registry), encoding="utf-8")
     assert audit_calculation_sources(p, data_dir=tmp_path) == []
     entries["field_provenance"]["density_kg_m3"]["grade"] = "35Л"
     (directory / "alloys.json").write_text(
@@ -107,3 +126,20 @@ def test_export_contains_visible_source_check_sheet(tmp_path):
     assert "ИСТ-6М1" in text
     assert "НЕПОЛНЫЙ ПРОЕКТ" in str(workbook["Сводка"]["A3"].value)
     workbook.close()
+
+
+def test_missing_and_duplicate_material_approval_fail_closed(tmp_path):
+    p = Project(selected_alloy_id="steel_20L")
+    # No approval manifest in this empty directory: refuse, never infer.
+    assert "Реестр допуска" in audit_calculation_sources(
+        p, data_dir=tmp_path
+    )[0]
+
+
+def test_legacy_melting_furnace_is_not_approved_by_normative_grade():
+    res = build_summary({
+        "melting": {"furnace_name": "ИСТ-6М1", "furnace_count": 6,
+                    "metal_charge_t": 58932.0, "load_factor": .84}
+    }, Project(selected_alloy_id="steel_20L"))
+    assert res.ready is False
+    assert any("Печь ИСТ-6М1" in s for s in res.evidence_blockers)
