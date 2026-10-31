@@ -11,10 +11,10 @@ from core.ferrous_normative_catalog import (
 DATA = Path(__file__).resolve().parents[1] / "data"
 
 
-def test_40_ferrous_grades_and_102_documented_properties():
+def test_42_ferrous_grades_and_114_documented_properties():
     data = load_ferrous_catalog(DATA)
-    assert len(data["records"]) == 40
-    assert sum(len(r["properties"]) for r in data["records"]) == 102
+    assert len(data["records"]) == 42
+    assert sum(len(r["properties"]) for r in data["records"]) == 114
     assert {r["category"] for r in data["records"]} == {
         "steel", "cast_iron", "ductile_iron", "malleable_iron",
     }
@@ -194,3 +194,24 @@ def test_all_eleven_malleable_iron_brinell_ranges_exact():
 
 def test_nonexistent_malleable_iron_hardness_is_not_assumed():
     assert get_ferrous_grade_properties("malleable_iron", "КЧ99-99", DATA) is None
+
+
+def test_gost_chromium_bounds_for_32x06l_and_40xl():
+    expected = {
+        "32Х06Л": ((.25, .35), (.40, .90), (.20, .40), .050, .050, (.50, .80)),
+        "40ХЛ": ((.35, .45), (.40, .90), (.20, .40), .040, .040, (.80, 1.10)),
+    }
+    for grade, (carbon, manganese, silicon, p, s, chromium) in expected.items():
+        record = get_ferrous_grade_properties("steel", grade, DATA)
+        assert record is not None and record["standard_id"] == "GOST_977_88"
+        for key, bounds in (
+            ("carbon_mass_pct", carbon), ("manganese_mass_pct", manganese),
+            ("silicon_mass_pct", silicon), ("chromium_mass_pct", chromium),
+        ):
+            v = record["properties"][key]
+            assert (v["min"], v["max"]) == bounds
+            assert v["kind"] == "normative_range"
+            assert grade in v["source"]["location"]
+        for key, maximum in (("phosphorus_mass_pct", p), ("sulfur_mass_pct", s)):
+            v = record["properties"][key]
+            assert v["kind"] == "normative_maximum" and v["value"] == maximum
