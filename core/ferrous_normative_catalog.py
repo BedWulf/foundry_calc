@@ -39,6 +39,8 @@ def validate_ferrous_catalog(data: dict, grade_index: dict) -> list[str]:
     if data.get("usage_policy") != "reference_only_no_automatic_selection":
         problems.append("Нормативные данные нельзя автоматически использовать как технологические")
     known = {(g["category"], g["name"]): g["standard_id"] for g in grade_index.get("grades", [])}
+    registry = {s["id"]: s for s in grade_index.get("sources", [])}
+
     seen = set()
     for record in data["records"]:
         if not isinstance(record, dict):
@@ -61,6 +63,10 @@ def validate_ferrous_catalog(data: dict, grade_index: dict) -> list[str]:
             continue
         if not str(details.get("source_url", "")).startswith("https://protect.gost.ru/"):
             problems.append(f"{name}: отсутствует официальный реестр")
+        if details.get("source_url") != registry.get(standard, {}).get("url"):
+            problems.append(f"{name}: официальный документ не совпадает с каталогом ГОСТ")
+        if details.get("designation") != registry.get(standard, {}).get("designation"):
+            problems.append(f"{name}: обозначение ГОСТ не совпадает с реестром")
         if not str(details.get("text_url", "")).startswith("https://"):
             problems.append(f"{name}: нет ссылки на текст таблицы")
         if record.get("eligible_for_process_calculations") is not False:
