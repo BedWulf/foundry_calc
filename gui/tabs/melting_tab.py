@@ -164,6 +164,13 @@ class MeltingTab(QWidget):
         btn_refresh.setStyleSheet(btn_add.styleSheet())
         btn_refresh.clicked.connect(self.refresh)
         top_row.addWidget(btn_refresh)
+        self.btn_official_furnaces = QPushButton("📖 Паспорта печей: сталь и чугун")
+        self.btn_official_furnaces.setStyleSheet(btn_add.styleSheet())
+        self.btn_official_furnaces.setToolTip(
+            "Встроенные характеристики изготовителей и ссылки на таблицы; без загрузки файлов"
+        )
+        self.btn_official_furnaces.clicked.connect(self._show_official_furnaces)
+        top_row.addWidget(self.btn_official_furnaces)
         vbox.addLayout(top_row)
 
         self.lbl_source_status = QLabel(
@@ -309,6 +316,13 @@ class MeltingTab(QWidget):
         # Сохранение выбора пользователя (требование №4)
         self.choices.save_equipment_choice(self.project.project_id, equipment)
         self.furnace_choice_changed.emit(equipment)
+
+    def _show_official_furnaces(self, _checked=False) -> None:
+        """Manufacturer datasheets shipped in EXE; do not auto-approve a plant."""
+        from gui.dialogs.official_catalog_dialog import OfficialCatalogDialog
+        dialog = OfficialCatalogDialog(self)
+        dialog.tabs.setCurrentIndex(0)
+        dialog.exec()
 
     def _on_add_custom_equipment(self) -> None:
         """Открыть диалог добавления своего оборудования (требование №5)."""
