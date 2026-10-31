@@ -150,3 +150,18 @@ def test_legacy_melting_furnace_is_not_approved_by_normative_grade():
     }, Project(selected_alloy_id="steel_20L"))
     assert res.ready is False
     assert any("Печь ИСТ-6М1" in s for s in res.evidence_blockers)
+
+
+def test_melting_tab_labels_unverified_legacy_equipment():
+    import os
+    os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
+    from PySide6.QtWidgets import QApplication
+    from gui.tabs.melting_tab import MeltingTab
+
+    app = QApplication.instance() or QApplication([])
+    tab = MeltingTab(Project())
+    try:
+        assert "ПРЕДВАРИТЕЛЬНЫЙ ПОДБОР" in tab.lbl_source_status.text()
+        assert "паспортных источников" in tab.lbl_source_status.text()
+    finally:
+        tab.close()
