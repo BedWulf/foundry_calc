@@ -57,5 +57,14 @@ def test_official_catalog_dialog_initializes_without_network_or_modal_windows():
     try:
         assert dialog.findChild(QTabWidget).count() == 4
         assert len(dialog.records["Плавильные печи"]) == 9
+        assert len(dialog.records["Марки материалов"]) == 96
+        assert dialog.records["Марки материалов"][0]["text_url"].startswith("https://")
+        # Search works without network or a blocking modal dialog.
+        dialog.search.setText("АЛ9-1")
+        from PySide6.QtWidgets import QTextBrowser
+        assert "АК7пч" in dialog._browsers["Марки материалов"].toPlainText()
+        assert dialog.tabs.tabText(3).endswith("(1/96)")
+        dialog.search.setText("")
+        assert dialog.tabs.tabText(3).endswith("(96/96)")
     finally:
         dialog.close()
