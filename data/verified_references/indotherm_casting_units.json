@@ -31,7 +31,13 @@
         "Steel Melting Rate @ 1675 deg cent for steel scrap 100% yield (Kgs/Hr)"
       ],
       "verification_status": "manufacturer_catalog_verified",
-      "operating_validation_status": "not_validated"
+      "operating_validation_status": "not_validated",
+      "source_reference": {
+        "url": "https://www.indotherm.net/urls/product.html",
+        "document": "TECHNICAL SPECIFICATIONS FOR INDUCTION FURNACES (CASTING UNITS)",
+        "location": "Casting Units technical specifications / 100 kg column",
+        "measurement_conditions": "steel scrap, 1675 °C, 100% published yield assumption"
+      }
     },
     {
       "id": "INDOTHERM-CU-200-150",
@@ -48,7 +54,13 @@
         "Steel Melting Rate @ 1675 deg cent for steel scrap 100% yield (Kgs/Hr)"
       ],
       "verification_status": "manufacturer_catalog_verified",
-      "operating_validation_status": "not_validated"
+      "operating_validation_status": "not_validated",
+      "source_reference": {
+        "url": "https://www.indotherm.net/urls/product.html",
+        "document": "TECHNICAL SPECIFICATIONS FOR INDUCTION FURNACES (CASTING UNITS)",
+        "location": "Casting Units technical specifications / 200 kg column",
+        "measurement_conditions": "steel scrap, 1675 °C, 100% published yield assumption"
+      }
     },
     {
       "id": "INDOTHERM-CU-500-250",
@@ -65,7 +77,13 @@
         "Steel Melting Rate @ 1675 deg cent for steel scrap 100% yield (Kgs/Hr)"
       ],
       "verification_status": "manufacturer_catalog_verified",
-      "operating_validation_status": "not_validated"
+      "operating_validation_status": "not_validated",
+      "source_reference": {
+        "url": "https://www.indotherm.net/urls/product.html",
+        "document": "TECHNICAL SPECIFICATIONS FOR INDUCTION FURNACES (CASTING UNITS)",
+        "location": "Casting Units technical specifications / 500 kg column",
+        "measurement_conditions": "steel scrap, 1675 °C, 100% published yield assumption"
+      }
     },
     {
       "id": "INDOTHERM-CU-750-375",
@@ -82,7 +100,13 @@
         "Steel Melting Rate @ 1675 deg cent for steel scrap 100% yield (Kgs/Hr)"
       ],
       "verification_status": "manufacturer_catalog_verified",
-      "operating_validation_status": "not_validated"
+      "operating_validation_status": "not_validated",
+      "source_reference": {
+        "url": "https://www.indotherm.net/urls/product.html",
+        "document": "TECHNICAL SPECIFICATIONS FOR INDUCTION FURNACES (CASTING UNITS)",
+        "location": "Casting Units technical specifications / 750 kg column",
+        "measurement_conditions": "steel scrap, 1675 °C, 100% published yield assumption"
+      }
     },
     {
       "id": "INDOTHERM-CU-1000-500",
@@ -99,7 +123,13 @@
         "Steel Melting Rate @ 1675 deg cent for steel scrap 100% yield (Kgs/Hr)"
       ],
       "verification_status": "manufacturer_catalog_verified",
-      "operating_validation_status": "not_validated"
+      "operating_validation_status": "not_validated",
+      "source_reference": {
+        "url": "https://www.indotherm.net/urls/product.html",
+        "document": "TECHNICAL SPECIFICATIONS FOR INDUCTION FURNACES (CASTING UNITS)",
+        "location": "Casting Units technical specifications / 1000 kg column",
+        "measurement_conditions": "steel scrap, 1675 °C, 100% published yield assumption"
+      }
     },
     {
       "id": "INDOTHERM-CU-1500-750",
@@ -116,7 +146,13 @@
         "Steel Melting Rate @ 1675 deg cent for steel scrap 100% yield (Kgs/Hr)"
       ],
       "verification_status": "manufacturer_catalog_verified",
-      "operating_validation_status": "not_validated"
+      "operating_validation_status": "not_validated",
+      "source_reference": {
+        "url": "https://www.indotherm.net/urls/product.html",
+        "document": "TECHNICAL SPECIFICATIONS FOR INDUCTION FURNACES (CASTING UNITS)",
+        "location": "Casting Units technical specifications / 1500 kg column",
+        "measurement_conditions": "steel scrap, 1675 °C, 100% published yield assumption"
+      }
     },
     {
       "id": "INDOTHERM-CU-2000-1000",
@@ -133,7 +169,13 @@
         "Steel Melting Rate @ 1675 deg cent for steel scrap 100% yield (Kgs/Hr)"
       ],
       "verification_status": "manufacturer_catalog_verified",
-      "operating_validation_status": "not_validated"
+      "operating_validation_status": "not_validated",
+      "source_reference": {
+        "url": "https://www.indotherm.net/urls/product.html",
+        "document": "TECHNICAL SPECIFICATIONS FOR INDUCTION FURNACES (CASTING UNITS)",
+        "location": "Casting Units technical specifications / 2000 kg column",
+        "measurement_conditions": "steel scrap, 1675 °C, 100% published yield assumption"
+      }
     },
     {
       "id": "INDOTHERM-CU-2500-1250",
@@ -150,7 +192,13 @@
         "Steel Melting Rate @ 1675 deg cent for steel scrap 100% yield (Kgs/Hr)"
       ],
       "verification_status": "manufacturer_catalog_verified",
-      "operating_validation_status": "not_validated"
+      "operating_validation_status": "not_validated",
+      "source_reference": {
+        "url": "https://www.indotherm.net/urls/product.html",
+        "document": "TECHNICAL SPECIFICATIONS FOR INDUCTION FURNACES (CASTING UNITS)",
+        "location": "Casting Units technical specifications / 2500 kg column",
+        "measurement_conditions": "steel scrap, 1675 °C, 100% published yield assumption"
+      }
     },
     {
       "id": "INDOTHERM-CU-3000-1500",
@@ -167,7 +215,13 @@
         "Steel Melting Rate @ 1675 deg cent for steel scrap 100% yield (Kgs/Hr)"
       ],
       "verification_status": "manufacturer_catalog_verified",
-      "operating_validation_status": "not_validated"
+      "operating_validation_status": "not_validated",
+      "source_reference": {
+        "url": "https://www.indotherm.net/urls/product.html",
+        "document": "TECHNICAL SPECIFICATIONS FOR INDUCTION FURNACES (CASTING UNITS)",
+        "location": "Casting Units technical specifications / 3000 kg column",
+        "measurement_conditions": "steel scrap, 1675 °C, 100% published yield assumption"
+      }
     }
   ],
   "usage_policy": "reference_only_no_automatic_selection"
