@@ -17,6 +17,7 @@ from core.plant_capacity import calculate_plant_capacity
 from core.casting_audit import audit_castings, audit_casting_technology
 from core.casting_item import CastingItem
 from core.shift_capacity import calculate_shift_stress
+from core.engineering_readiness import audit_calculation_sources
 
 # ----------------------------------------------------------------------
 # Константы оформления экспорта (палитра приложения; для Excel — hex)
@@ -81,6 +82,7 @@ class SummaryResult:
     rows: List[SummaryRow] = field(default_factory=list)
     missing_sections: List[str] = field(default_factory=list)
     warnings: List[str] = field(default_factory=list)
+    evidence_blockers: List[str] = field(default_factory=list)
     ready: bool = True
     capacity_rows: List[Dict[str, Any]] = field(default_factory=list)
     capacity_has_deficit: bool = False
@@ -105,6 +107,7 @@ class SummaryResult:
             "rows": [r.as_dict() for r in self.rows],
             "missing_sections": list(self.missing_sections),
             "warnings": list(self.warnings),
+            "evidence_blockers": list(self.evidence_blockers),
             "ready": self.ready,
             "capacity_rows": list(self.capacity_rows),
             "capacity_has_deficit": self.capacity_has_deficit,
@@ -213,6 +216,21 @@ def build_summary(summaries: Dict[str, Dict[str, Any]],
                 "НЕ ПОДТВЕРЖДЕНО: фонд оборудования и одного работника "
                 "основан на календаре без проверенных простоев и отсутствий. "
                 "Уточните и подтвердите раздел «Фонды времени».")
+
+    # Keep preliminary values visible; prevent the final report from being
+    # marked ready while selected ferrous material and melting equipment
+    # still rely on unverified example/catalog parameters.
+    if project is not None and hasattr(project, "selected_alloy_id"):
+        res.evidence_blockers = audit_calculation_sources(
+            project, summaries.get("melting", {}) or {}
+        )
+        if res.evidence_blockers:
+            res.ready = False
+            res.warnings.append(
+                "ИНЖЕНЕРНЫЕ ДАННЫЕ НЕ ПОДТВЕРЖДЕНЫ: "
+                f"{len(res.evidence_blockers)} критичных замечаний к источникам. "
+                "Числа ниже являются предварительными, а не готовым проектом."
+            )
 
     melt = summaries.get("melting", {}) or {}
     mold = summaries.get("molding", {}) or {}
@@ -480,6 +498,25 @@ def export_to_excel(result: SummaryResult, path: Path | str) -> Path:
         for warning in result.warnings:
             ws.cell(row=row_idx, column=1, value="⚠ " + warning).font = f_note
             row_idx += 1
+
+    # Each unresolved engineering source is exported independently, so a
+    # preliminary Excel cannot be mistaken for a certified project.
+    evidence_ws = wb.create_sheet("Проверка источников")
+    evidence_ws.append(["Статус", "Основание"])
+    evidence_ws.append([
+        "НЕ ПОДТВЕРЖДЕНО" if result.evidence_blockers else "Структурных замечаний нет",
+        "Проверка источников не является подтверждением точности расчёта"
+    ])
+    for issue in result.evidence_blockers:
+        evidence_ws.append(["БЛОКИРУЕТ ГОТОВНОСТЬ", issue])
+    for row in evidence_ws.iter_rows():
+        for cell in row:
+            cell.fill = fill_panel if cell.row == 1 else fill_bg
+            cell.font = f_head if cell.row == 1 else f_norm
+            cell.border = border
+    evidence_ws.column_dimensions["A"].width = 28
+    evidence_ws.column_dimensions["B"].width = 115
+    evidence_ws.freeze_panes = "B2"
 
     # На отдельном листе единицы потока не смешиваются, а статус unknown
     # отличается от реального дефицита мощности.
