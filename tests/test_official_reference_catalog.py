@@ -18,6 +18,7 @@ def test_bundled_manufacturer_and_gost_records_visible_offline():
         "Формовочные линии": 7,
         "Стержневые машины": 3,
         "Марки материалов": 96,
+        "Нормы чёрных сплавов": 36,
     }
     for records in catalog.values():
         for row in records:
@@ -55,7 +56,7 @@ def test_official_catalog_dialog_initializes_without_network_or_modal_windows():
     app = QApplication.instance() or QApplication([])
     dialog = OfficialCatalogDialog()
     try:
-        assert dialog.findChild(QTabWidget).count() == 4
+        assert dialog.findChild(QTabWidget).count() == 5
         assert len(dialog.records["Плавильные печи"]) == 9
         assert len(dialog.records["Марки материалов"]) == 96
         assert dialog.records["Марки материалов"][0]["text_url"].startswith("https://")
