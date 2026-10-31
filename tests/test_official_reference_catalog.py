@@ -83,3 +83,27 @@ def test_project_material_tab_warns_about_unverified_process_values():
         assert "ГОСТ: 96 марок" in tab.btn_official_materials.text()
     finally:
         tab.close()
+
+
+def test_each_equipment_model_links_its_own_manufacturer_table_row():
+    from core.official_reference_catalog import list_official_references
+    refs = list_official_references(ROOT)
+    for category in ("Плавильные печи", "Формовочные линии", "Стержневые машины"):
+        assert all("row" in item["source"] or "column" in item["source"]
+                   for item in refs[category])
+    indotherm = json.loads(
+        (ROOT / "verified_references" / "indotherm_casting_units.json")
+        .read_text(encoding="utf-8")
+    )
+    for row in indotherm["entries"]:
+        source = row["source_reference"]
+        assert source["url"] == indotherm["source"]["url"]
+        assert str(row["capacity_kg"]) in source["location"]
+    sinto = json.loads(
+        (ROOT / "verified_references" / "sinto_foundry_equipment.json")
+        .read_text(encoding="utf-8")
+    )
+    for row in sinto["molding_lines"] + sinto["core_machines"]:
+        source = row["source_reference"]
+        assert row["model"] in source["location"]
+        assert source["url"] == sinto["sources"][row["source_id"]]["url"]
