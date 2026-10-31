@@ -1,0 +1,7 @@
+{
+  "schema_version": "1.0",
+  "description": "Developer-reviewed approval records for process-critical material properties. Empty on purpose: existing alloys.json densities, temperatures, shrinkage and burnout are not yet backed by reviewed sources.",
+  "usage_policy": "fail_closed_no_approvals_until_documented",
+  "approved_records": [],
+  "review_policy": "Add entries only after independent source review for exact grade, exact property and value, published document, revision, page/table, material/process conditions and documented reviewer. A GOST grade designation alone is insufficient; user-entered provenance cannot approve a calculation."
+}
