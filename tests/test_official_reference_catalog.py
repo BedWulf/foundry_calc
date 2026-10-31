@@ -17,7 +17,7 @@ def test_bundled_manufacturer_and_gost_records_visible_offline():
         "Плавильные печи": 9,
         "Формовочные линии": 7,
         "Стержневые машины": 3,
-        "Марки материалов": 10,
+        "Марки материалов": 96,
     }
     for records in catalog.values():
         for row in records:
