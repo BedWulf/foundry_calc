@@ -18,6 +18,7 @@ from core.recovery import RecoveryStore, RecoveryEntry
 from core.version_history import VersionHistoryStore, VersionEntry
 from gui.dialogs.version_history_dialog import VersionHistoryDialog
 from gui.dialogs.recovery_dialog import RecoveryDialog
+from gui.dialogs.official_catalog_dialog import OfficialCatalogDialog
 from core.user_choices import UserChoices
 from core.project_io import (
     FILE_EXTENSION, ProjectFileError, project_inputs, read_project,
@@ -272,12 +273,18 @@ class MainWindow(QMainWindow):
             ("Сохранить проект как…", "Ctrl+Shift+S", self._save_project_as),
             ("История версий проекта…", "", self._show_version_history),
             ("Восстановить несохранённую работу…", "", self._show_recovery_dialog),
+            ("Официальные справочники (встроены)…", "", self._show_official_catalog),
         ):
             action = QAction(text, self)
             if shortcut:
                 action.setShortcut(QKeySequence(shortcut))
             action.triggered.connect(slot)
             menu.addAction(action)
+
+    def _show_official_catalog(self, _checked=False) -> None:
+        """Show bundled manufacturer/standard references, no manual imports."""
+        dialog = OfficialCatalogDialog(self)
+        dialog.exec()
 
     def _flush_pending_text_inputs(self) -> None:
         """Capture QLineEdit edits before Ctrl+S or closing the main window.
