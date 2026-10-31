@@ -11,10 +11,10 @@ from core.ferrous_normative_catalog import (
 DATA = Path(__file__).resolve().parents[1] / "data"
 
 
-def test_36_ferrous_grades_and_71_documented_properties():
+def test_40_ferrous_grades_and_91_documented_properties():
     data = load_ferrous_catalog(DATA)
-    assert len(data["records"]) == 36
-    assert sum(len(r["properties"]) for r in data["records"]) == 71
+    assert len(data["records"]) == 40
+    assert sum(len(r["properties"]) for r in data["records"]) == 91
     assert {r["category"] for r in data["records"]} == {
         "steel", "cast_iron", "ductile_iron", "malleable_iron",
     }
@@ -104,7 +104,67 @@ def test_explicit_sources_and_no_aluminium_new_properties():
         assert source["source_url"].startswith("https://protect.gost.ru/")
         assert source["text_url"].startswith("https://")
         for field, value in r["properties"].items():
-            assert value["source"]["location"] == source["location"]
+            assert value["source"]["location"]
+            if "строка " in value["source"]["location"]:
+                assert r["name"] in value["source"]["location"]
+            else:
+                assert value["source"]["location"] == source["location"]
             assert value["source"]["standard_id"] == r["standard_id"]
             assert property_description(field, value)
     assert get_ferrous_grade_properties("aluminum", "АК12", DATA) is None
+
+
+def test_four_alloyed_steels_have_exact_gost_table_one_ranges_and_maxima():
+    # Values transcribed from section 1.3/table 1, NOT derived from steel grade names.
+    expected = {
+        "20ГЛ": ((.15,.25),(1.20,1.60),(.20,.40),.040,.040),
+        "35ГЛ": ((.30,.40),(1.20,1.60),(.20,.40),.040,.040),
+        "20ГСЛ": ((.16,.22),(1.00,1.30),(.60,.80),.030,.030),
+        "30ГСЛ": ((.25,.35),(1.10,1.40),(.60,.80),.040,.040),
+    }
+    for grade, (c,mn,si,p,s) in expected.items():
+        row = get_ferrous_grade_properties("steel", grade, DATA)
+        assert row is not None
+        assert row["standard_id"] == "GOST_977_88"
+        for field, expected_pair in [
+            ("carbon_mass_pct", c), ("manganese_mass_pct", mn),
+            ("silicon_mass_pct", si),
+        ]:
+            item = row["properties"][field]
+            assert item["kind"] == "normative_range"
+            assert (item["min"], item["max"]) == expected_pair
+            assert item["unit"] == "mass_%"
+            assert grade in item["source"]["location"]
+        for field, maximum in [
+            ("phosphorus_mass_pct", p), ("sulfur_mass_pct", s),
+        ]:
+            item = row["properties"][field]
+            assert item["kind"] == "normative_maximum"
+            assert item["value"] == maximum
+            assert item["unit"] == "mass_%"
+            assert grade in item["source"]["location"]
+            assert property_description(field, item).startswith(
+                ("P:" if field == "phosphorus_mass_pct" else "S:")
+                + " не более "
+            )
+
+
+def test_wrong_alloyed_steel_source_and_impurity_kind_fail_closed():
+    d = load_ferrous_catalog(DATA)
+    index = json.loads(
+        (DATA / "verified_references" / "alloy_standards.json")
+        .read_text(encoding="utf-8")
+    )
+    for defect in ("other_grade", "impurity_as_range", "negative_limit", "bad_number"):
+        broken = copy.deepcopy(d)
+        row = next(r for r in broken["records"] if r["name"] == "20ГСЛ")
+        p = row["properties"]["phosphorus_mass_pct"]
+        if defect == "other_grade":
+            p["source"]["location"] = "п. 1.3, таблица 1, строка 35ГЛ"
+        elif defect == "impurity_as_range":
+            p.update(kind="normative_range", min=0.0, max=0.03)
+        elif defect == "negative_limit":
+            p["value"] = -0.03
+        else:
+            p["value"] = "0.03"
+        assert validate_ferrous_catalog(broken, index), defect
