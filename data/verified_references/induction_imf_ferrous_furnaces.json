@@ -1,0 +1,664 @@
+{
+  "schema_version": "1.0",
+  "usage_policy": "reference_only_no_automatic_selection",
+  "reviewed_at": "2026-10-31",
+  "source": {
+    "manufacturer": "INDUCTION s.r.l. (Italy)",
+    "title": "FURNACES FOR MELTING OF STEEL AND NON-FERROUS METALS",
+    "url": "https://induction.it/wp-content/uploads/brochure8_ted_ing_15.pdf",
+    "page_pdf_1_based": 2,
+    "table": "TECHNICAL CHARACTERISTICS OF THE STANDARD RANGE",
+    "source_type": "manufacturer_brochure"
+  },
+  "scope": "Catalogue nominal production under separate steel 1600 C and cast iron 1450 C headings. Not a guaranteed actual factory throughput; ranges of furnace capacity are NOT a single exact capacity.",
+  "entries": [
+    {
+      "id": "INDUCTION-IMF-15KW",
+      "model": "IMF 15 kW",
+      "power_kw": 15,
+      "capacity_min_kg": 15,
+      "capacity_max_kg": 20,
+      "published_rates": [
+        {
+          "material": "steel",
+          "temperature_c": 1600,
+          "rate_kg_h": 20
+        },
+        {
+          "material": "cast_iron",
+          "temperature_c": 1450,
+          "rate_kg_h": 25
+        }
+      ],
+      "verification_status": "manufacturer_catalog_verified",
+      "operation_validation_status": "reference_only",
+      "source_reference": {
+        "url": "https://induction.it/wp-content/uploads/brochure8_ted_ing_15.pdf",
+        "page_pdf_1_based": 2,
+        "table_row": "IMF 15 kW",
+        "columns": [
+          "CAPACITY (Kg)",
+          "STEEL 1600°C (Kg/h)",
+          "CAST IRON 1450°C (Kg/h)"
+        ]
+      },
+      "limitations": [
+        "Capacity is an interval, not one batch setting",
+        "Actual charge, downtime, scrap conditions, efficiency and operating schedule are not documented here",
+        "Do not infer cast-iron rate from steel rate or the reverse"
+      ]
+    },
+    {
+      "id": "INDUCTION-IMF-30KW",
+      "model": "IMF 30 kW",
+      "power_kw": 30,
+      "capacity_min_kg": 30,
+      "capacity_max_kg": 40,
+      "published_rates": [
+        {
+          "material": "steel",
+          "temperature_c": 1600,
+          "rate_kg_h": 40
+        },
+        {
+          "material": "cast_iron",
+          "temperature_c": 1450,
+          "rate_kg_h": 45
+        }
+      ],
+      "verification_status": "manufacturer_catalog_verified",
+      "operation_validation_status": "reference_only",
+      "source_reference": {
+        "url": "https://induction.it/wp-content/uploads/brochure8_ted_ing_15.pdf",
+        "page_pdf_1_based": 2,
+        "table_row": "IMF 30 kW",
+        "columns": [
+          "CAPACITY (Kg)",
+          "STEEL 1600°C (Kg/h)",
+          "CAST IRON 1450°C (Kg/h)"
+        ]
+      },
+      "limitations": [
+        "Capacity is an interval, not one batch setting",
+        "Actual charge, downtime, scrap conditions, efficiency and operating schedule are not documented here",
+        "Do not infer cast-iron rate from steel rate or the reverse"
+      ]
+    },
+    {
+      "id": "INDUCTION-IMF-50KW",
+      "model": "IMF 50 kW",
+      "power_kw": 50,
+      "capacity_min_kg": 50,
+      "capacity_max_kg": 70,
+      "published_rates": [
+        {
+          "material": "steel",
+          "temperature_c": 1600,
+          "rate_kg_h": 70
+        },
+        {
+          "material": "cast_iron",
+          "temperature_c": 1450,
+          "rate_kg_h": 75
+        }
+      ],
+      "verification_status": "manufacturer_catalog_verified",
+      "operation_validation_status": "reference_only",
+      "source_reference": {
+        "url": "https://induction.it/wp-content/uploads/brochure8_ted_ing_15.pdf",
+        "page_pdf_1_based": 2,
+        "table_row": "IMF 50 kW",
+        "columns": [
+          "CAPACITY (Kg)",
+          "STEEL 1600°C (Kg/h)",
+          "CAST IRON 1450°C (Kg/h)"
+        ]
+      },
+      "limitations": [
+        "Capacity is an interval, not one batch setting",
+        "Actual charge, downtime, scrap conditions, efficiency and operating schedule are not documented here",
+        "Do not infer cast-iron rate from steel rate or the reverse"
+      ]
+    },
+    {
+      "id": "INDUCTION-IMF-100KW",
+      "model": "IMF 100 kW",
+      "power_kw": 100,
+      "capacity_min_kg": 100,
+      "capacity_max_kg": 200,
+      "published_rates": [
+        {
+          "material": "steel",
+          "temperature_c": 1600,
+          "rate_kg_h": 140
+        },
+        {
+          "material": "cast_iron",
+          "temperature_c": 1450,
+          "rate_kg_h": 155
+        }
+      ],
+      "verification_status": "manufacturer_catalog_verified",
+      "operation_validation_status": "reference_only",
+      "source_reference": {
+        "url": "https://induction.it/wp-content/uploads/brochure8_ted_ing_15.pdf",
+        "page_pdf_1_based": 2,
+        "table_row": "IMF 100 kW",
+        "columns": [
+          "CAPACITY (Kg)",
+          "STEEL 1600°C (Kg/h)",
+          "CAST IRON 1450°C (Kg/h)"
+        ]
+      },
+      "limitations": [
+        "Capacity is an interval, not one batch setting",
+        "Actual charge, downtime, scrap conditions, efficiency and operating schedule are not documented here",
+        "Do not infer cast-iron rate from steel rate or the reverse"
+      ]
+    },
+    {
+      "id": "INDUCTION-IMF-200KW",
+      "model": "IMF 200 kW",
+      "power_kw": 200,
+      "capacity_min_kg": 200,
+      "capacity_max_kg": 300,
+      "published_rates": [
+        {
+          "material": "steel",
+          "temperature_c": 1600,
+          "rate_kg_h": 315
+        },
+        {
+          "material": "cast_iron",
+          "temperature_c": 1450,
+          "rate_kg_h": 350
+        }
+      ],
+      "verification_status": "manufacturer_catalog_verified",
+      "operation_validation_status": "reference_only",
+      "source_reference": {
+        "url": "https://induction.it/wp-content/uploads/brochure8_ted_ing_15.pdf",
+        "page_pdf_1_based": 2,
+        "table_row": "IMF 200 kW",
+        "columns": [
+          "CAPACITY (Kg)",
+          "STEEL 1600°C (Kg/h)",
+          "CAST IRON 1450°C (Kg/h)"
+        ]
+      },
+      "limitations": [
+        "Capacity is an interval, not one batch setting",
+        "Actual charge, downtime, scrap conditions, efficiency and operating schedule are not documented here",
+        "Do not infer cast-iron rate from steel rate or the reverse"
+      ]
+    },
+    {
+      "id": "INDUCTION-IMF-300KW",
+      "model": "IMF 300 kW",
+      "power_kw": 300,
+      "capacity_min_kg": 300,
+      "capacity_max_kg": 500,
+      "published_rates": [
+        {
+          "material": "steel",
+          "temperature_c": 1600,
+          "rate_kg_h": 480
+        },
+        {
+          "material": "cast_iron",
+          "temperature_c": 1450,
+          "rate_kg_h": 520
+        }
+      ],
+      "verification_status": "manufacturer_catalog_verified",
+      "operation_validation_status": "reference_only",
+      "source_reference": {
+        "url": "https://induction.it/wp-content/uploads/brochure8_ted_ing_15.pdf",
+        "page_pdf_1_based": 2,
+        "table_row": "IMF 300 kW",
+        "columns": [
+          "CAPACITY (Kg)",
+          "STEEL 1600°C (Kg/h)",
+          "CAST IRON 1450°C (Kg/h)"
+        ]
+      },
+      "limitations": [
+        "Capacity is an interval, not one batch setting",
+        "Actual charge, downtime, scrap conditions, efficiency and operating schedule are not documented here",
+        "Do not infer cast-iron rate from steel rate or the reverse"
+      ]
+    },
+    {
+      "id": "INDUCTION-IMF-400KW",
+      "model": "IMF 400 kW",
+      "power_kw": 400,
+      "capacity_min_kg": 500,
+      "capacity_max_kg": 750,
+      "published_rates": [
+        {
+          "material": "steel",
+          "temperature_c": 1600,
+          "rate_kg_h": 650
+        },
+        {
+          "material": "cast_iron",
+          "temperature_c": 1450,
+          "rate_kg_h": 700
+        }
+      ],
+      "verification_status": "manufacturer_catalog_verified",
+      "operation_validation_status": "reference_only",
+      "source_reference": {
+        "url": "https://induction.it/wp-content/uploads/brochure8_ted_ing_15.pdf",
+        "page_pdf_1_based": 2,
+        "table_row": "IMF 400 kW",
+        "columns": [
+          "CAPACITY (Kg)",
+          "STEEL 1600°C (Kg/h)",
+          "CAST IRON 1450°C (Kg/h)"
+        ]
+      },
+      "limitations": [
+        "Capacity is an interval, not one batch setting",
+        "Actual charge, downtime, scrap conditions, efficiency and operating schedule are not documented here",
+        "Do not infer cast-iron rate from steel rate or the reverse"
+      ]
+    },
+    {
+      "id": "INDUCTION-IMF-600KW",
+      "model": "IMF 600 kW",
+      "power_kw": 600,
+      "capacity_min_kg": 750,
+      "capacity_max_kg": 1000,
+      "published_rates": [
+        {
+          "material": "steel",
+          "temperature_c": 1600,
+          "rate_kg_h": 1000
+        },
+        {
+          "material": "cast_iron",
+          "temperature_c": 1450,
+          "rate_kg_h": 1100
+        }
+      ],
+      "verification_status": "manufacturer_catalog_verified",
+      "operation_validation_status": "reference_only",
+      "source_reference": {
+        "url": "https://induction.it/wp-content/uploads/brochure8_ted_ing_15.pdf",
+        "page_pdf_1_based": 2,
+        "table_row": "IMF 600 kW",
+        "columns": [
+          "CAPACITY (Kg)",
+          "STEEL 1600°C (Kg/h)",
+          "CAST IRON 1450°C (Kg/h)"
+        ]
+      },
+      "limitations": [
+        "Capacity is an interval, not one batch setting",
+        "Actual charge, downtime, scrap conditions, efficiency and operating schedule are not documented here",
+        "Do not infer cast-iron rate from steel rate or the reverse"
+      ]
+    },
+    {
+      "id": "INDUCTION-IMF-800KW",
+      "model": "IMF 800 kW",
+      "power_kw": 800,
+      "capacity_min_kg": 1000,
+      "capacity_max_kg": 1500,
+      "published_rates": [
+        {
+          "material": "steel",
+          "temperature_c": 1600,
+          "rate_kg_h": 1300
+        },
+        {
+          "material": "cast_iron",
+          "temperature_c": 1450,
+          "rate_kg_h": 1530
+        }
+      ],
+      "verification_status": "manufacturer_catalog_verified",
+      "operation_validation_status": "reference_only",
+      "source_reference": {
+        "url": "https://induction.it/wp-content/uploads/brochure8_ted_ing_15.pdf",
+        "page_pdf_1_based": 2,
+        "table_row": "IMF 800 kW",
+        "columns": [
+          "CAPACITY (Kg)",
+          "STEEL 1600°C (Kg/h)",
+          "CAST IRON 1450°C (Kg/h)"
+        ]
+      },
+      "limitations": [
+        "Capacity is an interval, not one batch setting",
+        "Actual charge, downtime, scrap conditions, efficiency and operating schedule are not documented here",
+        "Do not infer cast-iron rate from steel rate or the reverse"
+      ]
+    },
+    {
+      "id": "INDUCTION-IMF-1000KW",
+      "model": "IMF 1000 kW",
+      "power_kw": 1000,
+      "capacity_min_kg": 1500,
+      "capacity_max_kg": 2000,
+      "published_rates": [
+        {
+          "material": "steel",
+          "temperature_c": 1600,
+          "rate_kg_h": 1700
+        },
+        {
+          "material": "cast_iron",
+          "temperature_c": 1450,
+          "rate_kg_h": 1950
+        }
+      ],
+      "verification_status": "manufacturer_catalog_verified",
+      "operation_validation_status": "reference_only",
+      "source_reference": {
+        "url": "https://induction.it/wp-content/uploads/brochure8_ted_ing_15.pdf",
+        "page_pdf_1_based": 2,
+        "table_row": "IMF 1000 kW",
+        "columns": [
+          "CAPACITY (Kg)",
+          "STEEL 1600°C (Kg/h)",
+          "CAST IRON 1450°C (Kg/h)"
+        ]
+      },
+      "limitations": [
+        "Capacity is an interval, not one batch setting",
+        "Actual charge, downtime, scrap conditions, efficiency and operating schedule are not documented here",
+        "Do not infer cast-iron rate from steel rate or the reverse"
+      ]
+    },
+    {
+      "id": "INDUCTION-IMF-1200KW",
+      "model": "IMF 1200 kW",
+      "power_kw": 1200,
+      "capacity_min_kg": 2000,
+      "capacity_max_kg": 2500,
+      "published_rates": [
+        {
+          "material": "steel",
+          "temperature_c": 1600,
+          "rate_kg_h": 2040
+        },
+        {
+          "material": "cast_iron",
+          "temperature_c": 1450,
+          "rate_kg_h": 2350
+        }
+      ],
+      "verification_status": "manufacturer_catalog_verified",
+      "operation_validation_status": "reference_only",
+      "source_reference": {
+        "url": "https://induction.it/wp-content/uploads/brochure8_ted_ing_15.pdf",
+        "page_pdf_1_based": 2,
+        "table_row": "IMF 1200 kW",
+        "columns": [
+          "CAPACITY (Kg)",
+          "STEEL 1600°C (Kg/h)",
+          "CAST IRON 1450°C (Kg/h)"
+        ]
+      },
+      "limitations": [
+        "Capacity is an interval, not one batch setting",
+        "Actual charge, downtime, scrap conditions, efficiency and operating schedule are not documented here",
+        "Do not infer cast-iron rate from steel rate or the reverse"
+      ]
+    },
+    {
+      "id": "INDUCTION-IMF-1500KW",
+      "model": "IMF 1500 kW",
+      "power_kw": 1500,
+      "capacity_min_kg": 2500,
+      "capacity_max_kg": 3000,
+      "published_rates": [
+        {
+          "material": "steel",
+          "temperature_c": 1600,
+          "rate_kg_h": 2500
+        },
+        {
+          "material": "cast_iron",
+          "temperature_c": 1450,
+          "rate_kg_h": 2950
+        }
+      ],
+      "verification_status": "manufacturer_catalog_verified",
+      "operation_validation_status": "reference_only",
+      "source_reference": {
+        "url": "https://induction.it/wp-content/uploads/brochure8_ted_ing_15.pdf",
+        "page_pdf_1_based": 2,
+        "table_row": "IMF 1500 kW",
+        "columns": [
+          "CAPACITY (Kg)",
+          "STEEL 1600°C (Kg/h)",
+          "CAST IRON 1450°C (Kg/h)"
+        ]
+      },
+      "limitations": [
+        "Capacity is an interval, not one batch setting",
+        "Actual charge, downtime, scrap conditions, efficiency and operating schedule are not documented here",
+        "Do not infer cast-iron rate from steel rate or the reverse"
+      ]
+    },
+    {
+      "id": "INDUCTION-IMF-1750KW",
+      "model": "IMF 1750 kW",
+      "power_kw": 1750,
+      "capacity_min_kg": 3000,
+      "capacity_max_kg": 3500,
+      "published_rates": [
+        {
+          "material": "steel",
+          "temperature_c": 1600,
+          "rate_kg_h": 2900
+        },
+        {
+          "material": "cast_iron",
+          "temperature_c": 1450,
+          "rate_kg_h": 3450
+        }
+      ],
+      "verification_status": "manufacturer_catalog_verified",
+      "operation_validation_status": "reference_only",
+      "source_reference": {
+        "url": "https://induction.it/wp-content/uploads/brochure8_ted_ing_15.pdf",
+        "page_pdf_1_based": 2,
+        "table_row": "IMF 1750 kW",
+        "columns": [
+          "CAPACITY (Kg)",
+          "STEEL 1600°C (Kg/h)",
+          "CAST IRON 1450°C (Kg/h)"
+        ]
+      },
+      "limitations": [
+        "Capacity is an interval, not one batch setting",
+        "Actual charge, downtime, scrap conditions, efficiency and operating schedule are not documented here",
+        "Do not infer cast-iron rate from steel rate or the reverse"
+      ]
+    },
+    {
+      "id": "INDUCTION-IMF-2000KW",
+      "model": "IMF 2000 kW",
+      "power_kw": 2000,
+      "capacity_min_kg": 3500,
+      "capacity_max_kg": 4000,
+      "published_rates": [
+        {
+          "material": "steel",
+          "temperature_c": 1600,
+          "rate_kg_h": 3350
+        },
+        {
+          "material": "cast_iron",
+          "temperature_c": 1450,
+          "rate_kg_h": 3950
+        }
+      ],
+      "verification_status": "manufacturer_catalog_verified",
+      "operation_validation_status": "reference_only",
+      "source_reference": {
+        "url": "https://induction.it/wp-content/uploads/brochure8_ted_ing_15.pdf",
+        "page_pdf_1_based": 2,
+        "table_row": "IMF 2000 kW",
+        "columns": [
+          "CAPACITY (Kg)",
+          "STEEL 1600°C (Kg/h)",
+          "CAST IRON 1450°C (Kg/h)"
+        ]
+      },
+      "limitations": [
+        "Capacity is an interval, not one batch setting",
+        "Actual charge, downtime, scrap conditions, efficiency and operating schedule are not documented here",
+        "Do not infer cast-iron rate from steel rate or the reverse"
+      ]
+    },
+    {
+      "id": "INDUCTION-IMF-3000KW",
+      "model": "IMF 3000 kW",
+      "power_kw": 3000,
+      "capacity_min_kg": 4000,
+      "capacity_max_kg": 5000,
+      "published_rates": [
+        {
+          "material": "steel",
+          "temperature_c": 1600,
+          "rate_kg_h": 5050
+        },
+        {
+          "material": "cast_iron",
+          "temperature_c": 1450,
+          "rate_kg_h": 5900
+        }
+      ],
+      "verification_status": "manufacturer_catalog_verified",
+      "operation_validation_status": "reference_only",
+      "source_reference": {
+        "url": "https://induction.it/wp-content/uploads/brochure8_ted_ing_15.pdf",
+        "page_pdf_1_based": 2,
+        "table_row": "IMF 3000 kW",
+        "columns": [
+          "CAPACITY (Kg)",
+          "STEEL 1600°C (Kg/h)",
+          "CAST IRON 1450°C (Kg/h)"
+        ]
+      },
+      "limitations": [
+        "Capacity is an interval, not one batch setting",
+        "Actual charge, downtime, scrap conditions, efficiency and operating schedule are not documented here",
+        "Do not infer cast-iron rate from steel rate or the reverse"
+      ]
+    },
+    {
+      "id": "INDUCTION-IMF-5000KW",
+      "model": "IMF 5000 kW",
+      "power_kw": 5000,
+      "capacity_min_kg": 6000,
+      "capacity_max_kg": 8000,
+      "published_rates": [
+        {
+          "material": "steel",
+          "temperature_c": 1600,
+          "rate_kg_h": 8450
+        },
+        {
+          "material": "cast_iron",
+          "temperature_c": 1450,
+          "rate_kg_h": 9900
+        }
+      ],
+      "verification_status": "manufacturer_catalog_verified",
+      "operation_validation_status": "reference_only",
+      "source_reference": {
+        "url": "https://induction.it/wp-content/uploads/brochure8_ted_ing_15.pdf",
+        "page_pdf_1_based": 2,
+        "table_row": "IMF 5000 kW",
+        "columns": [
+          "CAPACITY (Kg)",
+          "STEEL 1600°C (Kg/h)",
+          "CAST IRON 1450°C (Kg/h)"
+        ]
+      },
+      "limitations": [
+        "Capacity is an interval, not one batch setting",
+        "Actual charge, downtime, scrap conditions, efficiency and operating schedule are not documented here",
+        "Do not infer cast-iron rate from steel rate or the reverse"
+      ]
+    },
+    {
+      "id": "INDUCTION-IMF-6000KW",
+      "model": "IMF 6000 kW",
+      "power_kw": 6000,
+      "capacity_min_kg": 8000,
+      "capacity_max_kg": 10000,
+      "published_rates": [
+        {
+          "material": "steel",
+          "temperature_c": 1600,
+          "rate_kg_h": 10100
+        },
+        {
+          "material": "cast_iron",
+          "temperature_c": 1450,
+          "rate_kg_h": 11800
+        }
+      ],
+      "verification_status": "manufacturer_catalog_verified",
+      "operation_validation_status": "reference_only",
+      "source_reference": {
+        "url": "https://induction.it/wp-content/uploads/brochure8_ted_ing_15.pdf",
+        "page_pdf_1_based": 2,
+        "table_row": "IMF 6000 kW",
+        "columns": [
+          "CAPACITY (Kg)",
+          "STEEL 1600°C (Kg/h)",
+          "CAST IRON 1450°C (Kg/h)"
+        ]
+      },
+      "limitations": [
+        "Capacity is an interval, not one batch setting",
+        "Actual charge, downtime, scrap conditions, efficiency and operating schedule are not documented here",
+        "Do not infer cast-iron rate from steel rate or the reverse"
+      ]
+    },
+    {
+      "id": "INDUCTION-IMF-8000KW",
+      "model": "IMF 8000 kW",
+      "power_kw": 8000,
+      "capacity_min_kg": 12000,
+      "capacity_max_kg": 15000,
+      "published_rates": [
+        {
+          "material": "steel",
+          "temperature_c": 1600,
+          "rate_kg_h": 13400
+        },
+        {
+          "material": "cast_iron",
+          "temperature_c": 1450,
+          "rate_kg_h": 15700
+        }
+      ],
+      "verification_status": "manufacturer_catalog_verified",
+      "operation_validation_status": "reference_only",
+      "source_reference": {
+        "url": "https://induction.it/wp-content/uploads/brochure8_ted_ing_15.pdf",
+        "page_pdf_1_based": 2,
+        "table_row": "IMF 8000 kW",
+        "columns": [
+          "CAPACITY (Kg)",
+          "STEEL 1600°C (Kg/h)",
+          "CAST IRON 1450°C (Kg/h)"
+        ]
+      },
+      "limitations": [
+        "Capacity is an interval, not one batch setting",
+        "Actual charge, downtime, scrap conditions, efficiency and operating schedule are not documented here",
+        "Do not infer cast-iron rate from steel rate or the reverse"
+      ]
+    }
+  ]
+}
