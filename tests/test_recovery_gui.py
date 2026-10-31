@@ -9,15 +9,22 @@ from PySide6.QtWidgets import QApplication, QMessageBox
 from core.casting_item import CastingItem
 from core.project import Project
 from core.project_io import write_project
+from core.version_history import VersionHistoryStore
 from core.recovery import RecoveryStore
 from gui.dialogs.recovery_dialog import RecoveryDialog
 from gui.main_window import MainWindow
 
 
-def test_autosave_is_separate_from_original_and_removed_after_manual_save(tmp_path):
+def test_autosave_is_separate_from_original_and_removed_after_manual_save(tmp_path, monkeypatch):
     app = QApplication.instance() or QApplication([])
     w = MainWindow()
     w._recovery_store = RecoveryStore(tmp_path / "recovery")
+    w._version_history = VersionHistoryStore(tmp_path / "history")
+    # A modal QMessageBox blocks headless CI forever. The actual exception
+    # is essential: fail visibly rather than treating a timeout as a result.
+    def fail_on_save_error(_parent, title, detail, *args, **kwargs):
+        raise AssertionError(f"{title}: {detail}")
+    monkeypatch.setattr(QMessageBox, "critical", fail_on_save_error)
     source = tmp_path / "manual.fpro.json"
     assert w._write_project_to(source)
     first_bytes = source.read_bytes()
