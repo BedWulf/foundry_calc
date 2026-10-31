@@ -13,6 +13,7 @@ from typing import Any
 
 from config import DATA_DIR
 from core.ferrous_normative_catalog import list_ferrous_reference_rows
+from core.ferrous_furnace_catalog import imf_reference_display_rows
 
 
 def _read(path: Path) -> dict[str, Any]:
@@ -62,6 +63,7 @@ def list_official_references(data_dir: Path | None = None) -> dict[str, list[dic
             "url": url,
             "status": "Параметры из каталога; пригодность для проекта не проверена",
         })
+    out["Плавильные печи"].extend(imf_reference_display_rows(root))
     for item in sinto["molding_lines"]:
         if item.get("verification_status") != "manufacturer_catalog_verified":
             raise ValueError(f"{item.get('id')}: не подтверждён источник")
